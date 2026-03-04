@@ -517,23 +517,13 @@
 
   <!-- MAP -->
   <div class="map-wrap reveal d5" id="mapWrap">
-    <div class="map-tabs">
-      <button class="map-tab active" onclick="switchMap('yandex',this)">🗺 Yandex Maps</button>
-      <button class="map-tab" onclick="switchMap('google',this)">📍 Google Maps</button>
-    </div>
-    <div class="map-pane active" id="paneYandex">
-      <div class="map-fallback">
-        <div class="mico">🗺</div>
-        <p>Gelion, Mone Café ro'parasida<br><span style="color:var(--muted)">Samarqand, O'zbekiston</span></p>
-        <a href="https://yandex.com/maps/-/CPq-BUYQ" target="_blank">Yandex Maps'da ochish →</a>
+    <div class="map-fallback">
+      <div class="mico">📍</div>
+      <p>Gelion, Mone Café ro'parasida<br><span style="color:var(--muted)">Samarqand, O'zbekiston</span></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        <a href="https://yandex.com/maps/-/CPq-BUYQ" target="_blank">🗺 Yandex Maps →</a>
+        <a href="https://maps.google.com/?q=MXF9+GJ+Samarkand+Uzbekistan" target="_blank" style="background:var(--card2);border:1px solid var(--border);color:var(--sky2);">📍 Google Maps →</a>
       </div>
-    </div>
-    <div class="map-pane" id="paneGoogle">
-      <iframe
-        src="https://maps.google.com/maps?q=39.6547,66.9597&z=16&output=embed"
-        allowfullscreen loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade">
-      </iframe>
     </div>
   </div>
 
@@ -579,12 +569,7 @@
     if(w.classList.contains('open')) setTimeout(()=>w.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
   }
 
-  function switchMap(type, btn) {
-    document.querySelectorAll('.map-pane').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.map-tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById('pane'+type[0].toUpperCase()+type.slice(1)).classList.add('active');
-    btn.classList.add('active');
-  }
+
 </script>
 </body>
 </html>
