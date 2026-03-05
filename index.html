@@ -814,6 +814,162 @@ span[data-lang].show { display:inline; }
   .footer { justify-content:center; text-align:center; }
   .sec-lbl::after { display:none; }
 }
+
+  /* ===================== PRICING ===================== */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .price-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 22px;
+    padding: 22px 16px;
+    text-align: center;
+    transition: all .3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .price-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--pc, var(--sky));
+  }
+  .price-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,.4); border-color: var(--pc, var(--sky)); }
+  .pc1{--pc:var(--sky)} .pc2{--pc:var(--gold)} .pc3{--pc:var(--purple)} .pc4{--pc:var(--teal)}
+  .pc-icon { font-size: 32px; margin-bottom: 8px; }
+  .pc-name { font-family: 'Fredoka One', cursive; font-size: 14px; color: #e8f4ff; margin-bottom: 10px; }
+  .pc-price { font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--pc, var(--sky)); margin-bottom: 6px; }
+  .pc-currency { font-size: 12px; opacity: .7; }
+  .pc-desc { font-size: 11px; color: #b0ccdf; font-weight: 700; }
+  .scholarship-note {
+    background: linear-gradient(90deg, rgba(255,179,0,.1), rgba(255,179,0,.05));
+    border: 1px solid rgba(255,179,0,.25);
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-size: 13.5px;
+    color: #e8f4ff;
+    font-weight: 600;
+  }
+  .scholarship-note strong { color: var(--gold2); font-weight: 800; }
+
+  /* ===================== SCHEDULE ===================== */
+  .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sch-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 22px 22px;
+    transition: all .25s;
+  }
+  .sch-card:hover { background: rgba(255,255,255,.09); transform: translateY(-3px); }
+  .sch3 { grid-column: 1 / -1; }
+  .sch-days {
+    font-family: 'Fredoka One', cursive;
+    font-size: 15px;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  .sch1 .sch-days { color: var(--sky); }
+  .sch2 .sch-days { color: var(--gold); }
+  .sch-times { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sch-time {
+    background: rgba(255,255,255,.08);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #e8f4ff;
+  }
+  .sch-special { background: linear-gradient(135deg, rgba(255,179,0,.1), rgba(255,111,0,.06)); border-color: rgba(255,179,0,.25); }
+  .sch-special .sch-days { color: var(--gold2); font-size: 16px; }
+  .sch-special-desc { font-size: 13px; color: #e8f4ff; font-weight: 600; line-height: 1.6; }
+
+  /* ===================== TRIAL BANNER ===================== */
+  .trial-banner {
+    background: linear-gradient(135deg, rgba(0,200,83,.12), rgba(0,188,212,.08));
+    border: 1.5px solid rgba(0,200,83,.3);
+    border-radius: 22px;
+    padding: 26px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 44px;
+    animation: trialGlow 3s ease-in-out infinite;
+  }
+  @keyframes trialGlow {
+    0%,100% { box-shadow: none; }
+    50% { box-shadow: 0 0 30px rgba(0,200,83,.15); }
+  }
+  .trial-left { display: flex; align-items: center; gap: 18px; flex: 1; min-width: 240px; }
+  .trial-icon { font-size: 44px; animation: wobble 3s ease-in-out infinite; flex-shrink: 0; }
+  .trial-title { font-family: 'Fredoka One', cursive; font-size: 20px; color: var(--green); margin-bottom: 6px; }
+  .trial-desc { font-size: 13px; color: #e8f4ff; line-height: 1.6; font-weight: 600; }
+  .trial-btn {
+    background: linear-gradient(135deg, var(--green), #00897b);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 100px;
+    text-decoration: none;
+    font-family: 'Fredoka One', cursive;
+    font-size: 16px;
+    transition: all .25s;
+    box-shadow: 0 4px 20px rgba(0,200,83,.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .trial-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,200,83,.5); }
+
+  /* ===================== FAQ ===================== */
+  .faq-list { display: flex; flex-direction: column; gap: 10px; }
+  .faq-item {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: border-color .25s;
+    cursor: pointer;
+  }
+  .faq-item.open { border-color: rgba(33,150,243,.35); }
+  .faq-q {
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 15px;
+    color: #ffffff;
+    user-select: none;
+    font-weight: 600;
+  }
+  .faq-arrow { font-size: 12px; color: var(--muted); transition: transform .3s; flex-shrink: 0; }
+  .faq-item.open .faq-arrow { transform: rotate(180deg); color: var(--sky); }
+  .faq-a {
+    display: none;
+    padding: 0 22px 18px;
+    font-size: 14px;
+    color: #ffffff;
+    line-height: 1.7;
+    font-weight: 600;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .faq-item.open .faq-a { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+  @media(max-width:720px){
+    .pricing-grid { grid-template-columns: 1fr 1fr; }
+    .schedule-grid { grid-template-columns: 1fr; }
+    .sch3 { grid-column: auto; }
+    .trial-banner { flex-direction: column; text-align: center; }
+    .trial-left { flex-direction: column; text-align: center; }
+  }
 </style>
 </head>
 <body>
@@ -867,8 +1023,8 @@ span[data-lang].show { display:inline; }
       <div class="hero-tagline">Learn · Build · Fly 🚀</div>
       <p class="hero-desc">
         <span data-lang="uz" class="show">Farzandingiz <strong>matematika, shaxmat yoki texnologiyaga</strong> qiziqadimi? Unda uning <strong>iqtidorini rivojlantirish</strong> uchun imkoniyat bor.</span>
-        <span data-lang="ru">Ваш ребёнок интересуется <strong>математикой, шахматами или технологиями</strong>? Мы готовим не к экзаменам — а к <strong>реальной жизни</strong>!</span>
-        <span data-lang="en">Is your child into <strong>math, chess, or technology</strong>? We don't prep for exams — we prepare for <strong>real life</strong>!</span>
+        <span data-lang="ru">Ваш ребёнок увлекается <strong>математикой, шахматами или технологиями</strong>? Значит, у него есть возможность <strong>развить свой талант</strong>!</span>
+        <span data-lang="en">Is your child passionate about <strong>math, chess, or technology</strong>? Then there's a great opportunity to <strong>develop their talent</strong>!</span>
       </p>
     </div>
   </div>
@@ -917,9 +1073,9 @@ span[data-lang].show { display:inline; }
         <span data-lang="en">Be among the first students!</span>
       </div>
       <p class="eb-desc">
-        <span data-lang="uz" class="show">Biz yangi ochilgan markaziz — siz <strong>tarixning bir qismiga</strong> aylanish imkoniyatiga egasiz. Birinchi o'quvchilar <strong>maxsus imtiyozlar</strong> va hamjamiyat asoschilaridan biri bo'lish sharafiga ega!</span>
-        <span data-lang="ru">Мы только открылись — у вас есть шанс <strong>стать частью истории</strong>. Первые ученики получат <strong>особые привилегии</strong> и статус основателей сообщества!</span>
-        <span data-lang="en">We just opened — you have the chance to <strong>be part of the story</strong>. First students get <strong>special benefits</strong> and founding community member status!</span>
+        <span data-lang="uz" class="show">Biz yangi ochilgan markaziz — va siz <strong>tarixning bir qismiga</strong> aylanish imkoniyatiga egasiz. Birinchi o'quvchilar <strong>maxsus imtiyozlar</strong> va hamjamiyat asoschilaridan biri bo'lish sharafiga ega!</span>
+        <span data-lang="ru">Мы только открылись — и у вас есть шанс <strong>стать частью истории</strong>. Первые ученики получат <strong>особые привилегии</strong> и статус основателей сообщества!</span>
+        <span data-lang="en">We just opened — and you have the chance to <strong>be part of the story</strong>. First students get <strong>special benefits</strong> and founding community member status!</span>
       </p>
     </div>
     <div class="eb-badge">
@@ -1069,6 +1225,194 @@ span[data-lang].show { display:inline; }
     </div>
   </div>
 
+  <!-- PRICING -->
+  <div class="reveal d5" style="margin-bottom:44px;">
+    <div class="sec-lbl">
+      <span>💰</span>
+      <span data-lang="uz" class="show">Narxlar</span>
+      <span data-lang="ru">Цены</span>
+      <span data-lang="en">Pricing</span>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card pc1">
+        <div class="pc-icon">♟</div>
+        <div class="pc-name"><span data-lang="uz" class="show">Shaxmat</span><span data-lang="ru">Шахматы</span><span data-lang="en">Chess</span></div>
+        <div class="pc-price">300 000 <span class="pc-currency">so'm/oy</span></div>
+        <div class="pc-desc"><span data-lang="uz" class="show">Hafta 3 kun · 2 soat</span><span data-lang="ru">3 раза в неделю · 2 часа</span><span data-lang="en">3x/week · 2 hours</span></div>
+      </div>
+      <div class="price-card pc2">
+        <div class="pc-icon">🧮</div>
+        <div class="pc-name"><span data-lang="uz" class="show">Matematika</span><span data-lang="ru">Математика</span><span data-lang="en">Mathematics</span></div>
+        <div class="pc-price">300 000 <span class="pc-currency">so'm/oy</span></div>
+        <div class="pc-desc"><span data-lang="uz" class="show">Hafta 3 kun · 2 soat</span><span data-lang="ru">3 раза в неделю · 2 часа</span><span data-lang="en">3x/week · 2 hours</span></div>
+      </div>
+      <div class="price-card pc3">
+        <div class="pc-icon">💻</div>
+        <div class="pc-name"><span data-lang="uz" class="show">Dasturlash</span><span data-lang="ru">Программирование</span><span data-lang="en">Programming</span></div>
+        <div class="pc-price">300 000 <span class="pc-currency">so'm/oy</span></div>
+        <div class="pc-desc"><span data-lang="uz" class="show">Hafta 3 kun · 2 soat</span><span data-lang="ru">3 раза в неделю · 2 часа</span><span data-lang="en">3x/week · 2 hours</span></div>
+      </div>
+      <div class="price-card pc4">
+        <div class="pc-icon">🤖</div>
+        <div class="pc-name"><span data-lang="uz" class="show">Robototexnika</span><span data-lang="ru">Робототехника</span><span data-lang="en">Robotics</span></div>
+        <div class="pc-price">300 000 <span class="pc-currency">so'm/oy</span></div>
+        <div class="pc-desc"><span data-lang="uz" class="show">Hafta 3 kun · 2 soat</span><span data-lang="ru">3 раза в неделю · 2 часа</span><span data-lang="en">3x/week · 2 hours</span></div>
+      </div>
+    </div>
+    <div class="scholarship-note">
+      🎓 <span data-lang="uz" class="show">Iqtidorli o'quvchilar uchun <strong>scholarship (bepul o'qish)</strong> imkoniyati mavjud!</span>
+      <span data-lang="ru">Для талантливых учеников доступна <strong>стипендия (бесплатное обучение)</strong>!</span>
+      <span data-lang="en">Scholarship (free study) available for talented students!</span>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="reveal d5" style="margin-bottom:44px;">
+    <div class="sec-lbl">
+      <span>📅</span>
+      <span data-lang="uz" class="show">Dars jadvali</span>
+      <span data-lang="ru">Расписание</span>
+      <span data-lang="en">Schedule</span>
+    </div>
+    <div class="schedule-grid">
+      <div class="sch-card sch1">
+        <div class="sch-days">
+          <span data-lang="uz" class="show">Dushanba · Chorshanba · Juma</span>
+          <span data-lang="ru">Пн · Ср · Пт</span>
+          <span data-lang="en">Mon · Wed · Fri</span>
+        </div>
+        <div class="sch-times">
+          <div class="sch-time">🌅 10:00 – 12:00</div>
+          <div class="sch-time">☀️ 15:00 – 17:00</div>
+        </div>
+      </div>
+      <div class="sch-card sch2">
+        <div class="sch-days">
+          <span data-lang="uz" class="show">Seshanba · Payshanba · Shanba</span>
+          <span data-lang="ru">Вт · Чт · Сб</span>
+          <span data-lang="en">Tue · Thu · Sat</span>
+        </div>
+        <div class="sch-times">
+          <div class="sch-time">🌅 10:00 – 12:00</div>
+          <div class="sch-time">☀️ 15:00 – 17:00</div>
+        </div>
+      </div>
+      <div class="sch-card sch3 sch-special">
+        <div class="sch-days">
+          <span data-lang="uz" class="show">🌟 Yakshanba — Maxsus kun!</span>
+          <span data-lang="ru">🌟 Воскресенье — Особый день!</span>
+          <span data-lang="en">🌟 Sunday — Special day!</span>
+        </div>
+        <div class="sch-special-desc">
+          <span data-lang="uz" class="show">Ochiq darslar · Musobaqalar · Ochiq eshiklar kuni</span>
+          <span data-lang="ru">Открытые уроки · Соревнования · День открытых дверей</span>
+          <span data-lang="en">Open lessons · Competitions · Open house day</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FREE TRIAL -->
+  <div class="trial-banner reveal d5">
+    <div class="trial-left">
+      <div class="trial-icon">🎁</div>
+      <div>
+        <div class="trial-title">
+          <span data-lang="uz" class="show">Bepul Sinov Darsi!</span>
+          <span data-lang="ru">Бесплатный Пробный Урок!</span>
+          <span data-lang="en">Free Trial Lesson!</span>
+        </div>
+        <div class="trial-desc">
+          <span data-lang="uz" class="show">Birinchi dars — mutlaqo bepul. Yoqsa davom etasiz, yoqmasa hech qanday majburiyat yo'q!</span>
+          <span data-lang="ru">Первый урок — абсолютно бесплатно. Понравится — продолжите, нет — никаких обязательств!</span>
+          <span data-lang="en">First lesson is completely free. Like it — continue, don't — no obligations!</span>
+        </div>
+      </div>
+    </div>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdjJW3ACj7IaLaGtpP1YwQF8eh3rbQxyCEkX0l1oqUmu1kidA/viewform" target="_blank" class="trial-btn">
+      <span data-lang="uz" class="show">Yozilish →</span>
+      <span data-lang="ru">Записаться →</span>
+      <span data-lang="en">Sign up →</span>
+    </a>
+  </div>
+
+  <!-- FAQ -->
+  <div class="reveal d6" style="margin-bottom:44px;">
+    <div class="sec-lbl">
+      <span>❓</span>
+      <span data-lang="uz" class="show">Ko'p beriladigan savollar</span>
+      <span data-lang="ru">Часто задаваемые вопросы</span>
+      <span data-lang="en">FAQ</span>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span data-lang="uz" class="show">Necha yoshdan qabul qilinadi?</span>
+          <span data-lang="ru">С какого возраста принимают?</span>
+          <span data-lang="en">From what age do you accept students?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          <span data-lang="uz" class="show">6 yoshdan boshlab qabul qilamiz. Har bir yo'nalish uchun alohida yosh guruhlari mavjud.</span>
+          <span data-lang="ru">Принимаем с 6 лет. Для каждого направления есть отдельные возрастные группы.</span>
+          <span data-lang="en">We accept students from age 6. Each course has separate age groups.</span>
+        </div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span data-lang="uz" class="show">Kompyuter yoki shaxmat doskasi kerakmi?</span>
+          <span data-lang="ru">Нужен ли компьютер или шахматная доска?</span>
+          <span data-lang="en">Do we need to bring a computer or chess board?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          <span data-lang="uz" class="show">Yo'q! Barcha kerakli jihozlar markazda mavjud. Farzandingiz faqat o'zi kelishi kifoya.</span>
+          <span data-lang="ru">Нет! Всё необходимое оборудование есть в центре. Ребёнку нужно только прийти.</span>
+          <span data-lang="en">No! All necessary equipment is available at the center. Your child just needs to show up.</span>
+        </div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span data-lang="uz" class="show">Sinov darsi bormi?</span>
+          <span data-lang="ru">Есть ли пробный урок?</span>
+          <span data-lang="en">Is there a trial lesson?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          <span data-lang="uz" class="show">Ha! Birinchi dars mutlaqo bepul. Yuqoridagi tugma orqali yozilishingiz mumkin.</span>
+          <span data-lang="ru">Да! Первый урок абсолютно бесплатный. Запишитесь через кнопку выше.</span>
+          <span data-lang="en">Yes! The first lesson is completely free. Sign up using the button above.</span>
+        </div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span data-lang="uz" class="show">Bir vaqtda bir necha kurs olsa bo'ladimi?</span>
+          <span data-lang="ru">Можно ли посещать несколько курсов одновременно?</span>
+          <span data-lang="en">Can a student take multiple courses at once?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          <span data-lang="uz" class="show">Ha, mumkin! Jadval bir-biriga to'g'ri kelmasa, bir vaqtda bir necha yo'nalishda o'qish mumkin.</span>
+          <span data-lang="ru">Да, можно! Если расписание не пересекается, можно учиться по нескольким направлениям.</span>
+          <span data-lang="en">Yes! If schedules don't overlap, students can take multiple courses simultaneously.</span>
+        </div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span data-lang="uz" class="show">To'lovni qanday amalga oshirish mumkin?</span>
+          <span data-lang="ru">Как можно оплатить?</span>
+          <span data-lang="en">How can I make the payment?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          <span data-lang="uz" class="show">To'lov naqd yoki Click/Payme orqali amalga oshiriladi. Har oyning boshida to'lanadi.</span>
+          <span data-lang="ru">Оплата наличными или через Click/Payme. Оплачивается в начале каждого месяца.</span>
+          <span data-lang="en">Payment by cash or via Click/Payme. Paid at the beginning of each month.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- BUTTONS -->
   <div class="btn-row reveal d6">
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSdjJW3ACj7IaLaGtpP1YwQF8eh3rbQxyCEkX0l1oqUmu1kidA/viewform"
@@ -1116,7 +1460,14 @@ function setLang(lang) {
 // Init feat text
 setLang('uz');
 
-// Map toggle
+
+  function toggleFaq(el) {
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
+    if(!isOpen) el.classList.add('open');
+  }
+
+  // Map toggle
 function toggleMap() {
   const w = document.getElementById('mapWrap');
   w.classList.toggle('open');
