@@ -665,6 +665,66 @@ section { padding:56px 0; }
 .sched-special .sched-days { color:var(--violet); }
 
 /* ============================================================
+   RESULTS + TESTIMONIALS
+   ============================================================ */
+.results-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:18px; margin-bottom:46px;
+}
+.res-card {
+  text-align:center;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:30px 22px;
+  transition:transform .25s, border-color .25s;
+}
+.res-card:hover { transform:translateY(-5px); border-color:var(--border-2); }
+.res-ico { font-size:2.2rem; margin-bottom:12px; }
+.res-card strong { display:block; font-size:1.08rem; font-weight:900; margin-bottom:6px; }
+.res-card p { color:var(--muted); font-size:.93rem; }
+
+.testi-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;
+}
+.testi {
+  position:relative;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:28px 26px 24px;
+  display:flex; flex-direction:column; gap:16px;
+  transition:transform .25s, border-color .25s;
+}
+.testi:hover { transform:translateY(-5px); border-color:rgba(255,179,0,.35); }
+.testi::before {
+  content:"\201C"; position:absolute; top:6px; right:20px;
+  font-family:Georgia,serif; font-size:4.4rem; line-height:1;
+  color:rgba(255,179,0,.16); pointer-events:none;
+}
+.testi-stars { color:var(--gold); font-size:1rem; letter-spacing:3px; }
+.testi-text { color:var(--muted); font-size:.97rem; flex:1; }
+.testi-who {
+  display:flex; align-items:center; gap:12px;
+  border-top:1px dashed rgba(255,255,255,.1); padding-top:16px;
+}
+.testi-ava {
+  width:44px; height:44px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:1.05rem; color:#131313;
+  background:var(--grad-gold);
+}
+.testi:nth-child(2) .testi-ava { background:var(--grad-sky); color:#fff; }
+.testi:nth-child(3) .testi-ava { background:linear-gradient(135deg,#22d3ee,#34d399); color:#0b2430; }
+.testi-name { font-weight:900; font-size:.97rem; }
+.testi-role { color:var(--faint); font-size:.83rem; font-weight:700; }
+.testi-note {
+  display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+  text-align:center; margin-top:28px;
+  background:rgba(56,168,255,.07); border:1px solid rgba(56,168,255,.22);
+  border-radius:var(--r-md); padding:16px 20px;
+  color:var(--muted); font-size:.95rem; font-weight:600;
+}
+.testi-note a { color:var(--sky2); font-weight:800; }
+
+/* ============================================================
    FAQ
    ============================================================ */
 .faq-list { max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
@@ -915,6 +975,7 @@ span[data-lang].show { display:inline; }
         <li><a href="#nega-parvoz"><span data-lang="uz" class="show">Nega Parvoz?</span><span data-lang="ru">Почему мы?</span><span data-lang="en">Why us?</span></a></li>
         <li><a href="#narxlar"><span data-lang="uz" class="show">Narxlar</span><span data-lang="ru">Цены</span><span data-lang="en">Pricing</span></a></li>
         <li><a href="#jadval"><span data-lang="uz" class="show">Jadval</span><span data-lang="ru">Расписание</span><span data-lang="en">Schedule</span></a></li>
+        <li><a href="#natijalar"><span data-lang="uz" class="show">Fikrlar</span><span data-lang="ru">Отзывы</span><span data-lang="en">Reviews</span></a></li>
         <li><a href="#faq">FAQ</a></li>
         <li><a href="#aloqa"><span data-lang="uz" class="show">Aloqa</span><span data-lang="ru">Контакты</span><span data-lang="en">Contact</span></a></li>
       </ul>
@@ -941,6 +1002,7 @@ span[data-lang].show { display:inline; }
   <a href="#nega-parvoz"><span data-lang="uz" class="show">⭐ Nega Parvoz?</span><span data-lang="ru">⭐ Почему мы?</span><span data-lang="en">⭐ Why us?</span></a>
   <a href="#narxlar"><span data-lang="uz" class="show">💰 Narxlar</span><span data-lang="ru">💰 Цены</span><span data-lang="en">💰 Pricing</span></a>
   <a href="#jadval"><span data-lang="uz" class="show">📅 Dars jadvali</span><span data-lang="ru">📅 Расписание</span><span data-lang="en">📅 Schedule</span></a>
+  <a href="#natijalar"><span data-lang="uz" class="show">🌟 Fikrlar</span><span data-lang="ru">🌟 Отзывы</span><span data-lang="en">🌟 Reviews</span></a>
   <a href="#faq">❓ FAQ</a>
   <a href="#aloqa"><span data-lang="uz" class="show">📍 Aloqa</span><span data-lang="ru">📍 Контакты</span><span data-lang="en">📍 Contact</span></a>
   <a class="nav-cta" href="https://docs.google.com/forms/d/e/1FAIpQLSdjJW3ACj7IaLaGtpP1YwQF8eh3rbQxyCEkX0l1oqUmu1kidA/viewform" target="_blank" rel="noopener">
@@ -1350,6 +1412,104 @@ span[data-lang].show { display:inline; }
         <div class="sched-time">🎪 <span><span data-lang="uz" class="show">Ochiq darslar va ochiq eshiklar kuni</span><span data-lang="ru">Открытые уроки и день открытых дверей</span><span data-lang="en">Open lessons & open house</span></span></div>
         <div class="sched-time">🏆 <span><span data-lang="uz" class="show">Musobaqalar va turnirlar</span><span data-lang="ru">Соревнования и турниры</span><span data-lang="en">Competitions & tournaments</span></span></div>
       </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ RESULTS + TESTIMONIALS ============================ -->
+<div class="wrap">
+  <section id="natijalar">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">🌟 <span data-lang="uz" class="show">Natijalar va fikrlar</span><span data-lang="ru">Результаты и отзывы</span><span data-lang="en">Results &amp; reviews</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Bizning g'ururimiz — o'quvchilarimiz</span>
+        <span data-lang="ru">Наша гордость — наши ученики</span>
+        <span data-lang="en">Our pride — our students</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">Har bir bola o'z sur'atida o'sadi — biz esa har bir qadamni natijaga aylantiramiz.</span>
+        <span data-lang="ru">Каждый ребёнок растёт в своём темпе — а мы превращаем каждый шаг в результат.</span>
+        <span data-lang="en">Every child grows at their own pace — we turn every step into a result.</span>
+      </p>
+    </div>
+
+    <div class="results-grid">
+      <div class="res-card" data-reveal style="--rd:.05s">
+        <div class="res-ico" aria-hidden="true">🏆</div>
+        <strong><span data-lang="uz" class="show">Haftalik musobaqalar</span><span data-lang="ru">Еженедельные соревнования</span><span data-lang="en">Weekly competitions</span></strong>
+        <p><span data-lang="uz" class="show">Har yakshanba — turnirlar, ochiq darslar va ochiq eshiklar kuni.</span><span data-lang="ru">Каждое воскресенье — турниры, открытые уроки и день открытых дверей.</span><span data-lang="en">Every Sunday — tournaments, open lessons, and open house.</span></p>
+      </div>
+      <div class="res-card" data-reveal style="--rd:.1s">
+        <div class="res-ico" aria-hidden="true">🚀</div>
+        <strong><span data-lang="uz" class="show">Real loyihalar</span><span data-lang="ru">Реальные проекты</span><span data-lang="en">Real projects</span></strong>
+        <p><span data-lang="uz" class="show">O'quvchilarimiz o'yinlar, robotlar va o'z loyihalarini yaratib o'rganadi.</span><span data-lang="ru">Наши ученики учатся, создавая игры, роботов и собственные проекты.</span><span data-lang="en">Our students learn by building games, robots, and their own projects.</span></p>
+      </div>
+      <div class="res-card" data-reveal style="--rd:.15s">
+        <div class="res-ico" aria-hidden="true">🎓</div>
+        <strong><span data-lang="uz" class="show">Scholarship dasturi</span><span data-lang="ru">Стипендиальная программа</span><span data-lang="en">Scholarship program</span></strong>
+        <p><span data-lang="uz" class="show">Iqtidorli o'quvchilar uchun bepul o'qish imkoniyati doimiy faol.</span><span data-lang="ru">Возможность бесплатного обучения для талантливых учеников.</span><span data-lang="en">Free study opportunities for talented students, always active.</span></p>
+      </div>
+    </div>
+
+    <!-- ⚠️ NAMUNA MATNLAR: quyidagi 3 ta fikr — dizayn namunasi.
+         Jonli saytga chiqarishdan oldin haqiqiy ota-onalar fikrlari bilan almashtiring. -->
+    <div class="testi-grid">
+      <article class="testi" data-reveal style="--rd:.05s">
+        <div class="testi-stars" aria-label="5 yulduz">★★★★★</div>
+        <p class="testi-text">
+          <span data-lang="uz" class="show">O'g'lim dasturlash kursiga qatnaydi — endi kompyuterda faqat o'yin o'ynamaydi, o'zi o'yin yasashga harakat qiladi. O'qituvchilar bolalarga alohida e'tibor berishadi.</span>
+          <span data-lang="ru">Сын ходит на программирование — теперь он не просто играет на компьютере, а сам пытается создавать игры. Преподаватели уделяют внимание каждому ребёнку.</span>
+          <span data-lang="en">My son attends the coding course — now he doesn't just play games, he tries to build his own. The teachers give each child real attention.</span>
+        </p>
+        <div class="testi-who">
+          <div class="testi-ava" aria-hidden="true">N</div>
+          <div>
+            <div class="testi-name">Nilufar A.</div>
+            <div class="testi-role"><span data-lang="uz" class="show">Dasturlash o'quvchisining onasi</span><span data-lang="ru">Мама ученика курса программирования</span><span data-lang="en">Mother of a coding student</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="testi" data-reveal style="--rd:.15s">
+        <div class="testi-stars" aria-label="5 yulduz">★★★★★</div>
+        <p class="testi-text">
+          <span data-lang="uz" class="show">Qizim shaxmat guruhida o'qiydi. Yakshanba turnirlari unga juda yoqadi — endi uyda ham bizni shaxmatga chorlaydi! Sabr va diqqat sezilarli o'sdi.</span>
+          <span data-lang="ru">Дочь занимается в группе шахмат. Ей очень нравятся воскресные турниры — теперь и дома зовёт нас играть! Терпение и внимание заметно выросли.</span>
+          <span data-lang="en">My daughter is in the chess group. She loves the Sunday tournaments — now she challenges us at home too! Her patience and focus have clearly grown.</span>
+        </p>
+        <div class="testi-who">
+          <div class="testi-ava" aria-hidden="true">B</div>
+          <div>
+            <div class="testi-name">Bekzod T.</div>
+            <div class="testi-role"><span data-lang="uz" class="show">Shaxmat o'quvchisining otasi</span><span data-lang="ru">Папа ученицы курса шахмат</span><span data-lang="en">Father of a chess student</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="testi" data-reveal style="--rd:.25s">
+        <div class="testi-stars" aria-label="5 yulduz">★★★★★</div>
+        <p class="testi-text">
+          <span data-lang="uz" class="show">Robototexnika darsidan keyin bolam ko'zlari yonib uyga keladi. Barcha jihozlar markazda bo'lgani biz uchun juda qulay — hech narsa sotib olmadik.</span>
+          <span data-lang="ru">После робототехники ребёнок приходит домой с горящими глазами. Очень удобно, что всё оборудование в центре — мы ничего не покупали.</span>
+          <span data-lang="en">After robotics class my child comes home with shining eyes. It's so convenient that all equipment is at the center — we didn't buy a thing.</span>
+        </p>
+        <div class="testi-who">
+          <div class="testi-ava" aria-hidden="true">M</div>
+          <div>
+            <div class="testi-name">Madina R.</div>
+            <div class="testi-role"><span data-lang="uz" class="show">Robototexnika o'quvchisining onasi</span><span data-lang="ru">Мама ученика курса робототехники</span><span data-lang="en">Mother of a robotics student</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="testi-note" data-reveal>
+      💬
+      <span>
+        <span data-lang="uz" class="show">Farzandingiz Parvozda o'qiydimi? Fikringizni <a href="https://t.me/parvozcode" target="_blank" rel="noopener">Telegram</a> orqali yuboring — shu yerda chop etamiz!</span>
+        <span data-lang="ru">Ваш ребёнок учится в Parvoz? Отправьте свой отзыв в <a href="https://t.me/parvozcode" target="_blank" rel="noopener">Telegram</a> — опубликуем его здесь!</span>
+        <span data-lang="en">Does your child study at Parvoz? Send your feedback via <a href="https://t.me/parvozcode" target="_blank" rel="noopener">Telegram</a> — we'll feature it here!</span>
+      </span>
     </div>
   </section>
 </div>
