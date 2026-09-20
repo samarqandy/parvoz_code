@@ -1075,3 +1075,32 @@ span[data-lang].show { display:inline; }
 .other-card .oc-ico { font-size:1.3rem; display:flex; align-items:center; }
 a.course-card { display:block; text-decoration:none; color:inherit; }
 .cc-more { margin-top:14px; font-weight:900; font-size:.9rem; color:var(--acc); }
+
+/* ============================================================
+   REVIEWS HUB
+   ============================================================ */
+.reviews-hub {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:30px 28px; margin-top:26px;
+}
+.rh-head { text-align:center; max-width:580px; margin:0 auto 26px; }
+.rh-head h3 { font-size:1.22rem; font-weight:900; margin-bottom:8px; }
+.rh-head p { color:var(--muted); font-size:.95rem; }
+.rh-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:16px; }
+.rh-card {
+  background:var(--soft-1); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:20px 18px;
+  display:flex; flex-direction:column; align-items:center; gap:9px; text-align:center;
+  transition:transform .25s, border-color .25s;
+}
+.rh-card:hover { transform:translateY(-4px); border-color:var(--border-2); }
+.rh-logo { height:30px; display:flex; align-items:center; justify-content:center; }
+.rh-name { font-weight:900; font-size:1.02rem; }
+.rh-note { color:var(--faint); font-size:.82rem; font-weight:700; }
+.rh-btns { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:auto; padding-top:8px; }
+.btn-xs { padding:9px 15px; font-size:.86rem; border-radius:99px; }
+.rv-source {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:.74rem; font-weight:800; padding:3px 9px; border-radius:99px;
+  background:var(--soft-1); border:1px solid var(--border); color:var(--muted);
+}
