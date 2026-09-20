@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
+<script>
+(function(){var t;try{t=localStorage.getItem('parvoz-theme');}catch(e){}
+if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}
+document.documentElement.setAttribute('data-theme',t);})();
+</script>
 <title>Parvoz — Davomat</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,15 +32,59 @@
   --red: #f87171;
   --violet: #a78bfa;
   --r: 14px;
+
+  --gold-ink: #ffb300;
+  --gold2-ink:#ffd54f;
+  --sky-ink:  #38a8ff;
+  --red-ink:  #f87171;
+  --soft-1:   rgba(255,255,255,.06);
+  --dash:     rgba(255,255,255,.08);
+  --topbar-bg:rgba(7,16,41,.9);
+  --toast-bg: rgba(10,20,48,.97);
+  --on-gold:  #131313;
+  --glow-a:   rgba(33,150,243,.12);
+  --glow-b:   rgba(255,179,0,.07);
 }
+
+:root[data-theme="light"] {
+  --bg: #f4f7fd;
+  --card: rgba(255,255,255,.82);
+  --card2: #ffffff;
+  --border: rgba(13,27,62,.12);
+  --border2: rgba(13,27,62,.22);
+  --text: #0c1a38;
+  --muted: #4a5c7e;
+  --faint: #6c7d9c;
+  --sky: #1a7fd4;
+  --green: #14a06d;
+  --red: #d64545;
+  --violet: #7c4ddb;
+
+  --gold-ink: #9a6a00;
+  --gold2-ink:#8a5c00;
+  --sky-ink:  #125fa8;
+  --red-ink:  #c33434;
+  --soft-1:   rgba(13,27,62,.05);
+  --dash:     rgba(13,27,62,.13);
+  --topbar-bg:rgba(255,255,255,.9);
+  --toast-bg: rgba(255,255,255,.98);
+  --glow-a:   rgba(26,127,212,.1);
+  --glow-b:   rgba(255,179,0,.12);
+}
+:root[data-theme="light"] .auth-card,
+:root[data-theme="light"] .stu-card,
+:root[data-theme="light"] .st-row,
+:root[data-theme="light"] .set-card,
+:root[data-theme="light"] .add-card,
+:root[data-theme="light"] .toast { box-shadow:0 6px 22px -16px rgba(13,27,62,.45); }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   font-family:'Nunito',system-ui,sans-serif;
   background:var(--bg); color:var(--text);
   min-height:100vh; line-height:1.5;
   background-image:
-    radial-gradient(ellipse 60% 40% at 15% 0%, rgba(33,150,243,.12) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 35% at 90% 100%, rgba(255,179,0,.07) 0%, transparent 60%);
+    radial-gradient(ellipse 60% 40% at 15% 0%, var(--glow-a) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 90% 100%, var(--glow-b) 0%, transparent 60%);
   background-attachment:fixed;
 }
 :focus-visible { outline:2px solid var(--gold); outline-offset:2px; border-radius:6px; }
@@ -61,31 +110,31 @@ input, select { font:inherit; }
 .field label { display:block; font-size:.8rem; font-weight:800; color:var(--faint); margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em; }
 .inp {
   width:100%; padding:12px 14px; border-radius:12px;
-  background:rgba(255,255,255,.06); border:1px solid var(--border2);
+  background:var(--soft-1); border:1px solid var(--border2);
   color:var(--text);
 }
-.inp:focus { border-color:var(--gold); outline:none; }
+.inp:focus { border-color:var(--gold-ink); outline:none; }
 .btn {
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
   padding:12px 20px; border-radius:12px; border:0;
   font-weight:900; font-size:.95rem;
-  background:linear-gradient(135deg,#ffb300,#ffd54f); color:#131313;
+  background:linear-gradient(135deg,#ffb300,#ffd54f); color:var(--on-gold);
   transition:transform .15s, opacity .15s;
 }
 .btn:hover { transform:translateY(-1px); }
 .btn:disabled { opacity:.5; cursor:default; transform:none; }
 .btn.full { width:100%; }
-.btn.ghost { background:rgba(255,255,255,.07); color:var(--text); border:1px solid var(--border2); }
-.btn.danger { background:rgba(248,113,113,.14); color:var(--red); border:1px solid rgba(248,113,113,.35); }
+.btn.ghost { background:var(--soft-1); color:var(--text); border:1px solid var(--border2); }
+.btn.danger { background:rgba(248,113,113,.14); color:var(--red-ink); border:1px solid rgba(248,113,113,.35); }
 .btn.sm { padding:8px 13px; font-size:.85rem; border-radius:10px; }
 .btn.green { background:linear-gradient(135deg,#10b981,#34d399); color:#06281c; }
-.err { color:var(--red); font-size:.88rem; font-weight:700; margin-top:12px; min-height:1.2em; }
+.err { color:var(--red-ink); font-size:.88rem; font-weight:700; margin-top:12px; min-height:1.2em; }
 .hint-note { color:var(--faint); font-size:.82rem; margin-top:16px; }
 
 /* ===== App shell ===== */
 .topbar {
   position:sticky; top:0; z-index:50;
-  background:rgba(7,16,41,.9);
+  background:var(--topbar-bg);
   -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
   padding:12px 16px;
@@ -103,7 +152,7 @@ input, select { font:inherit; }
   flex:1; padding:10px 6px; border-radius:10px; border:0;
   background:transparent; color:var(--muted); font-weight:800; font-size:.9rem;
 }
-.tab.active { background:linear-gradient(135deg,#ffb300,#ffd54f); color:#131313; }
+.tab.active { background:linear-gradient(135deg,#ffb300,#ffd54f); color:var(--on-gold); }
 .pane { display:none; }
 .pane.active { display:block; }
 
@@ -118,7 +167,7 @@ input, select { font:inherit; }
 .stat-chip b { color:var(--text); }
 .search { margin-bottom:14px; }
 .course-group { margin-bottom:20px; }
-.course-title { font-size:.8rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:8px; }
+.course-title { font-size:.8rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-ink); margin-bottom:8px; }
 .st-row {
   display:flex; align-items:center; gap:12px; flex-wrap:wrap;
   background:var(--card); border:1px solid var(--border);
@@ -128,7 +177,7 @@ input, select { font:inherit; }
 .st-name { font-weight:800; font-size:.98rem; }
 .st-times { font-size:.8rem; color:var(--muted); font-weight:700; margin-top:2px; display:flex; gap:10px; flex-wrap:wrap; }
 .st-times .undo { color:var(--faint); cursor:pointer; border:0; background:none; font-size:.8rem; padding:0 2px; }
-.st-times .undo:hover { color:var(--red); }
+.st-times .undo:hover { color:var(--red-ink); }
 .st-actions { display:flex; gap:8px; }
 .empty { text-align:center; color:var(--faint); padding:34px 10px; font-weight:700; }
 
@@ -144,10 +193,10 @@ input, select { font:inherit; }
 }
 .stu-top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .stu-name { font-weight:900; }
-.badge { font-size:.72rem; font-weight:800; padding:3px 10px; border-radius:99px; background:rgba(56,168,255,.12); border:1px solid rgba(56,168,255,.3); color:var(--sky); }
-.badge.off { background:rgba(255,255,255,.06); border-color:var(--border2); color:var(--faint); }
+.badge { font-size:.72rem; font-weight:800; padding:3px 10px; border-radius:99px; background:rgba(56,168,255,.12); border:1px solid rgba(56,168,255,.3); color:var(--sky-ink); }
+.badge.off { background:var(--soft-1); border-color:var(--border2); color:var(--faint); }
 .badge.tg-ok { background:rgba(52,211,153,.12); border-color:rgba(52,211,153,.35); color:var(--green); }
-.badge.tg-no { background:rgba(255,179,0,.1); border-color:rgba(255,179,0,.3); color:var(--gold2); }
+.badge.tg-no { background:rgba(255,179,0,.1); border-color:rgba(255,179,0,.3); color:var(--gold2-ink); }
 .stu-meta { color:var(--muted); font-size:.83rem; margin-top:4px; }
 .stu-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
 
@@ -161,18 +210,18 @@ input, select { font:inherit; }
 .row-inline { display:flex; gap:8px; }
 .row-inline .inp { flex:1; }
 details { margin-top:12px; }
-summary { cursor:pointer; font-weight:800; color:var(--sky); font-size:.88rem; }
+summary { cursor:pointer; font-weight:800; color:var(--sky-ink); font-size:.88rem; }
 details ol { margin:10px 0 0 20px; color:var(--muted); font-size:.87rem; }
 details li { margin-bottom:6px; }
-details code { background:rgba(255,255,255,.08); padding:1px 6px; border-radius:6px; font-size:.82rem; }
-.teacher-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px dashed rgba(255,255,255,.08); }
+details code { background:var(--soft-1); padding:1px 6px; border-radius:6px; font-size:.82rem; }
+.teacher-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px dashed var(--soft-1); }
 .teacher-row:last-child { border-bottom:0; }
 .teacher-row .em { flex:1; font-weight:700; font-size:.92rem; overflow:hidden; text-overflow:ellipsis; }
 
 /* ===== Toast ===== */
 .toast-box { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:100; display:flex; flex-direction:column; gap:8px; width:min(92vw,420px); }
 .toast {
-  background:rgba(10,20,48,.97); border:1px solid var(--border2);
+  background:var(--toast-bg); border:1px solid var(--border2);
   border-radius:12px; padding:12px 16px; font-weight:700; font-size:.9rem;
   box-shadow:0 12px 34px -10px rgba(0,0,0,.7);
   animation:toastIn .25s ease;
@@ -180,6 +229,9 @@ details code { background:rgba(255,255,255,.08); padding:1px 6px; border-radius:
 .toast.ok { border-color:rgba(52,211,153,.5); }
 .toast.bad { border-color:rgba(248,113,113,.5); }
 @keyframes toastIn { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:none;} }
+.theme-ico-light { display:none; }
+:root[data-theme="light"] .theme-ico-light { display:inline; }
+:root[data-theme="light"] .theme-ico-dark { display:none; }
 .hidden { display:none !important; }
 .spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(0,0,0,.3); border-top-color:transparent; border-radius:50%; animation:sp 1s linear infinite; }
 @keyframes sp { to { transform:rotate(360deg);} }
@@ -216,6 +268,9 @@ details code { background:rgba(255,255,255,.08); padding:1px 6px; border-radius:
     <img src="assets/logo.webp" alt="">
     <span class="t-title">Davomat</span>
     <span class="t-user" id="userEmail"></span>
+    <button class="btn ghost sm" id="themeBtn" type="button" aria-label="Rejimni almashtirish" style="padding:8px 11px">
+      <span class="theme-ico-dark">🌙</span><span class="theme-ico-light">☀️</span>
+    </button>
     <button class="btn ghost sm" id="logoutBtn" type="button">Chiqish</button>
   </div>
 
@@ -312,6 +367,13 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 sb.auth.onAuthStateChange((_evt, s) => { if (s) session = s; });
 
 const $ = (id) => document.getElementById(id);
+
+/* Tema */
+$('themeBtn').addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('parvoz-theme', next); } catch (e) {}
+});
 let session = null;
 let students = [];
 let todayRecords = [];
