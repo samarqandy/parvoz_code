@@ -36,6 +36,10 @@
     t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   }
   document.documentElement.setAttribute('data-theme', t);
+  var l = document.createElement('link');
+  l.rel = 'preload'; l.as = 'image'; l.type = 'image/webp';
+  l.href = t === 'light' ? 'assets/logo.webp' : 'assets/logo-dark.webp';
+  document.head.appendChild(l);
 })();
 </script>
 
@@ -47,9 +51,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-
-<!-- Hero logo -->
-<link rel="preload" as="image" href="assets/logo.webp" type="image/webp">
 
 <!-- Structured data -->
 <script type="application/ld+json">
@@ -141,6 +142,7 @@
   --cta-bg:   linear-gradient(140deg, rgba(26,79,207,.35) 0%, rgba(7,16,41,.6) 60%, rgba(255,179,0,.16) 100%);
   --pattern:  #ffffff;
   --on-gold:  #131313;
+  --logo-url: url(assets/logo-dark.webp);
   --ring-1:   rgba(56,168,255,.35);
   --ring-2:   rgba(255,179,0,.3);
 
@@ -196,6 +198,7 @@
   --price-bg: linear-gradient(160deg, rgba(26,79,207,.09) 0%, rgba(255,255,255,.7) 55%);
   --cta-bg:   linear-gradient(140deg, rgba(26,79,207,.14) 0%, rgba(255,255,255,.55) 60%, rgba(255,179,0,.18) 100%);
   --pattern:  #0d1b3e;
+  --logo-url: url(assets/logo.webp);
   --ring-1:   rgba(26,127,212,.3);
   --ring-2:   rgba(255,179,0,.4);
 
@@ -333,7 +336,10 @@ img { max-width:100%; display:block; }
   font-size:1.3rem; letter-spacing:.06em; color:var(--text);
   flex-shrink:0;
 }
-.nav-brand img { width:38px; height:auto; }
+.nav-brand .brand-logo {
+  width:38px; aspect-ratio:447/559; flex-shrink:0;
+  background:var(--logo-url) center/contain no-repeat;
+}
 .nav-brand span em { font-style:normal; color:var(--gold-ink); }
 
 .nav-links {
@@ -549,7 +555,11 @@ section { padding:56px 0; }
   box-shadow:var(--shadow-card), inset 0 1px 0 rgba(255,255,255,.09);
   animation:heroFloat 6s ease-in-out infinite;
 }
-.logo-card img { width:74%; height:auto; filter:drop-shadow(0 12px 30px rgba(33,150,243,.4)); }
+.logo-card .logo-img {
+  width:74%; aspect-ratio:447/559;
+  background:var(--logo-url) center/contain no-repeat;
+  filter:drop-shadow(0 12px 30px rgba(33,150,243,.4));
+}
 @keyframes heroFloat { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-14px) } }
 
 .orbit-item {
@@ -1019,7 +1029,10 @@ footer {
   display:grid; grid-template-columns:1.3fr 1fr 1fr;
   gap:36px; margin-bottom:38px;
 }
-.f-brand img { width:110px; height:auto; margin-bottom:14px; }
+.f-brand .f-logo {
+  display:block; width:110px; aspect-ratio:447/559; margin-bottom:14px;
+  background:var(--logo-url) center/contain no-repeat;
+}
 .f-brand p { color:var(--muted); font-size:.93rem; max-width:280px; }
 .f-col h3 {
   font-size:.82rem; font-weight:900; letter-spacing:.13em; text-transform:uppercase;
@@ -1157,7 +1170,7 @@ span[data-lang].show { display:inline; }
 <header class="nav" id="nav">
   <div class="nav-inner">
     <a class="nav-brand" href="#" aria-label="Parvoz — bosh sahifa">
-      <img src="assets/logo.webp" alt="" width="38" height="47">
+      <span class="brand-logo" aria-hidden="true"></span>
       <span>PARV<em>O</em>Z</span>
     </a>
 
@@ -1252,7 +1265,7 @@ span[data-lang].show { display:inline; }
           <div class="logo-ring"></div>
           <div class="logo-ring r2"></div>
           <div class="logo-card">
-            <img src="assets/logo.webp" alt="Parvoz O'quv Markazi logotipi" width="320" height="400" fetchpriority="high">
+            <span class="logo-img"></span>
           </div>
           <div class="orbit-item oi1" style="--bd:0s">♟</div>
           <div class="orbit-item oi2" style="--bd:.7s">🧮</div>
@@ -1921,7 +1934,7 @@ span[data-lang].show { display:inline; }
   <div class="wrap">
     <div class="f-grid">
       <div class="f-brand">
-        <img src="assets/logo.webp" alt="Parvoz O'quv Markazi" width="110" height="138" loading="lazy">
+        <span class="f-logo" role="img" aria-label="Parvoz O'quv Markazi"></span>
         <p>
           <span data-lang="uz" class="show">Samarqanddagi bolalar uchun zamonaviy ta'lim markazi. Biz fikrlashni o'rgatamiz — bilim yodlash uchun emas, dunyoni o'zgartirish uchun.</span>
           <span data-lang="ru">Современный учебный центр для детей в Самарканде. Мы учим мыслить — знания не для зубрёжки, а чтобы менять мир.</span>

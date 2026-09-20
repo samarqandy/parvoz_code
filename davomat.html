@@ -44,6 +44,7 @@ document.documentElement.setAttribute('data-theme',t);})();
   --on-gold:  #131313;
   --glow-a:   rgba(33,150,243,.12);
   --glow-b:   rgba(255,179,0,.07);
+  --logo-url: url(assets/logo-dark.webp);
 }
 
 :root[data-theme="light"] {
@@ -70,6 +71,7 @@ document.documentElement.setAttribute('data-theme',t);})();
   --toast-bg: rgba(255,255,255,.98);
   --glow-a:   rgba(26,127,212,.1);
   --glow-b:   rgba(255,179,0,.12);
+  --logo-url: url(assets/logo.webp);
 }
 :root[data-theme="light"] .auth-card,
 :root[data-theme="light"] .stu-card,
@@ -103,7 +105,7 @@ input, select { font:inherit; }
   border-radius:22px; padding:34px 28px;
   text-align:center;
 }
-.auth-card img { width:74px; margin:0 auto 12px; }
+.auth-card .logo { width:74px; aspect-ratio:447/559; margin:0 auto 12px; background:var(--logo-url) center/contain no-repeat; }
 .auth-card h1 { font-size:1.35rem; font-weight:900; margin-bottom:4px; }
 .auth-card .sub { color:var(--muted); font-size:.9rem; margin-bottom:22px; }
 .field { text-align:left; margin-bottom:14px; }
@@ -140,7 +142,7 @@ input, select { font:inherit; }
   padding:12px 16px;
   display:flex; align-items:center; gap:12px;
 }
-.topbar img { width:32px; }
+.topbar .logo { width:32px; aspect-ratio:447/559; flex-shrink:0; background:var(--logo-url) center/contain no-repeat; }
 .topbar .t-title { font-weight:900; font-size:1.05rem; }
 .topbar .t-user { margin-left:auto; color:var(--faint); font-size:.8rem; font-weight:700; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .tabs {
@@ -242,7 +244,7 @@ details code { background:var(--soft-1); padding:1px 6px; border-radius:6px; fon
 <!-- AUTH -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-card">
-    <img src="assets/logo.webp" alt="Parvoz">
+    <div class="logo" role="img" aria-label="Parvoz"></div>
     <h1>Davomat tizimi</h1>
     <p class="sub" id="authSub">Faqat o'qituvchilar uchun</p>
 
@@ -265,7 +267,7 @@ details code { background:var(--soft-1); padding:1px 6px; border-radius:6px; fon
 <!-- APP -->
 <div id="appScreen" class="hidden">
   <div class="topbar">
-    <img src="assets/logo.webp" alt="">
+    <div class="logo" aria-hidden="true"></div>
     <span class="t-title">Davomat</span>
     <span class="t-user" id="userEmail"></span>
     <button class="btn ghost sm" id="themeBtn" type="button" aria-label="Rejimni almashtirish" style="padding:8px 11px">
