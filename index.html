@@ -224,13 +224,13 @@ img { max-width:100%; display:block; }
 .nav-brand span em { font-style:normal; color:var(--gold); }
 
 .nav-links {
-  display:flex; align-items:center; gap:4px;
+  display:flex; align-items:center; gap:1px;
   list-style:none; margin-left:auto;
 }
 .nav-links a {
-  display:block; padding:9px 13px; border-radius:10px;
+  display:block; padding:8px 10px; border-radius:10px;
   text-decoration:none; color:var(--muted);
-  font-weight:700; font-size:.94rem;
+  font-weight:700; font-size:.9rem;
   transition:color .2s, background .2s;
   white-space:nowrap;
 }
@@ -725,6 +725,61 @@ section { padding:56px 0; }
 .testi-note a { color:var(--sky2); font-weight:800; }
 
 /* ============================================================
+   GALLERY
+   ============================================================ */
+.gallery-grid {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  grid-auto-rows:1fr; gap:14px;
+}
+.g-item {
+  position:relative; display:block; padding:0;
+  border-radius:var(--r-md); overflow:hidden;
+  border:1px solid var(--border); background:var(--card);
+  aspect-ratio:1; cursor:zoom-in;
+  font:inherit; color:inherit;
+  transition:border-color .25s, transform .25s;
+}
+.g-item:hover { border-color:var(--border-2); }
+.g-item img {
+  width:100%; height:100%; object-fit:cover;
+  transition:transform .45s ease;
+}
+.g-item:hover img { transform:scale(1.06); }
+.g-wide { grid-column:span 2; grid-row:span 2; }
+.g-ig {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; text-decoration:none; cursor:pointer; text-align:center;
+  background:linear-gradient(140deg, rgba(200,55,171,.16), rgba(255,84,62,.12), rgba(255,221,85,.1));
+  border-color:rgba(200,55,171,.35);
+}
+.g-ig:hover { transform:translateY(-4px); border-color:rgba(200,55,171,.6); }
+.g-ig strong { font-size:1rem; font-weight:900; }
+.g-ig span { color:var(--muted); font-size:.85rem; font-weight:700; padding:0 14px; }
+
+.lightbox {
+  border:0; padding:0; background:transparent;
+  max-width:min(92vw,1000px); max-height:92vh;
+  margin:auto;
+}
+.lightbox::backdrop { background:rgba(4,8,20,.92); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+.lightbox img {
+  display:block; width:min(92vw,900px); max-height:86vh;
+  object-fit:contain; margin:0 auto;
+  border-radius:var(--r-md); border:1px solid var(--border-2);
+}
+.lightbox-close {
+  position:fixed; top:18px; right:18px;
+  width:46px; height:46px; border-radius:50%;
+  background:rgba(255,255,255,.1); border:1px solid var(--border-2);
+  color:#fff; font-size:1.3rem; cursor:pointer; line-height:1;
+}
+.lightbox-close:hover { background:rgba(255,255,255,.2); }
+
+@media (max-width:760px){
+  .gallery-grid { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ============================================================
    FAQ
    ============================================================ */
 .faq-list { max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
@@ -882,7 +937,7 @@ span[data-lang].show { display:inline; }
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-@media (max-width:1020px){
+@media (max-width:1120px){
   .nav-links { display:none; }
   .nav .lang-btns { margin-left:auto; }
   .nav .nav-cta { display:none; }
@@ -976,6 +1031,7 @@ span[data-lang].show { display:inline; }
         <li><a href="#narxlar"><span data-lang="uz" class="show">Narxlar</span><span data-lang="ru">Цены</span><span data-lang="en">Pricing</span></a></li>
         <li><a href="#jadval"><span data-lang="uz" class="show">Jadval</span><span data-lang="ru">Расписание</span><span data-lang="en">Schedule</span></a></li>
         <li><a href="#natijalar"><span data-lang="uz" class="show">Fikrlar</span><span data-lang="ru">Отзывы</span><span data-lang="en">Reviews</span></a></li>
+        <li><a href="#galereya"><span data-lang="uz" class="show">Galereya</span><span data-lang="ru">Галерея</span><span data-lang="en">Gallery</span></a></li>
         <li><a href="#faq">FAQ</a></li>
         <li><a href="#aloqa"><span data-lang="uz" class="show">Aloqa</span><span data-lang="ru">Контакты</span><span data-lang="en">Contact</span></a></li>
       </ul>
@@ -1003,6 +1059,7 @@ span[data-lang].show { display:inline; }
   <a href="#narxlar"><span data-lang="uz" class="show">💰 Narxlar</span><span data-lang="ru">💰 Цены</span><span data-lang="en">💰 Pricing</span></a>
   <a href="#jadval"><span data-lang="uz" class="show">📅 Dars jadvali</span><span data-lang="ru">📅 Расписание</span><span data-lang="en">📅 Schedule</span></a>
   <a href="#natijalar"><span data-lang="uz" class="show">🌟 Fikrlar</span><span data-lang="ru">🌟 Отзывы</span><span data-lang="en">🌟 Reviews</span></a>
+  <a href="#galereya"><span data-lang="uz" class="show">📸 Galereya</span><span data-lang="ru">📸 Галерея</span><span data-lang="en">📸 Gallery</span></a>
   <a href="#faq">❓ FAQ</a>
   <a href="#aloqa"><span data-lang="uz" class="show">📍 Aloqa</span><span data-lang="ru">📍 Контакты</span><span data-lang="en">📍 Contact</span></a>
   <a class="nav-cta" href="https://docs.google.com/forms/d/e/1FAIpQLSdjJW3ACj7IaLaGtpP1YwQF8eh3rbQxyCEkX0l1oqUmu1kidA/viewform" target="_blank" rel="noopener">
@@ -1484,6 +1541,52 @@ span[data-lang].show { display:inline; }
   </section>
 </div>
 
+<!-- ============================ GALLERY ============================ -->
+<div class="wrap">
+  <section id="galereya">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">📸 <span data-lang="uz" class="show">Galereya</span><span data-lang="ru">Галерея</span><span data-lang="en">Gallery</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Markazdagi hayot</span>
+        <span data-lang="ru">Жизнь в центре</span>
+        <span data-lang="en">Life at the center</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">Darslar, turnirlar va o'quvchilarimizning eng yorqin lahzalari.</span>
+        <span data-lang="ru">Уроки, турниры и самые яркие моменты наших учеников.</span>
+        <span data-lang="en">Lessons, tournaments, and our students' brightest moments.</span>
+      </p>
+    </div>
+
+    <!-- Real fotolarni assets/gallery/ papkasiga joylab, quyidagi src va alt'larni yangilang.
+         "Tez orada" plashkalari haqiqiy suratlar kelguncha vaqtinchalik turadi. -->
+    <div class="gallery-grid" data-reveal>
+      <button class="g-item g-wide" type="button" data-full="assets/gallery/placeholder-hero.svg">
+        <img src="assets/gallery/placeholder-hero.svg" alt="Markazdagi hayot — foto tez orada" loading="lazy" width="600" height="600">
+      </button>
+      <button class="g-item" type="button" data-full="assets/gallery/placeholder-code.svg">
+        <img src="assets/gallery/placeholder-code.svg" alt="Dasturlash darsi — foto tez orada" loading="lazy" width="600" height="600">
+      </button>
+      <button class="g-item" type="button" data-full="assets/gallery/placeholder-robot.svg">
+        <img src="assets/gallery/placeholder-robot.svg" alt="Robototexnika darsi — foto tez orada" loading="lazy" width="600" height="600">
+      </button>
+      <button class="g-item" type="button" data-full="assets/gallery/placeholder-chess.svg">
+        <img src="assets/gallery/placeholder-chess.svg" alt="Shaxmat turniri — foto tez orada" loading="lazy" width="600" height="600">
+      </button>
+      <a class="g-item g-ig" href="https://www.instagram.com/parvoz_code" target="_blank" rel="noopener">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="ig_g2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#fd5"/><stop offset="50%" stop-color="#ff543e"/><stop offset="100%" stop-color="#c837ab"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" stroke="url(#ig_g2)" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="url(#ig_g2)" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="url(#ig_g2)"/></svg>
+        <strong>@parvoz_code</strong>
+        <span><span data-lang="uz" class="show">Barcha suratlar Instagram'da</span><span data-lang="ru">Все фото в Instagram</span><span data-lang="en">All photos on Instagram</span></span>
+      </a>
+    </div>
+  </section>
+</div>
+
+<dialog class="lightbox" id="lightbox" aria-label="Foto kattalashtirilgan ko'rinishda">
+  <img src="" alt="" id="lightboxImg">
+  <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Yopish">✕</button>
+</dialog>
+
 <!-- ============================ FAQ ============================ -->
 <div class="wrap">
   <section id="faq">
@@ -1807,6 +1910,21 @@ document.querySelectorAll('.faq-item').forEach(item => {
     }
   });
 });
+
+/* ============ GALLERY LIGHTBOX ============ */
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+document.querySelectorAll('.g-item[data-full]').forEach(item => {
+  item.addEventListener('click', () => {
+    const img = item.querySelector('img');
+    lightboxImg.src = item.dataset.full;
+    lightboxImg.alt = img ? img.alt : '';
+    lightbox.showModal();
+  });
+});
+document.getElementById('lightboxClose').addEventListener('click', () => lightbox.close());
+lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.close(); });
+lightbox.addEventListener('close', () => { lightboxImg.src = ''; });
 
 /* ============ AMBIENT (stars + floaters) ============ */
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
