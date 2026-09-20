@@ -1,4 +1,72 @@
+# Parvoz O'quv Markazi — parvozcode.uz
+
 User-agent: *
+Allow: /
+Disallow: /davomat.html
+
+# Qidiruv tizimlari
+User-agent: Googlebot
+Allow: /
+Disallow: /davomat.html
+
+User-agent: YandexBot
+Allow: /
+Disallow: /davomat.html
+
+User-agent: Bingbot
+Allow: /
+Disallow: /davomat.html
+
+# AI qidiruv va assistentlar (ChatGPT, Claude, Perplexity, Gemini va b.)
+User-agent: GPTBot
+Allow: /
+Disallow: /davomat.html
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /davomat.html
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /davomat.html
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /davomat.html
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /davomat.html
+
+User-agent: Claude-User
+Allow: /
+Disallow: /davomat.html
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /davomat.html
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /davomat.html
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /davomat.html
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /davomat.html
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /davomat.html
+
+User-agent: meta-externalagent
+Allow: /
+Disallow: /davomat.html
+
+User-agent: cohere-ai
 Allow: /
 Disallow: /davomat.html
 

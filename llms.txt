@@ -1,0 +1,37 @@
+# Parvoz O'quv Markazi (Parvoz Learning Center)
+
+> Samarqand shahridagi bolalar uchun IT va intellektual ta'lim markazi. Dasturlash, robototexnika, matematika, shaxmat va ingliz tili yo'nalishlari bo'yicha 6 yoshdan boshlab o'qitadi. Birinchi sinov darsi bepul.
+
+## Asosiy ma'lumotlar
+
+- **Nomi:** Parvoz O'quv Markazi (Parvoz Code / Учебный центр Parvoz)
+- **Shiori:** Learn. Build. Fly.
+- **Shahar:** Samarqand, O'zbekiston
+- **Manzil:** Gelion chorrahasi, Mone Café ro'parasida
+- **Telefon:** +998 97 234 44 42
+- **Telegram:** https://t.me/parvozcode (@parvozcode)
+- **Instagram:** https://www.instagram.com/parvoz_code (@parvoz_code)
+- **Sayt:** https://parvozcode.uz/
+- **Asos solingan:** 2025-yil
+- **Qabul yoshi:** 6 yoshdan
+- **Narx:** barcha yo'nalishlar uchun oyiga 300 000 so'm
+- **Dars tartibi:** haftada 3 kun, har dars 2 soat
+- **Guruh vaqtlari:** ertalab 10:00–12:00, tushdan keyin 13:00–15:00
+- **Yakshanba:** ochiq darslar, turnirlar va ochiq eshiklar kuni
+- **To'lov:** naqd, Click yoki Payme
+- **Sinov darsi:** birinchi dars bepul
+- **Qo'shimcha:** iqtidorli o'quvchilar uchun scholarship (bepul o'qish) imkoniyati; barcha jihozlar (kompyuter, robot to'plamlari, shaxmat doskalari) markaz tomonidan taqdim etiladi
+- **Muloqot tillari:** o'zbek, rus, ingliz
+
+## Kurslar
+
+- [Dasturlash kursi](https://parvozcode.uz/dasturlash-kurslari.html): Scratch, Python, veb asoslari (HTML/CSS), algoritmik fikrlash, loyiha ustida ishlash.
+- [Robototexnika kursi](https://parvozcode.uz/robototexnika-kurslari.html): robot konstruksiyasi, sensorlar, motorlar, robotni dasturlash, muhandislik sikli.
+- [Matematika kursi](https://parvozcode.uz/matematika-kurslari.html): og'zaki hisob, mantiqiy masalalar, geometriya, olimpiadaga tayyorgarlik.
+- [Shaxmat kursi](https://parvozcode.uz/shaxmat-kurslari.html): noldan boshlab qoidalar, debyut, taktika, endshpil, haftalik turnirlar.
+- [Ingliz tili kursi](https://parvozcode.uz/ingliz-tili-kurslari.html): jonli muloqot, tinglab tushunish, talaffuz, o'yin orqali grammatika.
+
+## Foydali havolalar
+
+- [Bosh sahifa](https://parvozcode.uz/): barcha yo'nalishlar, narxlar, dars jadvali, FAQ va aloqa ma'lumotlari.
+- [Sinov darsiga yozilish formasi](https://docs.google.com/forms/d/e/1FAIpQLSdjJW3ACj7IaLaGtpP1YwQF8eh3rbQxyCEkX0l1oqUmu1kidA/viewform)
