@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="dark">
+<title>Parvoz — Davomat</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060d1f;
+  --card: rgba(255,255,255,.05);
+  --card2: rgba(255,255,255,.08);
+  --border: rgba(255,255,255,.1);
+  --border2: rgba(255,255,255,.18);
+  --text: #eef4ff;
+  --muted: #a9bad9;
+  --faint: #7487ab;
+  --gold: #ffb300;
+  --gold2: #ffd54f;
+  --sky: #38a8ff;
+  --green: #34d399;
+  --red: #f87171;
+  --violet: #a78bfa;
+  --r: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Nunito',system-ui,sans-serif;
+  background:var(--bg); color:var(--text);
+  min-height:100vh; line-height:1.5;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 15% 0%, rgba(33,150,243,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 90% 100%, rgba(255,179,0,.07) 0%, transparent 60%);
+  background-attachment:fixed;
+}
+:focus-visible { outline:2px solid var(--gold); outline-offset:2px; border-radius:6px; }
+button { font:inherit; cursor:pointer; }
+input, select { font:inherit; }
+
+.wrap { max-width:860px; margin:0 auto; padding:0 16px 90px; }
+
+/* ===== Auth ===== */
+.auth-screen {
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.auth-card {
+  width:100%; max-width:400px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:22px; padding:34px 28px;
+  text-align:center;
+}
+.auth-card img { width:74px; margin:0 auto 12px; }
+.auth-card h1 { font-size:1.35rem; font-weight:900; margin-bottom:4px; }
+.auth-card .sub { color:var(--muted); font-size:.9rem; margin-bottom:22px; }
+.field { text-align:left; margin-bottom:14px; }
+.field label { display:block; font-size:.8rem; font-weight:800; color:var(--faint); margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em; }
+.inp {
+  width:100%; padding:12px 14px; border-radius:12px;
+  background:rgba(255,255,255,.06); border:1px solid var(--border2);
+  color:var(--text);
+}
+.inp:focus { border-color:var(--gold); outline:none; }
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:12px 20px; border-radius:12px; border:0;
+  font-weight:900; font-size:.95rem;
+  background:linear-gradient(135deg,#ffb300,#ffd54f); color:#131313;
+  transition:transform .15s, opacity .15s;
+}
+.btn:hover { transform:translateY(-1px); }
+.btn:disabled { opacity:.5; cursor:default; transform:none; }
+.btn.full { width:100%; }
+.btn.ghost { background:rgba(255,255,255,.07); color:var(--text); border:1px solid var(--border2); }
+.btn.danger { background:rgba(248,113,113,.14); color:var(--red); border:1px solid rgba(248,113,113,.35); }
+.btn.sm { padding:8px 13px; font-size:.85rem; border-radius:10px; }
+.btn.green { background:linear-gradient(135deg,#10b981,#34d399); color:#06281c; }
+.err { color:var(--red); font-size:.88rem; font-weight:700; margin-top:12px; min-height:1.2em; }
+.hint-note { color:var(--faint); font-size:.82rem; margin-top:16px; }
+
+/* ===== App shell ===== */
+.topbar {
+  position:sticky; top:0; z-index:50;
+  background:rgba(7,16,41,.9);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px;
+  display:flex; align-items:center; gap:12px;
+}
+.topbar img { width:32px; }
+.topbar .t-title { font-weight:900; font-size:1.05rem; }
+.topbar .t-user { margin-left:auto; color:var(--faint); font-size:.8rem; font-weight:700; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tabs {
+  display:flex; gap:6px; margin:18px 0 22px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:5px;
+}
+.tab {
+  flex:1; padding:10px 6px; border-radius:10px; border:0;
+  background:transparent; color:var(--muted); font-weight:800; font-size:.9rem;
+}
+.tab.active { background:linear-gradient(135deg,#ffb300,#ffd54f); color:#131313; }
+.pane { display:none; }
+.pane.active { display:block; }
+
+/* ===== Davomat ===== */
+.day-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.day-date { font-weight:900; font-size:1.1rem; }
+.day-stats { display:flex; gap:8px; }
+.stat-chip {
+  font-size:.8rem; font-weight:800; padding:5px 12px; border-radius:99px;
+  background:var(--card); border:1px solid var(--border); color:var(--muted);
+}
+.stat-chip b { color:var(--text); }
+.search { margin-bottom:14px; }
+.course-group { margin-bottom:20px; }
+.course-title { font-size:.8rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:8px; }
+.st-row {
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r); padding:13px 15px; margin-bottom:8px;
+}
+.st-info { flex:1; min-width:150px; }
+.st-name { font-weight:800; font-size:.98rem; }
+.st-times { font-size:.8rem; color:var(--muted); font-weight:700; margin-top:2px; display:flex; gap:10px; flex-wrap:wrap; }
+.st-times .undo { color:var(--faint); cursor:pointer; border:0; background:none; font-size:.8rem; padding:0 2px; }
+.st-times .undo:hover { color:var(--red); }
+.st-actions { display:flex; gap:8px; }
+.empty { text-align:center; color:var(--faint); padding:34px 10px; font-weight:700; }
+
+/* ===== O'quvchilar ===== */
+.add-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:18px; margin-bottom:20px; }
+.add-card h3 { font-size:.95rem; font-weight:900; margin-bottom:12px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.form-grid .span2 { grid-column:span 2; }
+@media (max-width:560px){ .form-grid { grid-template-columns:1fr; } .form-grid .span2 { grid-column:span 1; } }
+.stu-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r); padding:14px 16px; margin-bottom:10px;
+}
+.stu-top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.stu-name { font-weight:900; }
+.badge { font-size:.72rem; font-weight:800; padding:3px 10px; border-radius:99px; background:rgba(56,168,255,.12); border:1px solid rgba(56,168,255,.3); color:var(--sky); }
+.badge.off { background:rgba(255,255,255,.06); border-color:var(--border2); color:var(--faint); }
+.badge.tg-ok { background:rgba(52,211,153,.12); border-color:rgba(52,211,153,.35); color:var(--green); }
+.badge.tg-no { background:rgba(255,179,0,.1); border-color:rgba(255,179,0,.3); color:var(--gold2); }
+.stu-meta { color:var(--muted); font-size:.83rem; margin-top:4px; }
+.stu-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+/* ===== Sozlamalar ===== */
+.set-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:18px; margin-bottom:16px; }
+.set-card h3 { font-size:.98rem; font-weight:900; margin-bottom:6px; }
+.set-card .desc { color:var(--muted); font-size:.86rem; margin-bottom:14px; }
+.bot-status { display:flex; align-items:center; gap:10px; margin-bottom:14px; font-weight:800; }
+.dot { width:10px; height:10px; border-radius:50%; background:var(--red); }
+.dot.on { background:var(--green); }
+.row-inline { display:flex; gap:8px; }
+.row-inline .inp { flex:1; }
+details { margin-top:12px; }
+summary { cursor:pointer; font-weight:800; color:var(--sky); font-size:.88rem; }
+details ol { margin:10px 0 0 20px; color:var(--muted); font-size:.87rem; }
+details li { margin-bottom:6px; }
+details code { background:rgba(255,255,255,.08); padding:1px 6px; border-radius:6px; font-size:.82rem; }
+.teacher-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px dashed rgba(255,255,255,.08); }
+.teacher-row:last-child { border-bottom:0; }
+.teacher-row .em { flex:1; font-weight:700; font-size:.92rem; overflow:hidden; text-overflow:ellipsis; }
+
+/* ===== Toast ===== */
+.toast-box { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:100; display:flex; flex-direction:column; gap:8px; width:min(92vw,420px); }
+.toast {
+  background:rgba(10,20,48,.97); border:1px solid var(--border2);
+  border-radius:12px; padding:12px 16px; font-weight:700; font-size:.9rem;
+  box-shadow:0 12px 34px -10px rgba(0,0,0,.7);
+  animation:toastIn .25s ease;
+}
+.toast.ok { border-color:rgba(52,211,153,.5); }
+.toast.bad { border-color:rgba(248,113,113,.5); }
+@keyframes toastIn { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:none;} }
+.hidden { display:none !important; }
+.spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(0,0,0,.3); border-top-color:transparent; border-radius:50%; animation:sp 1s linear infinite; }
+@keyframes sp { to { transform:rotate(360deg);} }
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <img src="assets/logo.webp" alt="Parvoz">
+    <h1>Davomat tizimi</h1>
+    <p class="sub" id="authSub">Faqat o'qituvchilar uchun</p>
+
+    <form id="authForm">
+      <div class="field">
+        <label for="authEmail">Email</label>
+        <input class="inp" type="email" id="authEmail" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="authPass">Parol</label>
+        <input class="inp" type="password" id="authPass" required minlength="8" autocomplete="current-password">
+      </div>
+      <button class="btn full" type="submit" id="authBtn">Kirish</button>
+      <div class="err" id="authErr"></div>
+    </form>
+    <p class="hint-note">Parvoz O'quv Markazi · ichki tizim<br><a href="index.html" style="color:var(--sky)">← Bosh sahifa</a></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen" class="hidden">
+  <div class="topbar">
+    <img src="assets/logo.webp" alt="">
+    <span class="t-title">Davomat</span>
+    <span class="t-user" id="userEmail"></span>
+    <button class="btn ghost sm" id="logoutBtn" type="button">Chiqish</button>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-pane="paneToday" type="button">📋 Davomat</button>
+      <button class="tab" data-pane="paneStudents" type="button">👥 O'quvchilar</button>
+      <button class="tab" data-pane="paneSettings" type="button">⚙️ Sozlamalar</button>
+    </div>
+
+    <!-- DAVOMAT -->
+    <div class="pane active" id="paneToday">
+      <div class="day-head">
+        <div class="day-date" id="todayDate"></div>
+        <div class="day-stats">
+          <span class="stat-chip">Jami: <b id="statTotal">0</b></span>
+          <span class="stat-chip">Keldi: <b id="statIn">0</b></span>
+          <span class="stat-chip">Ketdi: <b id="statOut">0</b></span>
+        </div>
+      </div>
+      <input class="inp search" id="searchInp" placeholder="🔍 O'quvchini qidirish...">
+      <div id="todayList"></div>
+    </div>
+
+    <!-- O'QUVCHILAR -->
+    <div class="pane" id="paneStudents">
+      <div class="add-card">
+        <h3>➕ Yangi o'quvchi qo'shish</h3>
+        <form id="addStudentForm" class="form-grid">
+          <input class="inp" id="nsName" placeholder="Ism-familiya *" required>
+          <select class="inp" id="nsCourse" required>
+            <option value="">Kurs tanlang *</option>
+            <option>Dasturlash</option>
+            <option>Robototexnika</option>
+            <option>Matematika</option>
+            <option>Shaxmat</option>
+            <option>Ingliz tili</option>
+          </select>
+          <input class="inp" id="nsParent" placeholder="Ota-ona ismi">
+          <input class="inp" id="nsPhone" placeholder="Ota-ona telefoni">
+          <button class="btn span2" type="submit">Qo'shish</button>
+        </form>
+      </div>
+      <div id="studentsList"></div>
+    </div>
+
+    <!-- SOZLAMALAR -->
+    <div class="pane" id="paneSettings">
+      <div class="set-card">
+        <h3>🤖 Telegram bot</h3>
+        <p class="desc">Bot ulangach, har bir o'quvchi kartasida ota-onaga beriladigan maxsus havola paydo bo'ladi. Ota-ona havolani bosib botga /start yuborganida ulanadi va farzandining keldi-ketdisi haqida avtomatik xabar oladi.</p>
+        <div class="bot-status"><span class="dot" id="botDot"></span><span id="botStatusText">Bot ulanmagan</span></div>
+        <div class="row-inline">
+          <input class="inp" id="botTokenInp" placeholder="BotFather'dan olingan token">
+          <button class="btn" id="botSaveBtn" type="button">Ulash</button>
+        </div>
+        <details>
+          <summary>Botni qanday yaratish kerak? (1 daqiqa)</summary>
+          <ol>
+            <li>Telegram'da <code>@BotFather</code> ga kiring</li>
+            <li><code>/newbot</code> buyrug'ini yuboring</li>
+            <li>Bot nomini kiriting, masalan: <code>Parvoz Davomat</code></li>
+            <li>Username kiriting, masalan: <code>parvoz_davomat_bot</code></li>
+            <li>BotFather bergan tokenni (<code>123456:ABC-...</code>) yuqoridagi maydonga joylab "Ulash" tugmasini bosing</li>
+          </ol>
+        </details>
+      </div>
+
+      <div class="set-card">
+        <h3>👩‍🏫 O'qituvchilar</h3>
+        <p class="desc">Bu ro'yxatdagi emaillar tizimga kira oladi.</p>
+        <div id="teachersList"></div>
+        <form id="addTeacherForm" class="row-inline" style="margin-top:12px">
+          <input class="inp" type="email" id="ntEmail" placeholder="Email" required>
+          <input class="inp" type="password" id="ntPass" placeholder="Parol (kamida 8)" required minlength="8">
+          <button class="btn sm" type="submit">➕</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-box" id="toastBox"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+if (typeof supabase === 'undefined') {
+  document.body.innerHTML = '<div class="auth-screen"><div class="auth-card"><h1>⚠️ Ulanish xatosi</h1><p class="sub">Kutubxona yuklanmadi. Internet aloqasini tekshirib, sahifani yangilang.</p></div></div>';
+  throw new Error('supabase-js not loaded');
+}
+const SUPABASE_URL = 'https://pthqtdcbphqixeuqkgwa.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0aHF0ZGNicGhxaXhldXFrZ3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDM4ODgsImV4cCI6MjEwNTQ3OTg4OH0.S0gqEi-dwcfLlkgiB44xZj64KtpLoCDVOz66P3SD3TY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const $ = (id) => document.getElementById(id);
+let session = null;
+let students = [];
+let todayRecords = [];
+let botUsername = null;
+let needsBootstrap = false;
+let pollTimer = null;
+
+/* ---------- helpers ---------- */
+function toast(msg, kind = '') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + kind;
+  el.textContent = msg;
+  $('toastBox').appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+async function edge(fn, payload) {
+  const token = session?.access_token ?? SUPABASE_ANON;
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Xatolik (${res.status})`);
+  return data;
+}
+
+function fmtTime(iso) {
+  return new Intl.DateTimeFormat('uz-UZ', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Samarkand' }).format(new Date(iso));
+}
+function samarkandTodayStartISO() {
+  const d = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Samarkand' }).format(new Date());
+  return new Date(d + 'T00:00:00+05:00').toISOString();
+}
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- auth ---------- */
+async function initAuth() {
+  try {
+    const st = await edge('admin-api', { action: 'status' });
+    needsBootstrap = !!st.needs_bootstrap;
+  } catch (e) { /* status ishlamasa ham login formasi ko'rinadi */ }
+  if (needsBootstrap) {
+    $('authSub').textContent = "Birinchi sozlash: administrator hisobini yarating";
+    $('authBtn').textContent = "Hisob yaratish va kirish";
+    $('authPass').autocomplete = 'new-password';
+  }
+  const { data } = await sb.auth.getSession();
+  if (data.session) { session = data.session; await enterApp(); }
+}
+
+$('authForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('authEmail').value.trim();
+  const password = $('authPass').value;
+  $('authErr').textContent = '';
+  $('authBtn').disabled = true;
+  try {
+    if (needsBootstrap) {
+      await edge('admin-api', { action: 'bootstrap', email, password });
+      needsBootstrap = false;
+    }
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message === 'Invalid login credentials' ? "Email yoki parol noto'g'ri" : error.message);
+    session = data.session;
+    await enterApp();
+  } catch (err) {
+    $('authErr').textContent = err.message;
+  } finally {
+    $('authBtn').disabled = false;
+  }
+});
+
+$('logoutBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  session = null;
+  clearInterval(pollTimer);
+  $('appScreen').classList.add('hidden');
+  $('authScreen').classList.remove('hidden');
+});
+
+/* ---------- app ---------- */
+async function enterApp() {
+  // O'qituvchi ekanini tekshirish (aks holda 401/403 qaytadi)
+  try {
+    await edge('admin-api', { action: 'check_telegram' });
+  } catch (e) {
+    $('authErr').textContent = "Bu hisobga davomat tizimiga kirish ruxsati berilmagan.";
+    await sb.auth.signOut(); session = null;
+    return;
+  }
+  $('authScreen').classList.add('hidden');
+  $('appScreen').classList.remove('hidden');
+  $('userEmail').textContent = session.user.email;
+  $('todayDate').textContent = new Intl.DateTimeFormat('uz-UZ', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Samarkand' }).format(new Date());
+  await refreshAll();
+  clearInterval(pollTimer);
+  pollTimer = setInterval(pollTelegram, 25000);
+}
+
+async function refreshAll() {
+  await Promise.all([loadStudents(), loadToday(), loadConfig()]);
+  renderToday();
+  renderStudents();
+  loadTeachers();
+}
+
+async function loadStudents() {
+  const { data, error } = await sb.from('students').select('*').order('course').order('full_name');
+  if (!error) students = data ?? [];
+}
+async function loadToday() {
+  const { data, error } = await sb.from('attendance').select('*').gte('occurred_at', samarkandTodayStartISO()).order('occurred_at');
+  if (!error) todayRecords = data ?? [];
+}
+async function loadConfig() {
+  const { data } = await sb.from('app_config').select('key,value').eq('key', 'bot_username');
+  botUsername = data?.[0]?.value ?? null;
+  $('botDot').classList.toggle('on', !!botUsername);
+  $('botStatusText').textContent = botUsername ? `Ulangan: @${botUsername}` : 'Bot ulanmagan';
+}
+
+async function pollTelegram() {
+  try {
+    const r = await edge('admin-api', { action: 'check_telegram' });
+    if (r.linked > 0) {
+      toast(`✅ ${r.linked} ta ota-ona Telegram'ga ulandi!`, 'ok');
+      await loadStudents(); renderStudents(); renderToday();
+    }
+  } catch (e) { /* jim */ }
+}
+
+/* ---------- Davomat pane ---------- */
+function recFor(studentId, kind) {
+  return todayRecords.find((r) => r.student_id === studentId && r.kind === kind);
+}
+
+function renderToday() {
+  const q = $('searchInp').value.trim().toLowerCase();
+  const act = students.filter((s) => s.active && (!q || s.full_name.toLowerCase().includes(q)));
+  $('statTotal').textContent = students.filter((s) => s.active).length;
+  $('statIn').textContent = new Set(todayRecords.filter((r) => r.kind === 'in').map((r) => r.student_id)).size;
+  $('statOut').textContent = new Set(todayRecords.filter((r) => r.kind === 'out').map((r) => r.student_id)).size;
+
+  if (!act.length) {
+    $('todayList').innerHTML = `<div class="empty">${students.length ? 'Hech narsa topilmadi' : "Hali o'quvchilar qo'shilmagan.<br>«O'quvchilar» bo'limidan qo'shing."}</div>`;
+    return;
+  }
+  const byCourse = {};
+  act.forEach((s) => { (byCourse[s.course] ??= []).push(s); });
+
+  $('todayList').innerHTML = Object.entries(byCourse).map(([course, list]) => `
+    <div class="course-group">
+      <div class="course-title">${esc(course)} · ${list.length}</div>
+      ${list.map((s) => {
+        const rin = recFor(s.id, 'in');
+        const rout = recFor(s.id, 'out');
+        return `
+        <div class="st-row">
+          <div class="st-info">
+            <div class="st-name">${esc(s.full_name)} ${s.telegram_chat_id ? '' : '<span title="Telegram ulanmagan" style="opacity:.5">🔕</span>'}</div>
+            <div class="st-times">
+              ${rin ? `<span>✅ ${fmtTime(rin.occurred_at)} <button class="undo" data-del="${rin.id}" title="Bekor qilish">✕</button></span>` : ''}
+              ${rout ? `<span>🏠 ${fmtTime(rout.occurred_at)} <button class="undo" data-del="${rout.id}" title="Bekor qilish">✕</button></span>` : ''}
+            </div>
+          </div>
+          <div class="st-actions">
+            <button class="btn sm green" data-mark="in" data-id="${s.id}" ${rin ? 'disabled' : ''}>✅ Keldi</button>
+            <button class="btn sm ghost" data-mark="out" data-id="${s.id}" ${rout || !rin ? 'disabled' : ''}>🏠 Ketdi</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+$('searchInp').addEventListener('input', renderToday);
+
+$('todayList').addEventListener('click', async (e) => {
+  const markBtn = e.target.closest('[data-mark]');
+  const delBtn = e.target.closest('[data-del]');
+  if (markBtn) {
+    markBtn.disabled = true;
+    markBtn.innerHTML = '<span class="spin"></span>';
+    try {
+      const r = await edge('mark-attendance', { student_id: markBtn.dataset.id, kind: markBtn.dataset.mark });
+      await loadToday(); renderToday();
+      const s = students.find((x) => x.id === markBtn.dataset.id);
+      toast(r.notified
+        ? `📨 ${s?.full_name ?? ''} — belgilandi, ota-onaga xabar yuborildi`
+        : `✔️ ${s?.full_name ?? ''} — belgilandi${s?.telegram_chat_id ? '' : ' (Telegram ulanmagan)'}`, 'ok');
+    } catch (err) {
+      toast('❌ ' + err.message, 'bad');
+      renderToday();
+    }
+    return;
+  }
+  if (delBtn) {
+    if (!confirm("Bu belgini o'chirasizmi? (Ota-onaga yuborilgan xabar qaytarib olinmaydi)")) return;
+    const { error } = await sb.from('attendance').delete().eq('id', delBtn.dataset.del);
+    if (error) toast('❌ ' + error.message, 'bad');
+    await loadToday(); renderToday();
+  }
+});
+
+/* ---------- O'quvchilar pane ---------- */
+function renderStudents() {
+  if (!students.length) {
+    $('studentsList').innerHTML = `<div class="empty">Hali o'quvchi qo'shilmagan</div>`;
+    return;
+  }
+  $('studentsList').innerHTML = students.map((s) => `
+    <div class="stu-card">
+      <div class="stu-top">
+        <span class="stu-name">${esc(s.full_name)}</span>
+        <span class="badge">${esc(s.course)}</span>
+        ${s.active ? '' : '<span class="badge off">Arxiv</span>'}
+        ${s.telegram_chat_id
+          ? '<span class="badge tg-ok">✅ Telegram ulangan</span>'
+          : '<span class="badge tg-no">🔕 Ulanmagan</span>'}
+      </div>
+      ${s.parent_name || s.parent_phone ? `<div class="stu-meta">👤 ${esc(s.parent_name ?? '')} ${esc(s.parent_phone ?? '')}</div>` : ''}
+      <div class="stu-btns">
+        ${!s.telegram_chat_id ? (botUsername
+          ? `<button class="btn sm" data-copy="${s.link_code}">🔗 Ota-ona havolasini nusxalash</button>`
+          : `<span class="stu-meta">🔗 Havola uchun avval Sozlamalarda botni ulang</span>`) : ''}
+        <button class="btn sm ghost" data-toggle="${s.id}" data-val="${s.active}">${s.active ? '📦 Arxivlash' : '↩️ Qaytarish'}</button>
+        <button class="btn sm danger" data-remove="${s.id}">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+$('addStudentForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const row = {
+    full_name: $('nsName').value.trim(),
+    course: $('nsCourse').value,
+    parent_name: $('nsParent').value.trim() || null,
+    parent_phone: $('nsPhone').value.trim() || null,
+  };
+  if (!row.full_name || !row.course) return;
+  const { error } = await sb.from('students').insert(row);
+  if (error) { toast('❌ ' + error.message, 'bad'); return; }
+  e.target.reset();
+  toast("✅ O'quvchi qo'shildi", 'ok');
+  await loadStudents(); renderStudents(); renderToday();
+});
+
+$('studentsList').addEventListener('click', async (e) => {
+  const copyBtn = e.target.closest('[data-copy]');
+  const togBtn = e.target.closest('[data-toggle]');
+  const remBtn = e.target.closest('[data-remove]');
+  if (copyBtn) {
+    const link = `https://t.me/${botUsername}?start=${copyBtn.dataset.copy}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast('🔗 Havola nusxalandi — ota-onaga yuboring', 'ok');
+    } catch { prompt('Havolani nusxalang:', link); }
+    return;
+  }
+  if (togBtn) {
+    const { error } = await sb.from('students').update({ active: togBtn.dataset.val !== 'true' }).eq('id', togBtn.dataset.toggle);
+    if (error) toast('❌ ' + error.message, 'bad');
+    await loadStudents(); renderStudents(); renderToday();
+    return;
+  }
+  if (remBtn) {
+    if (!confirm("O'quvchi va uning BARCHA davomat tarixi o'chiriladi. Davom etasizmi?")) return;
+    const { error } = await sb.from('students').delete().eq('id', remBtn.dataset.remove);
+    if (error) toast('❌ ' + error.message, 'bad');
+    await loadStudents(); renderStudents(); renderToday();
+  }
+});
+
+/* ---------- Sozlamalar pane ---------- */
+$('botSaveBtn').addEventListener('click', async () => {
+  const token = $('botTokenInp').value.trim();
+  if (!token) { toast('Token kiriting', 'bad'); return; }
+  $('botSaveBtn').disabled = true;
+  try {
+    const r = await edge('admin-api', { action: 'save_bot_token', token });
+    $('botTokenInp').value = '';
+    toast(`🤖 Bot ulandi: @${r.username}`, 'ok');
+    await loadConfig(); renderStudents();
+  } catch (err) {
+    toast('❌ ' + err.message, 'bad');
+  } finally {
+    $('botSaveBtn').disabled = false;
+  }
+});
+
+async function loadTeachers() {
+  const { data, error } = await sb.from('allowed_teachers').select('*').order('created_at');
+  if (error) return;
+  $('teachersList').innerHTML = (data ?? []).map((t) => `
+    <div class="teacher-row">
+      <span class="em">${esc(t.email)}</span>
+      ${t.email.toLowerCase() === session.user.email.toLowerCase()
+        ? '<span class="badge">siz</span>'
+        : `<button class="btn sm danger" data-rmteacher="${esc(t.email)}">✕</button>`}
+    </div>`).join('');
+}
+
+$('teachersList').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-rmteacher]');
+  if (!btn) return;
+  if (!confirm(`${btn.dataset.rmteacher} o'chirilsinmi?`)) return;
+  try {
+    await edge('admin-api', { action: 'remove_teacher', email: btn.dataset.rmteacher });
+    toast("✅ O'qituvchi o'chirildi", 'ok');
+    loadTeachers();
+  } catch (err) { toast('❌ ' + err.message, 'bad'); }
+});
+
+$('addTeacherForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await edge('admin-api', { action: 'create_teacher', email: $('ntEmail').value.trim(), password: $('ntPass').value });
+    toast("✅ O'qituvchi qo'shildi", 'ok');
+    e.target.reset();
+    loadTeachers();
+  } catch (err) { toast('❌ ' + err.message, 'bad'); }
+});
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach((t) => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((x) => x.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach((x) => x.classList.remove('active'));
+    t.classList.add('active');
+    $(t.dataset.pane).classList.add('active');
+  });
+});
+
+initAuth();
+</script>
+</body>
+</html>
