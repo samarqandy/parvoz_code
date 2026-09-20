@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /davomat.html
 
 Sitemap: https://parvozcode.uz/sitemap.xml
