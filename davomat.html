@@ -309,6 +309,7 @@ if (typeof supabase === 'undefined') {
 const SUPABASE_URL = 'https://pthqtdcbphqixeuqkgwa.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0aHF0ZGNicGhxaXhldXFrZ3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDM4ODgsImV4cCI6MjEwNTQ3OTg4OH0.S0gqEi-dwcfLlkgiB44xZj64KtpLoCDVOz66P3SD3TY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+sb.auth.onAuthStateChange((_evt, s) => { if (s) session = s; });
 
 const $ = (id) => document.getElementById(id);
 let session = null;
@@ -328,7 +329,13 @@ function toast(msg, kind = '') {
 }
 
 async function edge(fn, payload) {
-  const token = session?.access_token ?? SUPABASE_ANON;
+  // Har chaqiruvda yangi (avto-yangilangan) sessiya tokenini olamiz —
+  // eskirgan token bilan so'rov yuborilishining oldini oladi
+  let token = SUPABASE_ANON;
+  try {
+    const { data } = await sb.auth.getSession();
+    if (data.session) { session = data.session; token = data.session.access_token; }
+  } catch (e) { token = session?.access_token ?? SUPABASE_ANON; }
   const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
     method: 'POST',
     headers: {
