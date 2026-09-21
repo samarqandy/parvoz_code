@@ -530,7 +530,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 /* Belgi qo'yilmagan qatorda holat matni oddiy yozuv */
 .rt-status.is-plain { cursor: default; padding-left: 0; margin-left: 0; }
 .rt-status.is-plain:hover { background: transparent; }
-.rt:has(.rt-status.is-plain) { cursor: default; }
+.rt.is-fresh { cursor: default; }
 
 /* Kuni tugadi */
 .act-done {
@@ -592,3 +592,17 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .th-ico span + span { margin-left: 6px; }
 .num-on { color: var(--tone-ink); font-weight: 900; }
 .num-off { color: var(--faint); }
+
+
+/* ===================== YUKLANISH XATOSI ===================== */
+.boot-err-ico { font-size: 2.2rem; line-height: 1; margin-bottom: 10px; color: var(--gold-ink); }
+.boot-err-what {
+  margin: 14px 0 4px; padding: 10px 12px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm);
+  font-weight: 800; font-size: .88rem; word-break: break-word; color: var(--text);
+}
+.boot-err-detail { color: var(--faint); font-size: .78rem; margin-bottom: 16px; word-break: break-all; }
+
+/* Kirish ekranidagi til tanlash */
+.auth-langs { justify-content: center; margin-top: 16px; }
+.auth-langs .chip { --acc: var(--sky); font-size: .82rem; padding: 6px 12px; }
