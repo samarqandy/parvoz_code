@@ -419,9 +419,10 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .row-actions { width: 100%; }
   .row-actions .btn { flex: 1; min-height: 44px; }
   .row-actions .btn.btn-sm { font-size: .9rem; }
-  /* Davomatda asosiy tugma butun qatorni egallaydi */
-  .rt .btn-act { flex: 1; font-size: 1rem; min-height: 50px; }
-  .rt .act-done { flex: 1; min-height: 50px; }
+  /* Davomatda: asosiy tugma butun kenglikda, ikkilamchilar ostida yonma-yon */
+  .rt .row-actions { flex-wrap: wrap; gap: 8px; }
+  .rt .btn-act, .rt .act-done { order: -1; flex: 1 0 100%; font-size: 1rem; min-height: 50px; }
+  .rt .btn-alt { flex: 1 1 0; min-height: 46px; font-size: .9rem; padding: 10px 8px; }
   .mk-row { flex-wrap: nowrap; }
   .mk-row .btn { width: auto; flex: 0 0 auto; }
   .mk-btn { min-height: 66px; }
@@ -520,8 +521,16 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .rt:hover .rt-status { background: color-mix(in srgb, var(--tone) 12%, transparent); }
 .rt-status:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
 
-/* Bitta katta tugma — keyingi qadam */
+/* Tugmalar: chapda ikkilamchi holatlar, o'ngda keyingi qadam */
+.rt .row-actions { gap: 8px; }
 .btn-act { min-width: 132px; }
+.btn-alt { min-width: 0; padding: 12px 14px; font-size: .88rem; }
+.btn-alt svg { width: 16px; height: 16px; }
+
+/* Belgi qo'yilmagan qatorda holat matni oddiy yozuv */
+.rt-status.is-plain { cursor: default; padding-left: 0; margin-left: 0; }
+.rt-status.is-plain:hover { background: transparent; }
+.rt:has(.rt-status.is-plain) { cursor: default; }
 
 /* Kuni tugadi */
 .act-done {
