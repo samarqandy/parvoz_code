@@ -32,6 +32,56 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/app.css">
+
+<script>
+// Telefonda konsolni ochib bo'lmaydi — xatoni ekranning o'zida ko'rsatamiz,
+// shunda foydalanuvchi uni surat qilib yubora oladi.
+(function () {
+  var done = false, pending = null;
+
+  function paint(what, detail) {
+    var box = document.getElementById('bootErr');
+    if (!box) { pending = [what, detail]; return; }     // DOM hali tayyor emas
+    done = true;
+    var boot = document.getElementById('boot');
+    if (boot) boot.classList.add('hidden');
+    box.classList.remove('hidden');
+    document.getElementById('bootErrWhat').textContent = what;
+    document.getElementById('bootErrDetail').textContent = detail || '';
+  }
+  function fail(what, detail) { if (!done) paint(what, detail); }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (pending && !done) paint(pending[0], pending[1]);
+  });
+
+  window.addEventListener('error', function (e) {
+    var el = e.target;
+    // Shrift yoki rasm yuklanmasa panel baribir ishlaydi — faqat skriptlar muhim
+    if (el && el.tagName === 'SCRIPT') {
+      fail('Fayl yuklanmadi / Файл не загрузился', String(el.src || '').split('/').pop());
+    } else if (!el || el === window || !el.tagName) {
+      fail(e.message || 'Xatolik / Ошибка',
+           String(e.filename || '').split('/').pop() + (e.lineno ? ':' + e.lineno : ''));
+    }
+  }, true);
+
+  window.addEventListener('unhandledrejection', function (e) {
+    var m = (e.reason && e.reason.message) || e.reason;
+    fail("So'rov bajarilmadi / Запрос не выполнен", String(m || ''));
+  });
+
+  // 15 soniyada ochilmasa ham xabar beramiz
+  var watch = setTimeout(function () {
+    var boot = document.getElementById('boot');
+    if (boot && !boot.classList.contains('hidden')) {
+      fail('Juda uzoq yuklanmoqda / Долго загружается', 'timeout 15s');
+    }
+  }, 15000);
+
+  window.__bootOk = function () { done = true; clearTimeout(watch); };
+})();
+</script>
 </head>
 <body>
 
@@ -43,23 +93,40 @@
   </div>
 </div>
 
+<!-- Yuklanish xatosi -->
+<div class="auth hidden" id="bootErr">
+  <div class="auth-card">
+    <div class="boot-err-ico">&#9888;</div>
+    <h1>Panel ochilmadi</h1>
+    <p class="sub">Панель не открылась</p>
+    <p class="boot-err-what" id="bootErrWhat"></p>
+    <p class="boot-err-detail" id="bootErrDetail"></p>
+    <button class="btn btn-primary btn-block" onclick="location.reload(true)" type="button">Qayta urinish / Повторить</button>
+    <p class="auth-foot"><a href="index.html">&#8592; Saytga qaytish</a></p>
+  </div>
+</div>
+
 <!-- Kirish -->
 <div class="auth hidden" id="auth">
   <div class="auth-card">
     <div class="logo"></div>
-    <h1 id="authTitle">Davomat tizimi</h1>
-    <p class="sub" id="authSub">Parvoz O'quv Markazi · ichki tizim</p>
+    <h1 id="authTitle" data-t="authTitle">Davomat tizimi</h1>
+    <p class="sub" id="authSub" data-t="authSub">Parvoz O'quv Markazi · ichki tizim</p>
     <form id="authForm">
-      <label class="field hidden"><span>Ism-familiya</span>
+      <label class="field hidden"><span data-t="fName">Ism-familiya</span>
         <input class="inp" id="authName" autocomplete="name"></label>
-      <label class="field"><span>Email</span>
+      <label class="field"><span data-t="fEmail">Email</span>
         <input class="inp" id="authEmail" type="email" required autocomplete="username"></label>
-      <label class="field"><span>Parol</span>
+      <label class="field"><span data-t="fPass">Parol</span>
         <input class="inp" id="authPass" type="password" required minlength="8" autocomplete="current-password"></label>
-      <button class="btn btn-primary btn-block" id="authSubmit" type="submit">Kirish</button>
+      <button class="btn btn-primary btn-block" id="authSubmit" type="submit" data-t="signIn">Kirish</button>
       <div class="err" id="authErr"></div>
     </form>
-    <p class="auth-foot"><a href="index.html">← Saytga qaytish</a></p>
+    <div class="chips auth-langs">
+      <button class="chip" data-lang-pick="uz" type="button">O'zbekcha</button>
+      <button class="chip" data-lang-pick="ru" type="button">Русский</button>
+    </div>
+    <p class="auth-foot"><a href="index.html">← <span data-t="backSite">Saytga qaytish</span></a></p>
   </div>
 </div>
 
@@ -69,7 +136,7 @@
   <aside class="sidebar">
     <div class="side-brand">
       <div class="logo"></div>
-      <div><b>Parvoz</b><small>Davomat tizimi</small></div>
+      <div><b>Parvoz</b><small data-t="authTitle">Davomat tizimi</small></div>
     </div>
     <nav class="side-nav" id="sideNav" aria-label="Asosiy menyu"></nav>
     <div class="side-foot">
@@ -81,7 +148,7 @@
   <div class="main">
     <header class="topbar">
       <div class="logo"></div>
-      <h1 id="pageTitle">Davomat</h1>
+      <h1 id="pageTitle" data-t="navToday">Davomat</h1>
       <div class="tb-actions">
         <button class="btn btn-icon btn-ghost" data-theme-toggle type="button"></button>
       </div>
@@ -101,16 +168,8 @@
   <div class="sheet-inner" id="sheetBody"></div>
 </dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-if (typeof supabase === 'undefined') {
-  document.body.innerHTML = '<div class="auth"><div class="auth-card"><h1>⚠️ Ulanish xatosi</h1>' +
-    '<p class="sub">Kutubxona yuklanmadi. Internet aloqasini tekshirib, sahifani yangilang.</p></div></div>';
-} else {
-  var s = document.createElement('script');
-  s.src = 'assets/app.js';
-  document.body.appendChild(s);
-}
-</script>
+<!-- Kutubxona saytning o'zida turadi: tashqi CDN ishlamasa ham panel ochiladi -->
+<script src="assets/supabase.min.js"></script>
+<script src="assets/app.js"></script>
 </body>
 </html>

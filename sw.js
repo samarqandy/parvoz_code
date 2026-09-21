@@ -1,10 +1,11 @@
 /* Parvoz Davomat — service worker.
    Faqat panel qobig'ini keshlaydi; Supabase so'rovlari va sayt sahifalariga tegmaydi. */
-const CACHE = 'parvoz-davomat-v1';
+const CACHE = 'parvoz-davomat-v3';
 const SHELL = [
   '/davomat.html',
   '/assets/app.css',
   '/assets/app.js',
+  '/assets/supabase.min.js',
   '/assets/logo-dark.webp',
   '/assets/logo.webp',
   '/favicon.png',
