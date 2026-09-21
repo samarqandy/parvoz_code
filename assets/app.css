@@ -23,10 +23,11 @@
   --rose:  #fb7185;
   --red:   #f87171;
 
-  --gold-ink:  #ffc233;
-  --sky-ink:   #7cc6ff;
-  --green-ink: #4ade80;
-  --red-ink:   #fca5a5;
+  --gold-ink:   #ffc233;
+  --sky-ink:    #7cc6ff;
+  --green-ink:  #4ade80;
+  --red-ink:    #fca5a5;
+  --violet-ink: #c4b5fd;
 
   --nav-bg:   rgba(9,17,38,.92);
   --sheet-bg: #0c1630;
@@ -61,10 +62,11 @@
   --rose:  #e0526a;
   --red:   #d64545;
 
-  --gold-ink:  #9a6a00;
-  --sky-ink:   #125fa8;
-  --green-ink: #0b7a50;
-  --red-ink:   #c33434;
+  --gold-ink:   #9a6a00;
+  --sky-ink:    #125fa8;
+  --green-ink:  #0b7a50;
+  --red-ink:    #c33434;
+  --violet-ink: #5b2fb8;
 
   --logo-url: url(logo.webp);
   --nav-bg:   rgba(255,255,255,.92);
@@ -282,10 +284,6 @@ select.inp option, select.inp optgroup { background: var(--sheet-bg); color: var
 .row-title { font-weight: 800; font-size: .98rem; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .row-sub { color: var(--muted); font-size: .8rem; font-weight: 700; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .row-actions { display: flex; gap: 7px; flex-shrink: 0; }
-.mark-time { display: inline-flex; align-items: center; gap: 4px; }
-.mark-time button { color: var(--faint); font-size: .95rem; line-height: 1; padding: 2px; }
-.mark-time button:hover { color: var(--red-ink); }
-
 .group-title {
   display: flex; align-items: center; gap: 8px;
   font-size: .76rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase;
@@ -426,7 +424,8 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .rt .btn-more { min-height: 50px; }
   .rt .act-done { flex: 1; min-height: 50px; }
   .mk-row { flex-wrap: nowrap; }
-  .mk-row .btn { width: auto; }
+  .mk-row .btn { width: auto; flex: 0 0 auto; }
+  .mk-btn { min-height: 66px; }
 }
 
 /* Navigatsiyadagi hisoblagich (yangi arizalar) */
@@ -487,18 +486,27 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .field .f-hint { display: block; margin-top: 5px; color: var(--faint); font-size: .78rem; line-height: 1.45; }
 
 /* ===================== DAVOMAT HOLATLARI ===================== */
-/* Qatorning holati chap chekkadagi chiziq bilan ko'rinadi */
-.rt { border-left: 3px solid transparent; }
-.rt-in      { border-left-color: color-mix(in srgb, var(--green) 65%, transparent); }
-.rt-done    { border-left-color: var(--border-2); }
-.rt-absent  { border-left-color: color-mix(in srgb, var(--red) 65%, transparent); }
-.rt-excused { border-left-color: color-mix(in srgb, var(--gold) 65%, transparent); }
+/* Bitta rang tizimi: har bir holatning o'z --tone i bor, qolgan hamma narsa
+   (tugma, matn, belgi, kun nuqtasi, statistika) shundan oziqlanadi. */
+.tone-green   { --tone: var(--green);    --tone-ink: var(--green-ink);  --tone-grad: linear-gradient(135deg,#10b981,#34d399); --tone-on: #052e1f; }
+.tone-gold    { --tone: var(--gold);     --tone-ink: var(--gold-ink);   --tone-grad: linear-gradient(135deg,#ffb300,#ffd54f); --tone-on: var(--on-gold); }
+.tone-red     { --tone: var(--red);      --tone-ink: var(--red-ink);    --tone-grad: linear-gradient(135deg,#ef4444,#f87171); --tone-on: #2b0606; }
+.tone-violet  { --tone: var(--violet);   --tone-ink: var(--violet-ink); --tone-grad: linear-gradient(135deg,#8b5cf6,#a78bfa); --tone-on: #190a33; }
+.tone-muted,
+.tone-pending { --tone: var(--border-2); --tone-ink: var(--faint);      --tone-grad: none;                                    --tone-on: var(--muted); }
 
-.rt-status { font-weight: 700; }
-.rt-in      .rt-status { color: var(--green-ink); }
-.rt-absent  .rt-status { color: var(--red-ink); }
-.rt-excused .rt-status { color: var(--gold-ink); }
-.rt-pending .rt-status { color: var(--faint); }
+/* Rangli tugma */
+.btn-tone { background: var(--tone-grad); color: var(--tone-on); border-color: transparent; }
+.btn-tone:disabled { opacity: .4; }
+
+/* Qator: chap chekka + holat matni */
+.rt { border-left: 3px solid var(--tone); }
+.rt.tone-pending { border-left-color: transparent; }
+.rt-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--tone-ink); font-weight: 700;
+}
+.rt-status svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 /* Bitta katta tugma — keyingi qadam */
 .btn-act { min-width: 132px; }
@@ -518,24 +526,54 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 }
 .act-done svg { width: 16px; height: 16px; color: var(--green-ink); }
 
+/* Telegramga ulanmagan belgisi */
+.badge.b-mute { padding: 2px 5px; color: var(--faint); }
+.badge.b-mute svg { width: 13px; height: 13px; display: block; }
+
+/* "⋯" oynasidagi holat tugmalari */
+.mk-opts { display: flex; flex-direction: column; gap: 9px; }
+.mk-btn {
+  justify-content: flex-start; text-align: left;
+  min-height: 62px; padding: 12px 15px; gap: 12px;
+}
+.mk-btn svg { width: 22px; height: 22px; }
+.mk-lbl { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.mk-lbl b { font-weight: 900; font-size: 1rem; }
+.mk-lbl small { font-size: .78rem; font-weight: 700; opacity: .8; white-space: normal; line-height: 1.35; }
+
 /* "⋯" oynasidagi bugungi belgilar */
 .mk-sep {
   margin: 18px 0 9px;
   font-size: .74rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
   color: var(--faint);
 }
-.mk-row { gap: 11px; }
-.mk-row .row-title { font-size: .95rem; }
+.mk-row { gap: 11px; border-left: 3px solid var(--tone); }
+.mk-row .row-title { font-size: .95rem; color: var(--tone-ink); }
 .mk-row .btn { flex: 0 0 auto; }
+.mk-ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  color: var(--tone-ink);
+}
+.mk-ico svg { width: 17px; height: 17px; }
 
-/* Holat tanlash oynasi */
-.check-item.mk { align-items: flex-start; gap: 12px; text-align: left; width: 100%; padding: 13px; }
-.check-item.mk[disabled] { opacity: .45; cursor: default; }
-.check-item.mk .mk-ico { font-size: 1.15rem; line-height: 1.35; flex-shrink: 0; }
-.check-item.mk .mk-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.check-item.mk .mk-txt b { font-weight: 900; }
-.check-item.mk .mk-txt small { color: var(--muted); font-size: .78rem; font-weight: 600; line-height: 1.4; }
+/* Statistika kartasi */
+.stat span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.stat span svg { width: 13px; height: 13px; opacity: .8; }
+.stat.tone-green b, .stat.tone-gold b, .stat.tone-red b, .stat.tone-violet b { color: var(--tone-ink); }
+.stat.tone-green span, .stat.tone-gold span, .stat.tone-red span, .stat.tone-violet span { color: var(--tone-ink); opacity: .9; }
 
 /* Hisobotdagi kun belgilari */
-.day-pill.dp-absent  { background: color-mix(in srgb, var(--red) 14%, transparent); color: var(--red-ink); }
-.day-pill.dp-excused { background: color-mix(in srgb, var(--gold) 14%, transparent); color: var(--gold-ink); }
+.day-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: color-mix(in srgb, var(--tone, var(--border-2)) 14%, transparent);
+  color: var(--tone-ink, var(--muted));
+}
+.day-pill svg { width: 12px; height: 12px; flex-shrink: 0; }
+.th-ico { white-space: nowrap; }
+.th-ico span { display: inline-flex; color: var(--tone-ink); }
+.th-ico svg { width: 14px; height: 14px; vertical-align: middle; }
+.th-ico span + span { margin-left: 6px; }
+.num-on { color: var(--tone-ink); font-weight: 900; }
+.num-off { color: var(--faint); }
