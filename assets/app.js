@@ -350,12 +350,28 @@ function visibleStudents() {
 }
 
 const recFor = (sid, kind) => state.today.find((r) => r.student_id === sid && r.kind === kind);
+const dayStatus = (sid) => state.today.find((r) => r.student_id === sid && (r.kind === 'absent' || r.kind === 'excused'));
+
+// Davomat holatlari
+const MARKS = {
+  in:      { icon: '✅',        label: 'Keldi',   short: 'Keldi' },
+  out:     { icon: '🏠',    label: 'Ketdi',   short: 'Ketdi' },
+  absent:  { icon: '❗️',  label: 'Kelmadi', short: 'Kelmadi' },
+  excused: { icon: '📝',    label: 'Sababli', short: 'Sababli' },
+};
+
+// "Sababli" uchun tayyor sabablar
+const REASONS = ['Kasal', 'Oilaviy sabab', "Ta'til / safar", 'Maktab ishi'];
 
 function viewToday() {
   const list = visibleStudents().filter((s) => s.active);
   const dateTxt = uzDate();
-  const inCount = new Set(state.today.filter((r) => r.kind === 'in').map((r) => r.student_id)).size;
-  const outCount = new Set(state.today.filter((r) => r.kind === 'out').map((r) => r.student_id)).size;
+  const ids = new Set(list.map((s) => s.id));
+  const seen = (kind) => new Set(state.today.filter((r) => r.kind === kind && ids.has(r.student_id)).map((r) => r.student_id));
+  const inCount = seen('in').size;
+  const absentCount = seen('absent').size;
+  const excusedCount = seen('excused').size;
+  const pending = Math.max(0, list.length - inCount - absentCount - excusedCount);
 
   if (!myCourses().length) {
     return `<div class="page-head"><div><h2>Bugungi davomat</h2><p>${dateTxt}</p></div></div>
@@ -384,8 +400,9 @@ function viewToday() {
     <div class="stats">
       <div class="stat"><b>${list.length}</b><span>O'quvchi</span></div>
       <div class="stat"><b style="color:var(--green-ink)">${inCount}</b><span>Keldi</span></div>
-      <div class="stat"><b>${outCount}</b><span>Ketdi</span></div>
-      <div class="stat"><b>${Math.max(0, list.length - inCount)}</b><span>Kutilmoqda</span></div>
+      <div class="stat"><b style="color:var(--red-ink)">${absentCount}</b><span>Kelmadi</span></div>
+      <div class="stat"><b>${excusedCount}</b><span>Sababli</span></div>
+      <div class="stat"><b>${pending}</b><span>Kutilmoqda</span></div>
     </div>
     ${courseChips()}
     <label class="field" style="margin:14px 0">
@@ -398,22 +415,96 @@ function viewToday() {
 function rowToday(s, c) {
   const rin = recFor(s.id, 'in');
   const rout = recFor(s.id, 'out');
-  return `<div class="row">
+  const away = dayStatus(s.id);              // kelmadi / sababli
+  const chip = (r, label) =>
+    `<span class="mark-time mt-${r.kind}">${MARKS[r.kind].icon} ${label} <button data-del="${r.id}" title="Bekor qilish" type="button">✕</button></span>`;
+
+  return `<div class="row ${away ? 'row-' + away.kind : ''}">
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
         ${s.telegram_chat_id ? '' : '<span class="badge" title="Telegram ulanmagan">🔕</span>'}</div>
       <div class="row-sub">
-        ${rin ? `<span class="mark-time">✅ ${hhmm(rin.occurred_at)} <button data-del="${rin.id}" title="Bekor qilish" type="button">✕</button></span>` : ''}
-        ${rout ? `<span class="mark-time">🏠 ${hhmm(rout.occurred_at)} <button data-del="${rout.id}" title="Bekor qilish" type="button">✕</button></span>` : ''}
-        ${!rin && !rout ? '<span>Hali belgilanmagan</span>' : ''}
+        ${away ? chip(away, MARKS[away.kind].label + (away.note ? ' · ' + esc(away.note) : '')) : ''}
+        ${rin ? chip(rin, hhmm(rin.occurred_at)) : ''}
+        ${rout ? chip(rout, hhmm(rout.occurred_at)) : ''}
+        ${!rin && !rout && !away ? '<span>Hali belgilanmagan</span>' : ''}
       </div>
     </div>
     <div class="row-actions">
       <button class="btn btn-sm btn-green" data-mark="in" data-id="${s.id}" ${rin ? 'disabled' : ''} type="button">${I.check} Keldi</button>
       <button class="btn btn-sm" data-mark="out" data-id="${s.id}" ${rout || !rin ? 'disabled' : ''} type="button">${I.home2} Ketdi</button>
+      <button class="btn btn-sm btn-more" data-more="${s.id}" title="Boshqa holatlar" aria-label="Boshqa holatlar" type="button">${I.dots}</button>
     </div>
   </div>`;
+}
+
+/* ---- Boshqa holatlar: Kelmadi / Sababli ---- */
+function markSheet(id) {
+  const s = state.students.find((x) => x.id === id);
+  if (!s) return;
+  const away = dayStatus(s.id);
+  const marked = state.today.filter((r) => r.student_id === s.id);
+
+  openSheet(esc(s.full_name), `
+    <div class="check-list">
+      <button class="check-item mk" data-set="absent" ${away?.kind === 'absent' ? 'disabled' : ''} type="button">
+        <span class="mk-ico">❗️</span>
+        <span class="mk-txt"><b>Kelmadi</b><small>Sababsiz qoldi — ota-onaga xabar boradi</small></span>
+      </button>
+      <button class="check-item mk" data-set="excused" ${away?.kind === 'excused' ? 'disabled' : ''} type="button">
+        <span class="mk-ico">📝</span>
+        <span class="mk-txt"><b>Sababli</b><small>Sababini yozib qoldirish</small></span>
+      </button>
+      ${marked.length ? `<button class="check-item mk" data-clear="1" type="button">
+        <span class="mk-ico">↩️</span>
+        <span class="mk-txt"><b>Belgini olib tashlash</b><small>Bugungi ${marked.length} ta belgi o'chadi</small></span>
+      </button>` : ''}
+    </div>`, () => {
+    document.querySelector('[data-set="absent"]').addEventListener('click', () => {
+      closeSheet(); sendMark(s.id, 'absent');
+    });
+    document.querySelector('[data-set="excused"]').addEventListener('click', () => reasonSheet(s));
+    const clr = document.querySelector('[data-clear]');
+    if (clr) clr.addEventListener('click', async () => {
+      closeSheet();
+      const { error } = await sb.from('attendance').delete().in('id', marked.map((r) => r.id));
+      if (error) { toast('❌ ' + error.message, 'bad'); return; }
+      toast('Belgilar olib tashlandi', 'ok');
+      await loadToday(); render();
+    });
+  });
+}
+
+function reasonSheet(s) {
+  openSheet(`${esc(s.full_name)} — sabab`, `
+    <div class="chips" style="margin-bottom:14px">
+      ${REASONS.map((r) => `<button class="chip" style="--acc:var(--gold)" data-reason="${esc(r)}" type="button">${esc(r)}</button>`).join('')}
+    </div>
+    <label class="field"><span>Sabab</span>
+      <input class="inp" id="mkNote" maxlength="200" placeholder="Masalan: shifokorga bordi">
+      <small class="f-hint">Sabab ota-onaga boradigan xabarda ko'rinadi.</small></label>
+    <button class="btn btn-primary btn-block" id="mkSave" type="button">📝 Sababli belgilash</button>`, () => {
+    document.querySelectorAll('[data-reason]').forEach((b) => b.addEventListener('click', () => {
+      $('mkNote').value = b.dataset.reason;
+      document.querySelectorAll('[data-reason]').forEach((x) => x.classList.toggle('on', x === b));
+    }));
+    $('mkSave').addEventListener('click', () => {
+      const note = $('mkNote').value.trim();
+      closeSheet(); sendMark(s.id, 'excused', note);
+    });
+  });
+}
+
+async function sendMark(studentId, kind, note) {
+  const s = state.students.find((x) => x.id === studentId);
+  try {
+    const r = await edge('mark-attendance', { student_id: studentId, kind, note });
+    await loadToday();
+    toast(r.notified ? `📨 ${s?.full_name}: ${MARKS[kind].short} — ota-onaga xabar yuborildi`
+                     : `✔️ ${s?.full_name}: ${MARKS[kind].short}${s?.telegram_chat_id ? '' : ' (Telegram ulanmagan)'}`, 'ok');
+    render();
+  } catch (err) { toast('❌ ' + err.message, 'bad'); render(); }
 }
 
 
@@ -589,7 +680,7 @@ async function loadReport() {
   const ym = $('repMonth')?.value || currentYm();
   const [from, to] = monthRange(ym);
   const { data, error } = await sb.from('attendance')
-    .select('student_id,kind,occurred_at').gte('occurred_at', from).lt('occurred_at', to).order('occurred_at');
+    .select('student_id,kind,note,occurred_at').gte('occurred_at', from).lt('occurred_at', to).order('occurred_at');
   if (error) { $('repOut').innerHTML = `<div class="card"><div class="empty"><b>Xatolik</b><p>${esc(error.message)}</p></div></div>`; return; }
 
   const allowed = new Set(myCourses().map((c) => c.id));
@@ -597,66 +688,90 @@ async function loadReport() {
     (state.courseFilter === 'all' || s.course_id === state.courseFilter));
   const scopedIds = new Set(scoped.map((s) => s.id));
 
+  // Har bir o'quvchi uchun kunlarni holatiga qarab ajratamiz
   const by = new Map();
   const openDays = new Set();
+  const entry = (sid) => {
+    if (!by.has(sid)) by.set(sid, { in: new Map(), absent: new Map(), excused: new Map(), last: null });
+    return by.get(sid);
+  };
   (data ?? []).forEach((r) => {
-    if (r.kind !== 'in' || !scopedIds.has(r.student_id)) return;
+    if (!scopedIds.has(r.student_id)) return;
     const d = dayKey(r.occurred_at);
-    openDays.add(d);
-    if (!by.has(r.student_id)) by.set(r.student_id, { days: new Set(), last: r.occurred_at });
-    const e = by.get(r.student_id);
-    e.days.add(d);
-    if (r.occurred_at > e.last) e.last = r.occurred_at;
+    if (r.kind === 'out') return;                 // "ketdi" alohida kun hisoblanmaydi
+    openDays.add(d);                              // markaz ishlagan kun
+    const e = entry(r.student_id);
+    if (r.kind === 'in') {
+      e.in.set(d, r.occurred_at);
+      if (!e.last || r.occurred_at > e.last) e.last = r.occurred_at;
+    } else {
+      e[r.kind].set(d, r.note || '');
+    }
   });
 
   const total = openDays.size;
   const rows = scoped.filter((s) => s.active || by.has(s.id)).map((s) => {
     const e = by.get(s.id);
-    const count = e ? e.days.size : 0;
+    const days = e ? [...e.in.keys()].sort() : [];
+    const absentDays = e ? [...e.absent.keys()].sort() : [];
+    const excusedDays = e ? [...e.excused.keys()].sort() : [];
+    const count = days.length;
     return {
       id: s.id, name: s.full_name, course: courseById(s.course_id), active: s.active,
-      count, last: e ? e.last : null,
+      count, absent: absentDays.length, excused: excusedDays.length,
+      last: e ? e.last : null,
       pct: total ? Math.round((count / total) * 100) : 0,
-      days: e ? [...e.days].sort() : [],
+      days, absentDays, excusedDays,
+      notes: e ? Object.fromEntries(e.excused) : {},
     };
   }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
   const visits = rows.reduce((n, r) => n + r.count, 0);
+  const absences = rows.reduce((n, r) => n + r.absent, 0);
   const avg = rows.length ? Math.round(rows.reduce((n, r) => n + r.pct, 0) / rows.length) : 0;
-  repData = { ym, rows, total, visits, avg };
+  repData = { ym, rows, total, visits, absences, avg };
 
   $('repOut').innerHTML = `
     <div class="stats">
       <div class="stat"><b>${rows.length}</b><span>O'quvchi</span></div>
       <div class="stat"><b>${total}</b><span>Ish kuni</span></div>
       <div class="stat"><b>${visits}</b><span>Tashrif</span></div>
+      <div class="stat"><b style="color:var(--red-ink)">${absences}</b><span>Kelmadi</span></div>
       <div class="stat"><b style="color:var(--green-ink)">${avg}%</b><span>O'rtacha</span></div>
     </div>
     ${(!rows.length || !total)
       ? `<div class="card"><div class="empty"><div class="e-ico">📭</div><b>Ma'lumot yo'q</b><p>Bu oyda davomat yozuvlari topilmadi.</p></div></div>`
       : `<div class="table-wrap"><table class="tbl"><thead><tr>
-          <th>O'quvchi</th><th style="text-align:center">Kunlar</th><th>Davomat</th><th>Oxirgi</th>
+          <th>O'quvchi</th><th style="text-align:center">Kunlar</th><th style="text-align:center" title="Kelmadi / Sababli">❗ / 📝</th><th>Davomat</th><th>Oxirgi</th>
         </tr></thead><tbody>${rows.map((r) => `
           <tr data-row="${r.id}">
             <td><div style="font-weight:800">${esc(r.name)}${r.active ? '' : ' <span class="badge">arxiv</span>'}</div>
                 <div style="color:var(--faint);font-size:.8rem;font-weight:700">${r.course.icon} ${esc(r.course.name)}</div></td>
             <td class="num">${r.count} / ${total}</td>
+            <td class="num"><span style="color:${r.absent ? 'var(--red-ink)' : 'var(--faint)'}">${r.absent}</span>
+                <span style="color:var(--faint)"> / ${r.excused}</span></td>
             <td><div class="bar"><i style="width:${Math.min(100, r.pct)}%"></i></div>
                 <span style="font-size:.78rem;font-weight:800;color:var(--muted)">${r.pct}%</span></td>
             <td style="color:var(--muted);font-weight:700;white-space:nowrap">${r.last ? dayKey(r.last).slice(8) + '.' + dayKey(r.last).slice(5, 7) : '—'}</td>
           </tr>
-          <tr class="hidden" data-detail="${r.id}"><td colspan="4"><div class="day-pills">${
-            r.days.length ? r.days.map((d) => `<span class="day-pill">${d.slice(8)}.${d.slice(5, 7)}</span>`).join('')
-                          : '<span style="color:var(--faint)">Bu oyda kelmagan</span>'}</div></td></tr>`).join('')}
+          <tr class="hidden" data-detail="${r.id}"><td colspan="5"><div class="day-pills">${
+            [
+              ...r.days.map((d) => `<span class="day-pill">✅ ${d.slice(8)}.${d.slice(5, 7)}</span>`),
+              ...r.absentDays.map((d) => `<span class="day-pill dp-absent">❗ ${d.slice(8)}.${d.slice(5, 7)}</span>`),
+              ...r.excusedDays.map((d) => `<span class="day-pill dp-excused" title="${esc(r.notes[d] || '')}">📝 ${d.slice(8)}.${d.slice(5, 7)}${r.notes[d] ? ' · ' + esc(r.notes[d]) : ''}</span>`),
+            ].join('') || '<span style="color:var(--faint)">Bu oyda yozuv yo\'q</span>'}</div></td></tr>`).join('')}
         </tbody></table></div>`}`;
 }
 
 function exportCsv() {
   if (!repData || !repData.rows.length) { toast('Avval hisobot yuklansin', 'bad'); return; }
-  const head = ["O'quvchi", 'Kurs', 'Kelgan kunlar', 'Ish kunlari', 'Davomat %', 'Oxirgi tashrif', 'Sanalar'];
+  const head = ["O'quvchi", 'Kurs', 'Kelgan kunlar', 'Kelmadi', 'Sababli', 'Ish kunlari', 'Davomat %',
+                'Oxirgi tashrif', 'Kelgan sanalar', 'Kelmagan sanalar', 'Sababli sanalar'];
   const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
   const lines = [head.map(q).join(';')].concat(repData.rows.map((r) =>
-    [r.name, r.course.name, r.count, repData.total, r.pct, r.last ? dayKey(r.last) : '', r.days.join(' ')].map(q).join(';')));
+    [r.name, r.course.name, r.count, r.absent, r.excused, repData.total, r.pct,
+     r.last ? dayKey(r.last) : '', r.days.join(' '), r.absentDays.join(' '),
+     r.excusedDays.map((d) => r.notes[d] ? `${d} (${r.notes[d]})` : d).join(' ')].map(q).join(';')));
   const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1104,19 +1219,14 @@ document.addEventListener('click', async (e) => {
   const linkBtn = t.closest('[data-link]');
   if (linkBtn) return parentLinkSheet(linkBtn.dataset.link);
 
+  const more = t.closest('[data-more]');
+  if (more) return markSheet(more.dataset.more);
+
   const mark = t.closest('[data-mark]');
   if (mark) {
     mark.disabled = true;
-    const old = mark.innerHTML;
     mark.innerHTML = '<span class="spin"></span>';
-    try {
-      const r = await edge('mark-attendance', { student_id: mark.dataset.id, kind: mark.dataset.mark });
-      await loadToday();
-      const s = state.students.find((x) => x.id === mark.dataset.id);
-      toast(r.notified ? `📨 ${s?.full_name}: ota-onaga xabar yuborildi`
-                       : `✔️ ${s?.full_name}: belgilandi${s?.telegram_chat_id ? '' : ' (Telegram ulanmagan)'}`, 'ok');
-      render();
-    } catch (err) { toast('❌ ' + err.message, 'bad'); mark.innerHTML = old; mark.disabled = false; }
+    await sendMark(mark.dataset.id, mark.dataset.mark);
     return;
   }
 

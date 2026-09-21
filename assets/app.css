@@ -430,6 +430,8 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   font-size: .72rem; font-weight: 900;
   display: inline-flex; align-items: center; justify-content: center;
 }
+/* [hidden] ni display:inline-flex bosib ketmasin */
+.nav-count[hidden] { display: none; }
 .tab-item { position: relative; }
 .tab-item .nav-count {
   position: absolute; top: 6px; left: 50%; margin-left: 6px;
@@ -477,3 +479,27 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .link-dim b { color: var(--muted); }
 
 .field .f-hint { display: block; margin-top: 5px; color: var(--faint); font-size: .78rem; line-height: 1.45; }
+
+/* ===================== DAVOMAT HOLATLARI ===================== */
+/* Kelmadi / sababli qatorlarni chap chekkadan belgilaymiz */
+.row-absent  { border-left: 3px solid color-mix(in srgb, var(--red) 55%, transparent); }
+.row-excused { border-left: 3px solid color-mix(in srgb, var(--gold) 55%, transparent); }
+
+.mark-time.mt-absent  { color: var(--red-ink); font-weight: 800; }
+.mark-time.mt-excused { color: var(--gold-ink); font-weight: 800; }
+
+/* "..." tugmasi qolgan ikkitasidan tor turadi */
+.btn-more { padding: 0 10px; flex: 0 0 auto !important; }
+.btn-more svg { width: 18px; height: 18px; }
+
+/* Holat tanlash oynasi */
+.check-item.mk { align-items: flex-start; gap: 12px; text-align: left; width: 100%; padding: 13px; }
+.check-item.mk[disabled] { opacity: .45; cursor: default; }
+.check-item.mk .mk-ico { font-size: 1.15rem; line-height: 1.35; flex-shrink: 0; }
+.check-item.mk .mk-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.check-item.mk .mk-txt b { font-weight: 900; }
+.check-item.mk .mk-txt small { color: var(--muted); font-size: .78rem; font-weight: 600; line-height: 1.4; }
+
+/* Hisobotdagi kun belgilari */
+.day-pill.dp-absent  { background: color-mix(in srgb, var(--red) 14%, transparent); color: var(--red-ink); }
+.day-pill.dp-excused { background: color-mix(in srgb, var(--gold) 14%, transparent); color: var(--gold-ink); }
