@@ -446,6 +446,7 @@ function rowToday(s, c) {
   const rout = recFor(s.id, 'out');
   const away = dayStatus(s.id);
   const act = nextAction(s.id);
+  const marked = state.today.some((r) => r.student_id === s.id);
 
   // Hozirgi holat: rangi, ikonkasi va matni shu yerdan
   const cur = away ? MARKS[away.kind] : (rout ? DONE : (rin ? MARKS.in : null));
@@ -456,19 +457,31 @@ function rowToday(s, c) {
     : rin  ? `${hhmm(rin.occurred_at)} dan beri markazda`
     :        'Hali belgilanmagan';
 
-  // Qatorning o'zi bosilsa holatlar oynasi ochiladi; holat matni esa
-  // klaviatura uchun ham ishlaydigan tugma.
-  return `<div class="row rt tone-${tone}" data-more="${s.id}">
+  // Ikkilamchi holatlar ham ko'rinib turadi — hech narsa yashirin emas
+  const alt = (kind) => {
+    const m = MARKS[kind];
+    return `<button class="btn btn-alt btn-tone tone-${m.tone}" data-set="${kind}" data-id="${s.id}"
+      ${away?.kind === kind ? 'disabled' : ''} type="button">${ico(m)} ${m.label}</button>`;
+  };
+
+  // Belgi qo'yilgan bo'lsa, qatorni bosish bekor qilish oynasini ochadi
+  const openAttr = marked ? ` data-more="${s.id}"` : '';
+
+  return `<div class="row rt tone-${tone}"${openAttr}>
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
         ${s.telegram_chat_id ? '' : `<span class="badge b-mute" title="Ota-ona Telegramga ulanmagan">${I.bell}</span>`}</div>
       <div class="row-sub">
-        <button class="rt-status" data-more="${s.id}" type="button"
-          aria-label="${esc(s.full_name)} — holatni o'zgartirish">${cur ? ico(cur) : ''}${text}${I.chev}</button>
+        ${marked
+          ? `<button class="rt-status"${openAttr} type="button"
+              aria-label="${esc(s.full_name)} — bugungi belgilar">${ico(cur)}${text}${I.chev}</button>`
+          : `<span class="rt-status is-plain">${text}</span>`}
       </div>
     </div>
     <div class="row-actions">
+      ${alt('absent')}
+      ${alt('excused')}
       ${act
         ? `<button class="btn btn-act btn-tone tone-${act.tone}" data-mark="${act.kind}" data-id="${s.id}" type="button">${ico(act)} ${act.label}</button>`
         : `<span class="act-done">${ico(DONE)} ${DONE.label}</span>`}
@@ -476,47 +489,31 @@ function rowToday(s, c) {
   </div>`;
 }
 
-/* ---- "⋯" oynasi: kelmadi / sababli / belgilarni bekor qilish ---- */
+/* ---- Bugungi belgilar: bekor qilish oynasi ---- */
 function markSheet(id) {
   const s = state.students.find((x) => x.id === id);
   if (!s) return;
-  const away = dayStatus(s.id);
   const marked = state.today.filter((r) => r.student_id === s.id)
     .sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
-
-  const opt = (kind, hint) => {
-    const m = MARKS[kind];
-    return `<button class="btn btn-tone tone-${m.tone} btn-block mk-btn" data-set="${kind}"
-      ${away?.kind === kind ? 'disabled' : ''} type="button">${ico(m)}
-      <span class="mk-lbl"><b>${m.label}</b><small>${hint}</small></span></button>`;
-  };
+  if (!marked.length) return;
 
   const when = (r) => (r.kind === 'in' || r.kind === 'out')
     ? hhmm(r.occurred_at)
     : (r.note || MARKS[r.kind].label);
 
   openSheet(esc(s.full_name), `
-    <div class="mk-opts">
-      ${opt('absent', "Sababsiz qoldi — ota-onaga xabar boradi")}
-      ${opt('excused', 'Sababini yozib qoldirish')}
-    </div>
-    ${marked.length ? `
-      <div class="mk-sep">Bugungi belgilar</div>
-      <div class="rows">${marked.map((r) => {
-        const m = MARKS[r.kind];
-        return `<div class="row mk-row tone-${m.tone}">
-          <span class="mk-ico">${ico(m)}</span>
-          <div class="row-main">
-            <div class="row-title">${m.label}</div>
-            <div class="row-sub"><span>${esc(when(r))}</span></div>
-          </div>
-          <button class="btn btn-sm btn-danger" data-undo="${r.id}" aria-label="${m.label} belgisini bekor qilish" type="button">${I.trash}</button>
-        </div>`;
-      }).join('')}</div>` : ''}`, () => {
-    document.querySelector('[data-set="absent"]').addEventListener('click', () => {
-      closeSheet(); sendMark(s.id, 'absent');
-    });
-    document.querySelector('[data-set="excused"]').addEventListener('click', () => reasonSheet(s));
+    <p class="card-desc">Bugungi belgilar. Xato bosilgan bo'lsa — o'chiring.</p>
+    <div class="rows">${marked.map((r) => {
+      const m = MARKS[r.kind];
+      return `<div class="row mk-row tone-${m.tone}">
+        <span class="mk-ico">${ico(m)}</span>
+        <div class="row-main">
+          <div class="row-title">${m.label}</div>
+          <div class="row-sub"><span>${esc(when(r))}</span></div>
+        </div>
+        <button class="btn btn-sm btn-danger" data-undo="${r.id}" aria-label="${m.label} belgisini bekor qilish" type="button">${I.trash}</button>
+      </div>`;
+    }).join('')}</div>`, () => {
     document.querySelectorAll('[data-undo]').forEach((btn) => btn.addEventListener('click', async () => {
       btn.disabled = true;
       const { error } = await sb.from('attendance').delete().eq('id', btn.dataset.undo);
@@ -528,6 +525,7 @@ function markSheet(id) {
   });
 }
 
+/* ---- "Sababli" bosilganda: sababini so'raymiz ---- */
 function reasonSheet(s) {
   const m = MARKS.excused;
   openSheet(`${esc(s.full_name)} — sabab`, `
@@ -1283,7 +1281,20 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
-  // Qatorning asosiy tugmadan tashqari joyi bosilsa — holatlar oynasi
+  // Kelmadi / Sababli tugmalari
+  const set = t.closest('[data-set]');
+  if (set) {
+    if (set.dataset.set === 'excused') {
+      const st = state.students.find((x) => x.id === set.dataset.id);
+      return st && reasonSheet(st);
+    }
+    set.disabled = true;
+    set.innerHTML = '<span class="spin"></span>';
+    await sendMark(set.dataset.id, 'absent');
+    return;
+  }
+
+  // Qatorning tugmalardan tashqari joyi bosilsa — bugungi belgilar oynasi
   const more = t.closest('[data-more]');
   if (more) return markSheet(more.dataset.more);
 
