@@ -546,7 +546,10 @@ function rowStudent(s) {
       <div class="row-title">${esc(s.full_name)}
         <span class="badge badge-course" style="--acc:var(--${c.color})">${c.icon} ${esc(c.name)}</span>
         ${s.active ? '' : '<span class="badge">Arxiv</span>'}
-        ${s.telegram_chat_id ? '<span class="badge badge-ok">Telegram ✓</span>' : '<span class="badge badge-warn">Ulanmagan</span>'}
+        ${s.telegram_chat_id
+          ? '<span class="badge badge-ok">Telegram ✓</span>'
+          : (s.parent_phone ? '<span class="badge badge-warn">Ulanmagan</span>'
+                            : '<span class="badge badge-warn">Raqam kiritilmagan</span>')}
       </div>
       <div class="row-sub">
         ${s.parent_name ? `<span>👤 ${esc(s.parent_name)}</span>` : ''}
@@ -554,8 +557,8 @@ function rowStudent(s) {
       </div>
     </div>
     <div class="row-actions">
-      ${!s.telegram_chat_id && state.botUsername
-        ? `<button class="btn btn-sm" data-copy="${s.link_code}" title="Ota-ona havolasi" type="button">${I.link}</button>` : ''}
+      ${state.botUsername
+        ? `<button class="btn btn-sm" data-link="${s.id}" title="Ota-ona ulanishi" type="button">${I.link}</button>` : ''}
       <button class="btn btn-sm" data-edit-student="${s.id}" title="Tahrirlash" type="button">${I.edit}</button>
     </div>
   </div>`;
@@ -741,6 +744,12 @@ function viewSettings() {
 
     ${admin ? `
     <div class="card">
+      <div class="card-head"><h3>👥 Jamoa</h3></div>
+      <p class="card-desc">O'qituvchi qo'shish, ularga fan biriktirish va kurslarni boshqarish.</p>
+      <button class="btn btn-block" data-goto="team" type="button">${I.team} O'qituvchilar va kurslar</button>
+    </div>
+
+    <div class="card">
       <div class="card-head"><h3>🤖 Telegram bot</h3></div>
       <p class="card-desc">Bot ota-onalarga farzandi kelgani va ketgani haqida avtomatik xabar yuboradi.</p>
       <div class="row" style="margin-bottom:12px">
@@ -834,7 +843,8 @@ function studentSheet(id) {
       <label class="field"><span>Ota-ona ismi</span>
         <input class="inp" id="stParent" value="${esc(s?.parent_name ?? '')}"></label>
       <label class="field"><span>Ota-ona telefoni</span>
-        <input class="inp" id="stPhone" inputmode="tel" value="${esc(s?.parent_phone ?? '')}"></label>
+        <input class="inp" id="stPhone" inputmode="tel" placeholder="+998 90 123 45 67" value="${esc(s?.parent_phone ?? '')}">
+        <small class="f-hint">Telegram havolasi faqat shu raqam egasiga ochiladi.</small></label>
       ${s ? `<label class="check-item" style="margin-bottom:14px">
         <input type="checkbox" id="stActive" ${s.active ? 'checked' : ''}><span>Faol (arxivda emas)</span></label>` : ''}
       <button class="btn btn-primary btn-block" type="submit">${s ? 'Saqlash' : "Qo'shish"}</button>
@@ -864,6 +874,100 @@ function studentSheet(id) {
       await Promise.all([loadStudents(), loadToday()]); render();
     });
   });
+}
+
+/* ---- Ota-ona ulanishi: telefon bilan tasdiqlanadigan havola ---- */
+
+// "998972344442" -> "+998 ** *** ** 42"
+function maskPhone(norm) {
+  const d = String(norm || '').replace(/\D+/g, '');
+  if (d.length < 6) return '';
+  const tail = d.slice(-4);
+  return `+${d.slice(0, 3)} ** *** ${tail.slice(0, 2)} ${tail.slice(2)}`;
+}
+
+function parentLinkSheet(id) {
+  const s = state.students.find((x) => x.id === id);
+  if (!s) return;
+
+  // Allaqachon ulangan
+  if (s.telegram_chat_id) {
+    openSheet('Telegram ulanishi', `
+      <div class="link-state ok">
+        <div class="link-ico">✅</div>
+        <b>${esc(s.full_name)} — ulangan</b>
+        <p>Xabarlar <b>${esc(maskPhone(s.linked_phone) || s.parent_phone || '')}</b> raqami egasining Telegramiga boradi.</p>
+        ${s.linked_at ? `<p class="link-dim">Ulangan sana: ${uzDate(s.linked_at)}</p>` : ''}
+      </div>
+      <button class="btn btn-danger btn-block" id="lnUnlink" type="button">${I.x} Ulanishni uzish</button>
+      <p class="link-dim" style="margin-top:10px">Raqam o'zgargan bo'lsa: ulanishni uzing, yangi raqamni kiriting va yangi havola bering.</p>`,
+      () => {
+        $('lnUnlink').addEventListener('click', async () => {
+          if (!confirm(`${s.full_name} uchun Telegram xabarlari to'xtatiladi. Davom etasizmi?`)) return;
+          try {
+            await edge('student-link', { student_id: s.id, action: 'unlink' });
+            closeSheet(); toast('Ulanish uzildi', 'ok');
+            await loadStudents(); render();
+          } catch (e) { toast('❌ ' + e.message, 'bad'); }
+        });
+      });
+    return;
+  }
+
+  // Raqam yo'q — havola berib bo'lmaydi
+  if (!s.parent_phone) {
+    openSheet('Telefon raqami kerak', `
+      <div class="link-state warn">
+        <div class="link-ico">📵</div>
+        <b>Ota-onaning raqami kiritilmagan</b>
+        <p>Havola faqat markazga qoldirilgan raqam egasiga ochiladi. Avval raqamni kiriting.</p>
+      </div>
+      <button class="btn btn-primary btn-block" id="lnEdit" type="button">${I.edit} Raqamni kiritish</button>`,
+      () => $('lnEdit').addEventListener('click', () => { closeSheet(); studentSheet(s.id); }));
+    return;
+  }
+
+  // Yangi havola so'raymiz
+  openSheet('Ota-ona havolasi',
+    `<div class="link-state"><div class="skel"></div><div class="skel"></div></div>`,
+    async () => {
+      let r;
+      try {
+        r = await edge('student-link', { student_id: s.id });
+      } catch (e) {
+        $('sheetBody').querySelector('.link-state').outerHTML =
+          `<div class="link-state warn"><div class="link-ico">⚠️</div><b>Havola yaratilmadi</b><p>${esc(e.message)}</p></div>`;
+        return;
+      }
+      $('sheetBody').querySelector('.link-state').outerHTML = `
+        <div class="link-state">
+          <div class="link-ico">🔗</div>
+          <b>${esc(s.full_name)}</b>
+          <p>Havolani <b>${esc(r.phone_hint)}</b> raqamli ota-onaga yuboring.</p>
+        </div>
+        <div class="link-url" id="lnUrl">${esc(r.url)}</div>
+        <button class="btn btn-primary btn-block" id="lnCopy" type="button">${I.link} Havolani nusxalash</button>
+        <button class="btn btn-block" id="lnShare" style="margin-top:9px" type="button">📤 Yuborish</button>
+        <ol class="link-steps">
+          <li>Ota-ona havolani bosadi.</li>
+          <li>Bot <b>«📱 Raqamimni tasdiqlash»</b> tugmasini ko'rsatadi.</li>
+          <li>Raqam yuqoridagi raqamga mos kelsa — ulanadi.</li>
+        </ol>
+        <p class="link-dim">Havola <b>${r.ttl_hours} soat</b> amal qiladi va bir marta ishlaydi. Boshqa odam ochsa — hech narsa ko'rmaydi.</p>`;
+
+      const copy = async () => {
+        try { await navigator.clipboard.writeText(r.url); toast('🔗 Havola nusxalandi', 'ok'); }
+        catch { prompt('Havolani nusxalang:', r.url); }
+      };
+      $('lnCopy').addEventListener('click', copy);
+      $('lnShare').addEventListener('click', async () => {
+        const text = `Assalomu alaykum! ${s.full_name} ning markazga kelgan-ketganini Telegramda kuzatish uchun shu havolani oching va raqamingizni tasdiqlang:\n${r.url}`;
+        if (navigator.share) { try { await navigator.share({ text }); return; } catch (_) {} }
+        try { await navigator.clipboard.writeText(text); toast('📋 Matn nusxalandi — ota-onaga yuboring', 'ok'); }
+        catch { prompt('Matnni nusxalang:', text); }
+      });
+      await loadStudents();
+    });
 }
 
 /* ---- O'qituvchi qo'shish / tahrirlash ---- */
@@ -973,6 +1077,9 @@ function courseSheet(id) {
 document.addEventListener('click', async (e) => {
   const t = e.target;
 
+  const goto = t.closest('[data-goto]');
+  if (goto) { go(goto.dataset.goto); return; }
+
   const lf = t.closest('[data-lead-filter]');
   if (lf) { state.leadFilter = lf.dataset.leadFilter; render(); return; }
   const leadBtn = t.closest('[data-lead]');
@@ -994,13 +1101,8 @@ document.addEventListener('click', async (e) => {
   const themeBtn = t.closest('[data-theme-toggle], #themeBtnBig');
   if (themeBtn) { setTheme(currentTheme() === 'dark' ? 'light' : 'dark'); if (state.view === 'settings') render(); return; }
 
-  const copy = t.closest('[data-copy]');
-  if (copy) {
-    const link = `https://t.me/${state.botUsername}?start=${copy.dataset.copy}`;
-    try { await navigator.clipboard.writeText(link); toast('🔗 Havola nusxalandi — ota-onaga yuboring', 'ok'); }
-    catch { prompt('Havolani nusxalang:', link); }
-    return;
-  }
+  const linkBtn = t.closest('[data-link]');
+  if (linkBtn) return parentLinkSheet(linkBtn.dataset.link);
 
   const mark = t.closest('[data-mark]');
   if (mark) {
