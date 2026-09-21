@@ -421,7 +421,6 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .row-actions .btn.btn-sm { font-size: .9rem; }
   /* Davomatda asosiy tugma butun qatorni egallaydi */
   .rt .btn-act { flex: 1; font-size: 1rem; min-height: 50px; }
-  .rt .btn-more { min-height: 50px; }
   .rt .act-done { flex: 1; min-height: 50px; }
   .mk-row { flex-wrap: nowrap; }
   .mk-row .btn { width: auto; flex: 0 0 auto; }
@@ -499,23 +498,30 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .btn-tone { background: var(--tone-grad); color: var(--tone-on); border-color: transparent; }
 .btn-tone:disabled { opacity: .4; }
 
-/* Qator: chap chekka + holat matni */
-.rt { border-left: 3px solid var(--tone); }
+/* Qator: chap chekka + holat matni. Asosiy tugmadan tashqari joyi
+   bosilsa holatlar oynasi ochiladi. */
+.rt { border-left: 3px solid var(--tone); cursor: pointer; }
 .rt.tone-pending { border-left-color: transparent; }
+.rt:hover { border-color: var(--border-2); border-left-color: var(--tone); }
+.rt.tone-pending:hover { border-left-color: var(--border-2); }
+.rt .row-actions { cursor: default; }
+
+/* Holat matni — ayni paytda "o'zgartirish" tugmasi */
 .rt-status {
   display: inline-flex; align-items: center; gap: 6px;
-  color: var(--tone-ink); font-weight: 700;
+  padding: 3px 7px 3px 6px; margin-left: -6px;
+  border-radius: 8px; border: 0; background: transparent;
+  color: var(--tone-ink); font-weight: 700; font-size: inherit;
+  font-family: inherit; cursor: pointer; text-align: left;
 }
 .rt-status svg { width: 15px; height: 15px; flex-shrink: 0; }
+.rt-status svg:last-child { width: 13px; height: 13px; opacity: .55; margin-left: 1px; }
+.rt-status:hover,
+.rt:hover .rt-status { background: color-mix(in srgb, var(--tone) 12%, transparent); }
+.rt-status:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
 
 /* Bitta katta tugma — keyingi qadam */
 .btn-act { min-width: 132px; }
-.btn-more {
-  flex: 0 0 auto !important;
-  width: 46px; min-width: 46px; padding: 0;
-  color: var(--muted);
-}
-.btn-more svg { width: 20px; height: 20px; }
 
 /* Kuni tugadi */
 .act-done {
