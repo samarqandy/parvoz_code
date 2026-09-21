@@ -412,39 +412,57 @@ function viewToday() {
     ${body}`;
 }
 
+// Har bir qatorda bitta katta tugma: keyin nima qilish kerakligini ko'rsatadi.
+// Qolgan hamma narsa (kelmadi, sababli, bekor qilish) "⋯" oynasida.
+function nextAction(sid) {
+  const rin = recFor(sid, 'in');
+  const rout = recFor(sid, 'out');
+  if (!rin)  return { kind: 'in',  label: 'Keldi', icon: I.check, cls: 'btn-green' };
+  if (!rout) return { kind: 'out', label: 'Ketdi', icon: I.home2, cls: 'btn-primary' };
+  return null;                                  // kuni tugadi
+}
+
 function rowToday(s, c) {
   const rin = recFor(s.id, 'in');
   const rout = recFor(s.id, 'out');
-  const away = dayStatus(s.id);              // kelmadi / sababli
-  const chip = (r, label) =>
-    `<span class="mark-time mt-${r.kind}">${MARKS[r.kind].icon} ${label} <button data-del="${r.id}" title="Bekor qilish" type="button">✕</button></span>`;
+  const away = dayStatus(s.id);
+  const act = nextAction(s.id);
 
-  return `<div class="row ${away ? 'row-' + away.kind : ''}">
+  const state_ = away ? away.kind : (rout ? 'done' : (rin ? 'in' : 'pending'));
+  const status =
+      away && away.note ? `${MARKS[away.kind].icon} ${MARKS[away.kind].label} · ${esc(away.note)}`
+    : away              ? `${MARKS[away.kind].icon} ${MARKS[away.kind].label}`
+    : rin && rout       ? `✅ ${hhmm(rin.occurred_at)} → 🏠 ${hhmm(rout.occurred_at)}`
+    : rin               ? `✅ ${hhmm(rin.occurred_at)} dan beri markazda`
+    :                     'Hali belgilanmagan';
+
+  return `<div class="row rt rt-${state_}">
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
-        ${s.telegram_chat_id ? '' : '<span class="badge" title="Telegram ulanmagan">🔕</span>'}</div>
-      <div class="row-sub">
-        ${away ? chip(away, MARKS[away.kind].label + (away.note ? ' · ' + esc(away.note) : '')) : ''}
-        ${rin ? chip(rin, hhmm(rin.occurred_at)) : ''}
-        ${rout ? chip(rout, hhmm(rout.occurred_at)) : ''}
-        ${!rin && !rout && !away ? '<span>Hali belgilanmagan</span>' : ''}
-      </div>
+        ${s.telegram_chat_id ? '' : '<span class="badge" title="Ota-ona Telegramga ulanmagan">🔕</span>'}</div>
+      <div class="row-sub"><span class="rt-status">${status}</span></div>
     </div>
     <div class="row-actions">
-      <button class="btn btn-sm btn-green" data-mark="in" data-id="${s.id}" ${rin ? 'disabled' : ''} type="button">${I.check} Keldi</button>
-      <button class="btn btn-sm" data-mark="out" data-id="${s.id}" ${rout || !rin ? 'disabled' : ''} type="button">${I.home2} Ketdi</button>
-      <button class="btn btn-sm btn-more" data-more="${s.id}" title="Boshqa holatlar" aria-label="Boshqa holatlar" type="button">${I.dots}</button>
+      ${act
+        ? `<button class="btn btn-act ${act.cls}" data-mark="${act.kind}" data-id="${s.id}" type="button">${act.icon} ${act.label}</button>`
+        : `<span class="act-done">${I.check} Tugadi</span>`}
+      <button class="btn btn-more" data-more="${s.id}" title="Boshqa holatlar" aria-label="Boshqa holatlar" type="button">${I.dots}</button>
     </div>
   </div>`;
 }
 
-/* ---- Boshqa holatlar: Kelmadi / Sababli ---- */
+/* ---- "⋯" oynasi: kelmadi / sababli / belgilarni bekor qilish ---- */
 function markSheet(id) {
   const s = state.students.find((x) => x.id === id);
   if (!s) return;
   const away = dayStatus(s.id);
-  const marked = state.today.filter((r) => r.student_id === s.id);
+  const marked = state.today.filter((r) => r.student_id === s.id)
+    .sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
+
+  const when = (r) => (r.kind === 'in' || r.kind === 'out')
+    ? hhmm(r.occurred_at)
+    : (r.note || MARKS[r.kind].label);
 
   openSheet(esc(s.full_name), `
     <div class="check-list">
@@ -456,23 +474,30 @@ function markSheet(id) {
         <span class="mk-ico">📝</span>
         <span class="mk-txt"><b>Sababli</b><small>Sababini yozib qoldirish</small></span>
       </button>
-      ${marked.length ? `<button class="check-item mk" data-clear="1" type="button">
-        <span class="mk-ico">↩️</span>
-        <span class="mk-txt"><b>Belgini olib tashlash</b><small>Bugungi ${marked.length} ta belgi o'chadi</small></span>
-      </button>` : ''}
-    </div>`, () => {
+    </div>
+    ${marked.length ? `
+      <div class="mk-sep">Bugungi belgilar</div>
+      <div class="rows">${marked.map((r) => `
+        <div class="row mk-row">
+          <span class="mk-ico">${MARKS[r.kind].icon}</span>
+          <div class="row-main">
+            <div class="row-title">${MARKS[r.kind].label}</div>
+            <div class="row-sub"><span>${esc(when(r))}</span></div>
+          </div>
+          <button class="btn btn-sm btn-danger" data-undo="${r.id}" type="button">${I.trash}</button>
+        </div>`).join('')}</div>` : ''}`, () => {
     document.querySelector('[data-set="absent"]').addEventListener('click', () => {
       closeSheet(); sendMark(s.id, 'absent');
     });
     document.querySelector('[data-set="excused"]').addEventListener('click', () => reasonSheet(s));
-    const clr = document.querySelector('[data-clear]');
-    if (clr) clr.addEventListener('click', async () => {
-      closeSheet();
-      const { error } = await sb.from('attendance').delete().in('id', marked.map((r) => r.id));
-      if (error) { toast('❌ ' + error.message, 'bad'); return; }
-      toast('Belgilar olib tashlandi', 'ok');
+    document.querySelectorAll('[data-undo]').forEach((btn) => btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      const { error } = await sb.from('attendance').delete().eq('id', btn.dataset.undo);
+      if (error) { toast('❌ ' + error.message, 'bad'); btn.disabled = false; return; }
       await loadToday(); render();
-    });
+      toast('Belgi bekor qilindi', 'ok');
+      if (state.today.some((r) => r.student_id === s.id)) markSheet(s.id); else closeSheet();
+    }));
   });
 }
 
@@ -1227,15 +1252,6 @@ document.addEventListener('click', async (e) => {
     mark.disabled = true;
     mark.innerHTML = '<span class="spin"></span>';
     await sendMark(mark.dataset.id, mark.dataset.mark);
-    return;
-  }
-
-  const del = t.closest('[data-del]');
-  if (del) {
-    if (!confirm("Bu belgini o'chirasizmi? (Yuborilgan xabar qaytarilmaydi)")) return;
-    const { error } = await sb.from('attendance').delete().eq('id', del.dataset.del);
-    if (error) toast('❌ ' + error.message, 'bad');
-    await loadToday(); render();
     return;
   }
 

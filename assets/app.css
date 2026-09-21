@@ -421,6 +421,12 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .row-actions { width: 100%; }
   .row-actions .btn { flex: 1; min-height: 44px; }
   .row-actions .btn.btn-sm { font-size: .9rem; }
+  /* Davomatda asosiy tugma butun qatorni egallaydi */
+  .rt .btn-act { flex: 1; font-size: 1rem; min-height: 50px; }
+  .rt .btn-more { min-height: 50px; }
+  .rt .act-done { flex: 1; min-height: 50px; }
+  .mk-row { flex-wrap: nowrap; }
+  .mk-row .btn { width: auto; }
 }
 
 /* Navigatsiyadagi hisoblagich (yangi arizalar) */
@@ -481,16 +487,46 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .field .f-hint { display: block; margin-top: 5px; color: var(--faint); font-size: .78rem; line-height: 1.45; }
 
 /* ===================== DAVOMAT HOLATLARI ===================== */
-/* Kelmadi / sababli qatorlarni chap chekkadan belgilaymiz */
-.row-absent  { border-left: 3px solid color-mix(in srgb, var(--red) 55%, transparent); }
-.row-excused { border-left: 3px solid color-mix(in srgb, var(--gold) 55%, transparent); }
+/* Qatorning holati chap chekkadagi chiziq bilan ko'rinadi */
+.rt { border-left: 3px solid transparent; }
+.rt-in      { border-left-color: color-mix(in srgb, var(--green) 65%, transparent); }
+.rt-done    { border-left-color: var(--border-2); }
+.rt-absent  { border-left-color: color-mix(in srgb, var(--red) 65%, transparent); }
+.rt-excused { border-left-color: color-mix(in srgb, var(--gold) 65%, transparent); }
 
-.mark-time.mt-absent  { color: var(--red-ink); font-weight: 800; }
-.mark-time.mt-excused { color: var(--gold-ink); font-weight: 800; }
+.rt-status { font-weight: 700; }
+.rt-in      .rt-status { color: var(--green-ink); }
+.rt-absent  .rt-status { color: var(--red-ink); }
+.rt-excused .rt-status { color: var(--gold-ink); }
+.rt-pending .rt-status { color: var(--faint); }
 
-/* "..." tugmasi qolgan ikkitasidan tor turadi */
-.btn-more { padding: 0 10px; flex: 0 0 auto !important; }
-.btn-more svg { width: 18px; height: 18px; }
+/* Bitta katta tugma — keyingi qadam */
+.btn-act { min-width: 132px; }
+.btn-more {
+  flex: 0 0 auto !important;
+  width: 46px; min-width: 46px; padding: 0;
+  color: var(--muted);
+}
+.btn-more svg { width: 20px; height: 20px; }
+
+/* Kuni tugadi */
+.act-done {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-width: 132px; min-height: 46px; padding: 0 16px;
+  border-radius: var(--r-sm); border: 1px dashed var(--border-2);
+  color: var(--muted); font-weight: 800; font-size: .9rem;
+}
+.act-done svg { width: 16px; height: 16px; color: var(--green-ink); }
+
+/* "⋯" oynasidagi bugungi belgilar */
+.mk-sep {
+  margin: 18px 0 9px;
+  font-size: .74rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--faint);
+}
+.mk-row { gap: 11px; }
+.mk-row .row-title { font-size: .95rem; }
+.mk-row .btn { flex: 0 0 auto; }
 
 /* Holat tanlash oynasi */
 .check-item.mk { align-items: flex-start; gap: 12px; text-align: left; width: 100%; padding: 13px; }
