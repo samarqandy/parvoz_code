@@ -422,3 +422,18 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .row-actions .btn { flex: 1; min-height: 44px; }
   .row-actions .btn.btn-sm { font-size: .9rem; }
 }
+
+/* Navigatsiyadagi hisoblagich (yangi arizalar) */
+.nav-count {
+  margin-left: auto; min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: 99px; background: var(--red); color: #fff;
+  font-size: .72rem; font-weight: 900;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.tab-item { position: relative; }
+.tab-item .nav-count {
+  position: absolute; top: 6px; left: 50%; margin-left: 6px;
+  min-width: 18px; height: 18px; font-size: .66rem;
+}
+.check-item[data-go-more] { width: 100%; text-align: left; }
+.check-item svg { width: 19px; height: 19px; flex-shrink: 0; }

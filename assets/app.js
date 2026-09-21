@@ -14,6 +14,8 @@ const state = {
   courses: [],
   students: [],
   today: [],
+  leads: [],
+  leadFilter: 'new',
   view: 'today',
   courseFilter: 'all',
   search: '',
@@ -43,6 +45,8 @@ const I = {
   sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
   search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z"/></svg>',
+  dots: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
 };
 
@@ -209,7 +213,8 @@ async function enterApp() {
 }
 
 async function refreshAll() {
-  await Promise.all([loadCourses(), loadStudents(), loadToday(), loadConfig()]);
+  await Promise.all([loadCourses(), loadStudents(), loadToday(), loadConfig(), loadLeadsData()]);
+  renderCounts();
 }
 
 async function loadCourses() {
@@ -225,6 +230,11 @@ async function loadToday() {
   const { data } = await sb.from('attendance').select('*').gte('occurred_at', start).order('occurred_at');
   state.today = data ?? [];
 }
+async function loadLeadsData() {
+  const { data } = await sb.from('leads').select('*').order('created_at', { ascending: false }).limit(300);
+  state.leads = data ?? [];
+}
+
 async function loadConfig() {
   const { data } = await sb.from('app_config').select('key,value').in('key', ['bot_username', 'tg_mode']);
   const cfg = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
@@ -247,6 +257,7 @@ async function refreshLinks() {
    ============================================================ */
 const VIEWS = [
   { id: 'today',    label: 'Davomat',     icon: 'check',  title: 'Bugungi davomat' },
+  { id: 'leads',    label: 'Arizalar',    icon: 'inbox',  title: 'Arizalar' },
   { id: 'students', label: "O'quvchilar", icon: 'users',  title: "O'quvchilar" },
   { id: 'report',   label: 'Hisobot',     icon: 'chart',  title: 'Oylik hisobot' },
   { id: 'team',     label: 'Jamoa',       icon: 'team',   title: "Jamoa", admin: true },
@@ -258,10 +269,35 @@ function visibleViews() { return VIEWS.filter((v) => !v.admin || isAdmin()); }
 function buildNav() {
   const items = visibleViews();
   $('sideNav').innerHTML = items.map((v) =>
-    `<button class="nav-item" data-go="${v.id}" type="button">${I[v.icon]}<span>${v.label}</span></button>`).join('');
-  $('tabbarInner').innerHTML = items.map((v) =>
-    `<button class="tab-item" data-go="${v.id}" type="button">${I[v.icon]}<span>${v.label}</span></button>`).join('');
+    `<button class="nav-item" data-go="${v.id}" type="button">${I[v.icon]}<span>${v.label}</span>
+      <span class="nav-count" data-count="${v.id}" hidden></span></button>`).join('');
+
+  // Telefonda 4 tadan ko'p bo'lsa oxirgilari "Yana" oynasiga tushadi
+  const MAX = 4;
+  const main = items.length > MAX ? items.slice(0, MAX) : items;
+  const rest = items.length > MAX ? items.slice(MAX) : [];
+  $('tabbarInner').innerHTML =
+    main.map((v) => `<button class="tab-item" data-go="${v.id}" type="button">${I[v.icon]}<span>${v.label}</span>
+      <span class="nav-count" data-count="${v.id}" hidden></span></button>`).join('') +
+    (rest.length ? `<button class="tab-item" id="moreTab" type="button">${I.dots}<span>Yana</span></button>` : '');
+
   document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => go(b.dataset.go)));
+  const more = $('moreTab');
+  if (more) more.addEventListener('click', () => {
+    openSheet('Yana', `<div class="check-list">${rest.map((v) =>
+      `<button class="check-item" data-go-more="${v.id}" type="button">${I[v.icon]}<span>${v.label}</span></button>`).join('')}</div>`,
+      () => document.querySelectorAll('[data-go-more]').forEach((b) =>
+        b.addEventListener('click', () => { closeSheet(); go(b.dataset.goMore); })));
+  });
+}
+
+// Yangi arizalar sonini navigatsiyada ko'rsatamiz
+function renderCounts() {
+  const n = state.leads.filter((l) => l.status === 'new').length;
+  document.querySelectorAll('[data-count="leads"]').forEach((el) => {
+    el.textContent = n;
+    el.hidden = n === 0;
+  });
 }
 
 function renderUserCard() {
@@ -286,10 +322,11 @@ function go(view) {
 function render() {
   const el = $('page');
   if (state.view === 'today') el.innerHTML = viewToday();
+  else if (state.view === 'leads') { el.innerHTML = viewLeadsShell(); loadLeads(); }
   else if (state.view === 'students') el.innerHTML = viewStudents();
   else if (state.view === 'report') { el.innerHTML = viewReportShell(); loadReport(); }
   else if (state.view === 'team') { el.innerHTML = viewTeamShell(); loadTeam(); }
-  else el.innerHTML = viewSettings();
+  else { el.innerHTML = viewSettings(); if (isAdmin()) loadNotifyChats(); }
 }
 
 /* ============================================================
@@ -377,6 +414,102 @@ function rowToday(s, c) {
       <button class="btn btn-sm" data-mark="out" data-id="${s.id}" ${rout || !rin ? 'disabled' : ''} type="button">${I.home2} Ketdi</button>
     </div>
   </div>`;
+}
+
+
+/* ============================================================
+   KO'RINISH: ARIZALAR
+   ============================================================ */
+const LEAD_STATUS = {
+  new:       { label: 'Yangi',        badge: 'badge-warn' },
+  contacted: { label: "Bog'lanildi",  badge: '' },
+  enrolled:  { label: 'Yozildi',      badge: 'badge-ok' },
+  rejected:  { label: 'Rad etildi',   badge: '' },
+};
+
+function viewLeadsShell() {
+  const counts = { all: state.leads.length };
+  Object.keys(LEAD_STATUS).forEach((k) => { counts[k] = state.leads.filter((l) => l.status === k).length; });
+  const chip = (id, label) =>
+    `<button class="chip ${state.leadFilter === id ? 'on' : ''}" style="--acc:var(--gold)" data-lead-filter="${id}" type="button">${label} ${counts[id] ? `· ${counts[id]}` : ''}</button>`;
+  return `
+    <div class="page-head">
+      <div><h2>Arizalar</h2><p>Saytdan kelgan murojaatlar</p></div>
+    </div>
+    <div class="chips">
+      ${chip('new', 'Yangi')}${chip('contacted', "Bog'lanildi")}${chip('enrolled', 'Yozildi')}${chip('rejected', 'Rad etildi')}${chip('all', 'Barchasi')}
+    </div>
+    <div id="leadsOut" style="margin-top:16px"></div>`;
+}
+
+function loadLeads() {
+  const list = state.leadFilter === 'all'
+    ? state.leads
+    : state.leads.filter((l) => l.status === state.leadFilter);
+
+  if (!list.length) {
+    $('leadsOut').innerHTML = `<div class="card"><div class="empty"><div class="e-ico">\u{1F4ED}</div>
+      <b>Ariza yo'q</b><p>${state.leadFilter === 'new' ? "Yangi arizalar shu yerda ko'rinadi." : 'Bu bo\'limda ariza yo\'q.'}</p></div></div>`;
+    return;
+  }
+
+  $('leadsOut').innerHTML = `<div class="rows">${list.map((l) => {
+    const c = l.course_id ? courseById(l.course_id) : null;
+    const st = LEAD_STATUS[l.status] || LEAD_STATUS.new;
+    const when = uzDate(l.created_at) + ', ' + hhmm(l.created_at);
+    return `<div class="row">
+      <div class="avatar" style="--acc:var(--${c ? c.color : 'gold'})">${esc(initials(l.full_name))}</div>
+      <div class="row-main">
+        <div class="row-title">${esc(l.full_name)}
+          <span class="badge ${st.badge}">${st.label}</span>
+          ${c ? `<span class="badge badge-course" style="--acc:var(--${c.color})">${c.icon} ${esc(c.name)}</span>` : ''}</div>
+        <div class="row-sub">
+          <span>\u{1F4DE} ${esc(l.phone)}</span>
+          ${l.preferred_time ? `<span>\u23F0 ${esc(l.preferred_time)}</span>` : ''}
+          <span>${when}</span>
+        </div>
+        ${l.note ? `<div class="row-sub"><span>\u{1F4AC} ${esc(l.note)}</span></div>` : ''}
+      </div>
+      <div class="row-actions">
+        <a class="btn btn-sm btn-green" href="tel:${esc(l.phone)}">${I.phone} Qo'ng'iroq</a>
+        <button class="btn btn-sm" data-lead="${l.id}" type="button">${I.edit}</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function leadSheet(id) {
+  const l = state.leads.find((x) => x.id === id);
+  if (!l) return;
+  openSheet(esc(l.full_name), `
+    <div class="card" style="margin-bottom:14px">
+      <div class="row-sub"><span>\u{1F4DE} <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a></span></div>
+      ${l.note ? `<div class="row-sub" style="margin-top:6px"><span>\u{1F4AC} ${esc(l.note)}</span></div>` : ''}
+      <div class="row-sub" style="margin-top:6px"><span>${uzDate(l.created_at)}, ${hhmm(l.created_at)}</span></div>
+    </div>
+    <div class="field"><span>Holat</span>
+      <div class="check-list">${Object.entries(LEAD_STATUS).map(([k, v]) =>
+        `<button class="check-item" data-lead-status="${k}" type="button">
+          ${l.status === k ? '\u2705' : '\u25CB'} <span>${v.label}</span></button>`).join('')}</div>
+    </div>
+    <button class="btn btn-danger btn-block" style="margin-top:10px" data-lead-del="${l.id}" type="button">${I.trash} O'chirish</button>
+  `, () => {
+    document.querySelectorAll('[data-lead-status]').forEach((b) => b.addEventListener('click', async () => {
+      const { error } = await sb.from('leads')
+        .update({ status: b.dataset.leadStatus, handled_by: state.me.email }).eq('id', l.id);
+      if (error) { toast('\u274C ' + error.message, 'bad'); return; }
+      closeSheet(); toast('Holat yangilandi', 'ok');
+      await loadLeadsData(); renderCounts(); render();
+    }));
+    const del = document.querySelector('[data-lead-del]');
+    if (del) del.addEventListener('click', async () => {
+      if (!confirm('Bu arizani o\'chirasizmi?')) return;
+      const { error } = await sb.from('leads').delete().eq('id', l.id);
+      if (error) { toast('\u274C ' + error.message, 'bad'); return; }
+      closeSheet(); toast("O'chirildi", 'ok');
+      await loadLeadsData(); renderCounts(); render();
+    });
+  });
 }
 
 /* ============================================================
@@ -623,12 +756,35 @@ function viewSettings() {
     </div>` : ''}
 
     <div class="card">
+      <div class="card-head"><h3>🔔 Ariza xabarnomalari</h3></div>
+      <p class="card-desc">Saytdan yangi ariza kelganda Telegramga darhol xabar olish uchun o'zingizni ulang.</p>
+      <div id="notifyOut" class="rows" style="margin-bottom:12px"></div>
+      <button class="btn btn-block" id="notifyLinkBtn" type="button">🔗 Meni ulash havolasini olish</button>
+    </div>
+
+    <div class="card">
       <div class="card-head"><h3>👋 Hisob</h3></div>
       <button class="btn btn-danger btn-block" id="logoutBtn" type="button">${I.out} Chiqish</button>
     </div>
 
     <p style="text-align:center;color:var(--faint);font-size:.8rem;margin-top:18px">
       Parvoz Davomat · <a href="index.html">Saytga qaytish</a></p>`;
+}
+
+
+async function loadNotifyChats() {
+  const out = $('notifyOut');
+  if (!out) return;
+  try {
+    const { chats } = await edge('admin-api', { action: 'list_notify_chats' });
+    out.innerHTML = chats.length
+      ? chats.map((c) => `<div class="row"><div class="row-main">
+          <div class="row-title">${esc(c.label || 'Telegram foydalanuvchi')}</div>
+          <div class="row-sub"><span class="badge badge-ok">Ulangan</span></div></div>
+          <div class="row-actions"><button class="btn btn-sm btn-danger" data-notify-del="${c.chat_id}" type="button">${I.trash}</button></div></div>`).join('')
+      : `<div class="row"><div class="row-main"><div class="row-sub">
+         <span class="badge badge-warn">Hech kim ulanmagan \u2014 arizalar haqida xabar bormaydi</span></div></div></div>`;
+  } catch (e) { out.innerHTML = ''; }
 }
 
 async function checkWebhook(autoFix) {
@@ -817,6 +973,11 @@ function courseSheet(id) {
 document.addEventListener('click', async (e) => {
   const t = e.target;
 
+  const lf = t.closest('[data-lead-filter]');
+  if (lf) { state.leadFilter = lf.dataset.leadFilter; render(); return; }
+  const leadBtn = t.closest('[data-lead]');
+  if (leadBtn) return leadSheet(leadBtn.dataset.lead);
+
   const chip = t.closest('[data-chip]');
   if (chip) { state.courseFilter = chip.dataset.chip; render(); if (state.view === 'report') loadReport(); return; }
 
@@ -870,6 +1031,37 @@ document.addEventListener('click', async (e) => {
   if (repRow) {
     const d = document.querySelector(`[data-detail="${repRow.dataset.row}"]`);
     if (d) d.classList.toggle('hidden');
+    return;
+  }
+
+  if (t.closest('#notifyLinkBtn')) {
+    const btn = t.closest('#notifyLinkBtn');
+    btn.disabled = true;
+    try {
+      const r = await edge('admin-api', { action: 'admin_link' });
+      openSheet('Xabarnomalarga ulanish', `
+        <p class="card-desc">Quyidagi tugmani bosing \u2014 Telegram ochiladi va "Start" bosganingizdan keyin
+        saytdan kelgan arizalar shu chatga yuboriladi. Havola 30 daqiqa amal qiladi.</p>
+        <a class="btn btn-primary btn-block" href="${r.link}" target="_blank" rel="noopener">Telegramda ochish</a>
+        <button class="btn btn-block" style="margin-top:9px" data-copy-link="${esc(r.link)}" type="button">Havolani nusxalash</button>`,
+        () => {
+          const cp = document.querySelector('[data-copy-link]');
+          cp.addEventListener('click', async () => {
+            try { await navigator.clipboard.writeText(cp.dataset.copyLink); toast('Nusxalandi', 'ok'); }
+            catch { prompt('Havola:', cp.dataset.copyLink); }
+          });
+        });
+    } catch (err) { toast('\u274C ' + err.message, 'bad'); }
+    finally { btn.disabled = false; }
+    return;
+  }
+
+  const nd = t.closest('[data-notify-del]');
+  if (nd) {
+    try {
+      await edge('admin-api', { action: 'remove_notify_chat', chat_id: Number(nd.dataset.notifyDel) });
+      toast("O'chirildi", 'ok'); loadNotifyChats();
+    } catch (err) { toast('\u274C ' + err.message, 'bad'); }
     return;
   }
 
