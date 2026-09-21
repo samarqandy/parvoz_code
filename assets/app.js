@@ -51,6 +51,7 @@ const I = {
   note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
   checks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>',
   bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="m2 2 20 20"/><path d="M8.8 4.3A5.99 5.99 0 0 1 18 9v2c0 1.2.3 2 .8 2.8"/><path d="M6 9v2c0 2-1 3-2 4.5V17h13"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
 };
@@ -455,18 +456,22 @@ function rowToday(s, c) {
     : rin  ? `${hhmm(rin.occurred_at)} dan beri markazda`
     :        'Hali belgilanmagan';
 
-  return `<div class="row rt tone-${tone}">
+  // Qatorning o'zi bosilsa holatlar oynasi ochiladi; holat matni esa
+  // klaviatura uchun ham ishlaydigan tugma.
+  return `<div class="row rt tone-${tone}" data-more="${s.id}">
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
         ${s.telegram_chat_id ? '' : `<span class="badge b-mute" title="Ota-ona Telegramga ulanmagan">${I.bell}</span>`}</div>
-      <div class="row-sub"><span class="rt-status">${cur ? ico(cur) : ''}${text}</span></div>
+      <div class="row-sub">
+        <button class="rt-status" data-more="${s.id}" type="button"
+          aria-label="${esc(s.full_name)} — holatni o'zgartirish">${cur ? ico(cur) : ''}${text}${I.chev}</button>
+      </div>
     </div>
     <div class="row-actions">
       ${act
         ? `<button class="btn btn-act btn-tone tone-${act.tone}" data-mark="${act.kind}" data-id="${s.id}" type="button">${ico(act)} ${act.label}</button>`
         : `<span class="act-done">${ico(DONE)} ${DONE.label}</span>`}
-      <button class="btn btn-more" data-more="${s.id}" title="Boshqa holatlar" aria-label="Boshqa holatlar" type="button">${I.dots}</button>
     </div>
   </div>`;
 }
@@ -1270,9 +1275,6 @@ document.addEventListener('click', async (e) => {
   const linkBtn = t.closest('[data-link]');
   if (linkBtn) return parentLinkSheet(linkBtn.dataset.link);
 
-  const more = t.closest('[data-more]');
-  if (more) return markSheet(more.dataset.more);
-
   const mark = t.closest('[data-mark]');
   if (mark) {
     mark.disabled = true;
@@ -1280,6 +1282,10 @@ document.addEventListener('click', async (e) => {
     await sendMark(mark.dataset.id, mark.dataset.mark);
     return;
   }
+
+  // Qatorning asosiy tugmadan tashqari joyi bosilsa — holatlar oynasi
+  const more = t.closest('[data-more]');
+  if (more) return markSheet(more.dataset.more);
 
   const repRow = t.closest('[data-row]');
   if (repRow) {
