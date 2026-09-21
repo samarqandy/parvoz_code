@@ -47,6 +47,11 @@ const I = {
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
   inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z"/></svg>',
   dots: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+  note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
+  checks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="m2 2 20 20"/><path d="M8.8 4.3A5.99 5.99 0 0 1 18 9v2c0 1.2.3 2 .8 2.8"/><path d="M6 9v2c0 2-1 3-2 4.5V17h13"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
 };
 
@@ -353,11 +358,26 @@ const recFor = (sid, kind) => state.today.find((r) => r.student_id === sid && r.
 const dayStatus = (sid) => state.today.find((r) => r.student_id === sid && (r.kind === 'absent' || r.kind === 'excused'));
 
 // Davomat holatlari
+// Har bir holatning o'z rangi va ikonkasi — butun panelda shu manbadan olinadi
 const MARKS = {
-  in:      { icon: '✅',        label: 'Keldi',   short: 'Keldi' },
-  out:     { icon: '🏠',    label: 'Ketdi',   short: 'Ketdi' },
-  absent:  { icon: '❗️',  label: 'Kelmadi', short: 'Kelmadi' },
-  excused: { icon: '📝',    label: 'Sababli', short: 'Sababli' },
+  in:      { label: 'Keldi',   icon: 'check', tone: 'green'  },
+  out:     { label: 'Ketdi',   icon: 'home2', tone: 'gold'   },
+  absent:  { label: 'Kelmadi', icon: 'alert', tone: 'red'    },
+  excused: { label: 'Sababli', icon: 'note',  tone: 'violet' },
+};
+const DONE = { label: 'Tugadi', icon: 'checks', tone: 'muted' };
+const ico = (m) => I[m.icon];
+
+// Statistika kartasi: raqam + ikonka, rangi holatdan
+const statTile = (n, label, icon, tone) =>
+  `<div class="stat${tone ? ' tone-' + tone : ''}"><b>${n}</b>
+    <span>${I[icon] ?? ''}${label}</span></div>`;
+
+// Hisobotdagi kun belgisi: "12.09" + holat rangi/ikonkasi
+const pill = (kind, day, note) => {
+  const m = MARKS[kind];
+  return `<span class="day-pill tone-${m.tone}"${note ? ` title="${esc(note)}"` : ''}>${ico(m)}
+    ${day.slice(8)}.${day.slice(5, 7)}${note ? ' · ' + esc(note) : ''}</span>`;
 };
 
 // "Sababli" uchun tayyor sabablar
@@ -398,11 +418,11 @@ function viewToday() {
       <div class="spacer"></div>
     </div>
     <div class="stats">
-      <div class="stat"><b>${list.length}</b><span>O'quvchi</span></div>
-      <div class="stat"><b style="color:var(--green-ink)">${inCount}</b><span>Keldi</span></div>
-      <div class="stat"><b style="color:var(--red-ink)">${absentCount}</b><span>Kelmadi</span></div>
-      <div class="stat"><b>${excusedCount}</b><span>Sababli</span></div>
-      <div class="stat"><b>${pending}</b><span>Kutilmoqda</span></div>
+      ${statTile(list.length, "O'quvchi", 'users')}
+      ${statTile(inCount, MARKS.in.label, MARKS.in.icon, MARKS.in.tone)}
+      ${statTile(absentCount, MARKS.absent.label, MARKS.absent.icon, MARKS.absent.tone)}
+      ${statTile(excusedCount, MARKS.excused.label, MARKS.excused.icon, MARKS.excused.tone)}
+      ${statTile(pending, 'Kutilmoqda', 'clock')}
     </div>
     ${courseChips()}
     <label class="field" style="margin:14px 0">
@@ -415,10 +435,8 @@ function viewToday() {
 // Har bir qatorda bitta katta tugma: keyin nima qilish kerakligini ko'rsatadi.
 // Qolgan hamma narsa (kelmadi, sababli, bekor qilish) "⋯" oynasida.
 function nextAction(sid) {
-  const rin = recFor(sid, 'in');
-  const rout = recFor(sid, 'out');
-  if (!rin)  return { kind: 'in',  label: 'Keldi', icon: I.check, cls: 'btn-green' };
-  if (!rout) return { kind: 'out', label: 'Ketdi', icon: I.home2, cls: 'btn-primary' };
+  if (!recFor(sid, 'in'))  return { kind: 'in',  ...MARKS.in };
+  if (!recFor(sid, 'out')) return { kind: 'out', ...MARKS.out };
   return null;                                  // kuni tugadi
 }
 
@@ -428,25 +446,26 @@ function rowToday(s, c) {
   const away = dayStatus(s.id);
   const act = nextAction(s.id);
 
-  const state_ = away ? away.kind : (rout ? 'done' : (rin ? 'in' : 'pending'));
-  const status =
-      away && away.note ? `${MARKS[away.kind].icon} ${MARKS[away.kind].label} · ${esc(away.note)}`
-    : away              ? `${MARKS[away.kind].icon} ${MARKS[away.kind].label}`
-    : rin && rout       ? `✅ ${hhmm(rin.occurred_at)} → 🏠 ${hhmm(rout.occurred_at)}`
-    : rin               ? `✅ ${hhmm(rin.occurred_at)} dan beri markazda`
-    :                     'Hali belgilanmagan';
+  // Hozirgi holat: rangi, ikonkasi va matni shu yerdan
+  const cur = away ? MARKS[away.kind] : (rout ? DONE : (rin ? MARKS.in : null));
+  const tone = cur ? cur.tone : 'pending';
+  const text =
+      away ? MARKS[away.kind].label + (away.note ? ' · ' + esc(away.note) : '')
+    : rout ? `${hhmm(rin.occurred_at)} → ${hhmm(rout.occurred_at)}`
+    : rin  ? `${hhmm(rin.occurred_at)} dan beri markazda`
+    :        'Hali belgilanmagan';
 
-  return `<div class="row rt rt-${state_}">
+  return `<div class="row rt tone-${tone}">
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
-        ${s.telegram_chat_id ? '' : '<span class="badge" title="Ota-ona Telegramga ulanmagan">🔕</span>'}</div>
-      <div class="row-sub"><span class="rt-status">${status}</span></div>
+        ${s.telegram_chat_id ? '' : `<span class="badge b-mute" title="Ota-ona Telegramga ulanmagan">${I.bell}</span>`}</div>
+      <div class="row-sub"><span class="rt-status">${cur ? ico(cur) : ''}${text}</span></div>
     </div>
     <div class="row-actions">
       ${act
-        ? `<button class="btn btn-act ${act.cls}" data-mark="${act.kind}" data-id="${s.id}" type="button">${act.icon} ${act.label}</button>`
-        : `<span class="act-done">${I.check} Tugadi</span>`}
+        ? `<button class="btn btn-act btn-tone tone-${act.tone}" data-mark="${act.kind}" data-id="${s.id}" type="button">${ico(act)} ${act.label}</button>`
+        : `<span class="act-done">${ico(DONE)} ${DONE.label}</span>`}
       <button class="btn btn-more" data-more="${s.id}" title="Boshqa holatlar" aria-label="Boshqa holatlar" type="button">${I.dots}</button>
     </div>
   </div>`;
@@ -460,32 +479,35 @@ function markSheet(id) {
   const marked = state.today.filter((r) => r.student_id === s.id)
     .sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
 
+  const opt = (kind, hint) => {
+    const m = MARKS[kind];
+    return `<button class="btn btn-tone tone-${m.tone} btn-block mk-btn" data-set="${kind}"
+      ${away?.kind === kind ? 'disabled' : ''} type="button">${ico(m)}
+      <span class="mk-lbl"><b>${m.label}</b><small>${hint}</small></span></button>`;
+  };
+
   const when = (r) => (r.kind === 'in' || r.kind === 'out')
     ? hhmm(r.occurred_at)
     : (r.note || MARKS[r.kind].label);
 
   openSheet(esc(s.full_name), `
-    <div class="check-list">
-      <button class="check-item mk" data-set="absent" ${away?.kind === 'absent' ? 'disabled' : ''} type="button">
-        <span class="mk-ico">❗️</span>
-        <span class="mk-txt"><b>Kelmadi</b><small>Sababsiz qoldi — ota-onaga xabar boradi</small></span>
-      </button>
-      <button class="check-item mk" data-set="excused" ${away?.kind === 'excused' ? 'disabled' : ''} type="button">
-        <span class="mk-ico">📝</span>
-        <span class="mk-txt"><b>Sababli</b><small>Sababini yozib qoldirish</small></span>
-      </button>
+    <div class="mk-opts">
+      ${opt('absent', "Sababsiz qoldi — ota-onaga xabar boradi")}
+      ${opt('excused', 'Sababini yozib qoldirish')}
     </div>
     ${marked.length ? `
       <div class="mk-sep">Bugungi belgilar</div>
-      <div class="rows">${marked.map((r) => `
-        <div class="row mk-row">
-          <span class="mk-ico">${MARKS[r.kind].icon}</span>
+      <div class="rows">${marked.map((r) => {
+        const m = MARKS[r.kind];
+        return `<div class="row mk-row tone-${m.tone}">
+          <span class="mk-ico">${ico(m)}</span>
           <div class="row-main">
-            <div class="row-title">${MARKS[r.kind].label}</div>
+            <div class="row-title">${m.label}</div>
             <div class="row-sub"><span>${esc(when(r))}</span></div>
           </div>
-          <button class="btn btn-sm btn-danger" data-undo="${r.id}" type="button">${I.trash}</button>
-        </div>`).join('')}</div>` : ''}`, () => {
+          <button class="btn btn-sm btn-danger" data-undo="${r.id}" aria-label="${m.label} belgisini bekor qilish" type="button">${I.trash}</button>
+        </div>`;
+      }).join('')}</div>` : ''}`, () => {
     document.querySelector('[data-set="absent"]').addEventListener('click', () => {
       closeSheet(); sendMark(s.id, 'absent');
     });
@@ -502,14 +524,15 @@ function markSheet(id) {
 }
 
 function reasonSheet(s) {
+  const m = MARKS.excused;
   openSheet(`${esc(s.full_name)} — sabab`, `
     <div class="chips" style="margin-bottom:14px">
-      ${REASONS.map((r) => `<button class="chip" style="--acc:var(--gold)" data-reason="${esc(r)}" type="button">${esc(r)}</button>`).join('')}
+      ${REASONS.map((r) => `<button class="chip" style="--acc:var(--violet)" data-reason="${esc(r)}" type="button">${esc(r)}</button>`).join('')}
     </div>
     <label class="field"><span>Sabab</span>
       <input class="inp" id="mkNote" maxlength="200" placeholder="Masalan: shifokorga bordi">
       <small class="f-hint">Sabab ota-onaga boradigan xabarda ko'rinadi.</small></label>
-    <button class="btn btn-primary btn-block" id="mkSave" type="button">📝 Sababli belgilash</button>`, () => {
+    <button class="btn btn-tone tone-${m.tone} btn-block" id="mkSave" type="button">${ico(m)} ${m.label} belgilash</button>`, () => {
     document.querySelectorAll('[data-reason]').forEach((b) => b.addEventListener('click', () => {
       $('mkNote').value = b.dataset.reason;
       document.querySelectorAll('[data-reason]').forEach((x) => x.classList.toggle('on', x === b));
@@ -526,8 +549,8 @@ async function sendMark(studentId, kind, note) {
   try {
     const r = await edge('mark-attendance', { student_id: studentId, kind, note });
     await loadToday();
-    toast(r.notified ? `📨 ${s?.full_name}: ${MARKS[kind].short} — ota-onaga xabar yuborildi`
-                     : `✔️ ${s?.full_name}: ${MARKS[kind].short}${s?.telegram_chat_id ? '' : ' (Telegram ulanmagan)'}`, 'ok');
+    toast(r.notified ? `📨 ${s?.full_name}: ${MARKS[kind].label} — ota-onaga xabar yuborildi`
+                     : `✔️ ${s?.full_name}: ${MARKS[kind].label}${s?.telegram_chat_id ? '' : ' (Telegram ulanmagan)'}`, 'ok');
     render();
   } catch (err) { toast('❌ ' + err.message, 'bad'); render(); }
 }
@@ -758,32 +781,35 @@ async function loadReport() {
 
   $('repOut').innerHTML = `
     <div class="stats">
-      <div class="stat"><b>${rows.length}</b><span>O'quvchi</span></div>
-      <div class="stat"><b>${total}</b><span>Ish kuni</span></div>
-      <div class="stat"><b>${visits}</b><span>Tashrif</span></div>
-      <div class="stat"><b style="color:var(--red-ink)">${absences}</b><span>Kelmadi</span></div>
-      <div class="stat"><b style="color:var(--green-ink)">${avg}%</b><span>O'rtacha</span></div>
+      ${statTile(rows.length, "O'quvchi", 'users')}
+      ${statTile(total, 'Ish kuni', 'clock')}
+      ${statTile(visits, 'Tashrif', MARKS.in.icon, MARKS.in.tone)}
+      ${statTile(absences, MARKS.absent.label, MARKS.absent.icon, MARKS.absent.tone)}
+      ${statTile(avg + '%', "O'rtacha", 'chart')}
     </div>
     ${(!rows.length || !total)
       ? `<div class="card"><div class="empty"><div class="e-ico">📭</div><b>Ma'lumot yo'q</b><p>Bu oyda davomat yozuvlari topilmadi.</p></div></div>`
       : `<div class="table-wrap"><table class="tbl"><thead><tr>
-          <th>O'quvchi</th><th style="text-align:center">Kunlar</th><th style="text-align:center" title="Kelmadi / Sababli">❗ / 📝</th><th>Davomat</th><th>Oxirgi</th>
+          <th>O'quvchi</th><th class="num">Kunlar</th>
+          <th class="num th-ico" title="Kelmadi / Sababli">
+            <span class="tone-red">${I.alert}</span><span class="tone-violet">${I.note}</span></th>
+          <th>Davomat</th><th>Oxirgi</th>
         </tr></thead><tbody>${rows.map((r) => `
           <tr data-row="${r.id}">
             <td><div style="font-weight:800">${esc(r.name)}${r.active ? '' : ' <span class="badge">arxiv</span>'}</div>
                 <div style="color:var(--faint);font-size:.8rem;font-weight:700">${r.course.icon} ${esc(r.course.name)}</div></td>
             <td class="num">${r.count} / ${total}</td>
-            <td class="num"><span style="color:${r.absent ? 'var(--red-ink)' : 'var(--faint)'}">${r.absent}</span>
-                <span style="color:var(--faint)"> / ${r.excused}</span></td>
+            <td class="num"><span class="${r.absent ? 'tone-red num-on' : 'num-off'}">${r.absent}</span>
+                <span class="num-off"> / </span><span class="${r.excused ? 'tone-violet num-on' : 'num-off'}">${r.excused}</span></td>
             <td><div class="bar"><i style="width:${Math.min(100, r.pct)}%"></i></div>
                 <span style="font-size:.78rem;font-weight:800;color:var(--muted)">${r.pct}%</span></td>
             <td style="color:var(--muted);font-weight:700;white-space:nowrap">${r.last ? dayKey(r.last).slice(8) + '.' + dayKey(r.last).slice(5, 7) : '—'}</td>
           </tr>
           <tr class="hidden" data-detail="${r.id}"><td colspan="5"><div class="day-pills">${
             [
-              ...r.days.map((d) => `<span class="day-pill">✅ ${d.slice(8)}.${d.slice(5, 7)}</span>`),
-              ...r.absentDays.map((d) => `<span class="day-pill dp-absent">❗ ${d.slice(8)}.${d.slice(5, 7)}</span>`),
-              ...r.excusedDays.map((d) => `<span class="day-pill dp-excused" title="${esc(r.notes[d] || '')}">📝 ${d.slice(8)}.${d.slice(5, 7)}${r.notes[d] ? ' · ' + esc(r.notes[d]) : ''}</span>`),
+              ...r.days.map((d) => pill('in', d)),
+              ...r.absentDays.map((d) => pill('absent', d)),
+              ...r.excusedDays.map((d) => pill('excused', d, r.notes[d])),
             ].join('') || '<span style="color:var(--faint)">Bu oyda yozuv yo\'q</span>'}</div></td></tr>`).join('')}
         </tbody></table></div>`}`;
 }
