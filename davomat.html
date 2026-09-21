@@ -151,8 +151,13 @@ input, select { font:inherit; }
   border-radius:14px; padding:5px;
 }
 .tab {
-  flex:1; padding:10px 6px; border-radius:10px; border:0;
+  flex:1; min-width:0; padding:10px 6px; border-radius:10px; border:0;
   background:transparent; color:var(--muted); font-weight:800; font-size:.9rem;
+}
+/* Tor ekranlarda tablar ikki qatorga tushadi */
+@media (max-width:520px) {
+  .tabs { flex-wrap:wrap; }
+  .tab { flex:1 1 calc(50% - 3px); font-size:.86rem; }
 }
 .tab.active { background:linear-gradient(135deg,#ffb300,#ffd54f); color:var(--on-gold); }
 .pane { display:none; }
@@ -201,6 +206,32 @@ input, select { font:inherit; }
 .badge.tg-no { background:rgba(255,179,0,.1); border-color:rgba(255,179,0,.3); color:var(--gold2-ink); }
 .stu-meta { color:var(--muted); font-size:.83rem; margin-top:4px; }
 .stu-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+/* ===== Hisobot ===== */
+.rep-head { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+.rep-head .inp { max-width:200px; }
+.rep-tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:18px; }
+.rep-tile { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:14px 10px; text-align:center; }
+.rep-tile b { display:block; font-size:1.45rem; font-weight:900; line-height:1.2; }
+.rep-tile span { color:var(--muted); font-size:.78rem; font-weight:700; }
+.rep-wrap { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:4px 12px; overflow-x:auto; }
+.rep-table { width:100%; border-collapse:collapse; font-size:.92rem; }
+.rep-table th {
+  text-align:left; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--faint); padding:10px 8px; border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.rep-table td { padding:11px 8px; border-bottom:1px dashed var(--dash); vertical-align:middle; }
+.rep-table tr:last-child td { border-bottom:0; }
+.rep-table tbody tr[data-rep] { cursor:pointer; }
+.rep-table tbody tr[data-rep]:hover { background:var(--soft-1); }
+.rep-name { font-weight:800; }
+.rep-course { color:var(--faint); font-size:.8rem; font-weight:700; }
+.rep-num { font-weight:900; text-align:center; white-space:nowrap; }
+.rep-bar { height:6px; border-radius:99px; background:var(--soft-1); overflow:hidden; min-width:60px; }
+.rep-bar i { display:block; height:100%; background:linear-gradient(90deg,#10b981,#34d399); }
+.rep-pct { font-size:.78rem; font-weight:800; color:var(--muted); }
+.rep-days { display:flex; flex-wrap:wrap; gap:5px; padding:4px 0 10px; }
+.rep-day { font-size:.74rem; font-weight:700; padding:3px 8px; border-radius:7px; background:var(--soft-1); border:1px solid var(--border); color:var(--muted); }
 
 /* ===== Sozlamalar ===== */
 .set-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:18px; margin-bottom:16px; }
@@ -280,6 +311,7 @@ details code { background:var(--soft-1); padding:1px 6px; border-radius:6px; fon
     <div class="tabs" role="tablist">
       <button class="tab active" data-pane="paneToday" type="button">📋 Davomat</button>
       <button class="tab" data-pane="paneStudents" type="button">👥 O'quvchilar</button>
+      <button class="tab" data-pane="paneReport" type="button">📊 Hisobot</button>
       <button class="tab" data-pane="paneSettings" type="button">⚙️ Sozlamalar</button>
     </div>
 
@@ -317,6 +349,16 @@ details code { background:var(--soft-1); padding:1px 6px; border-radius:6px; fon
         </form>
       </div>
       <div id="studentsList"></div>
+    </div>
+
+    <!-- HISOBOT -->
+    <div class="pane" id="paneReport">
+      <div class="rep-head">
+        <input class="inp" type="month" id="repMonth" aria-label="Oy tanlash">
+        <button class="btn sm ghost" id="repCsvBtn" type="button">⬇️ CSV yuklab olish</button>
+      </div>
+      <div class="rep-tiles" id="repTiles"></div>
+      <div id="repBody"></div>
     </div>
 
     <!-- SOZLAMALAR -->
@@ -487,6 +529,7 @@ async function enterApp() {
   $('authScreen').classList.add('hidden');
   $('appScreen').classList.remove('hidden');
   $('userEmail').textContent = session.user.email;
+  $('repMonth').value = currentYm();
   $('todayDate').textContent = new Intl.DateTimeFormat('uz-UZ', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Samarkand' }).format(new Date());
   await refreshAll();
   await refreshWebhook(true);
@@ -709,6 +752,133 @@ $('studentsList').addEventListener('click', async (e) => {
   }
 });
 
+/* ---------- Hisobot pane ---------- */
+let repData = null;
+
+// Samarqand vaqti (UTC+5) bo'yicha kun kaliti
+function dayKey(iso) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Samarkand', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date(iso));
+}
+
+// Tanlangan oyning Samarqand vaqtidagi chegaralari
+function monthRangeISO(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const OFFSET = 5 * 3600 * 1000;
+  return [
+    new Date(Date.UTC(y, m - 1, 1) - OFFSET).toISOString(),
+    new Date(Date.UTC(y, m, 1) - OFFSET).toISOString(),
+  ];
+}
+
+function currentYm() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Samarkand', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date()).slice(0, 7);
+}
+
+async function loadReport() {
+  const ym = $('repMonth').value || currentYm();
+  $('repMonth').value = ym;
+  const [from, to] = monthRangeISO(ym);
+
+  const { data, error } = await sb.from('attendance')
+    .select('student_id,kind,occurred_at')
+    .gte('occurred_at', from).lt('occurred_at', to)
+    .order('occurred_at');
+  if (error) { toast('❌ ' + error.message, 'bad'); return; }
+
+  const byStudent = new Map();
+  const centerDays = new Set();
+  (data ?? []).forEach(function (r) {
+    if (r.kind !== 'in') return;
+    const d = dayKey(r.occurred_at);
+    centerDays.add(d);
+    if (!byStudent.has(r.student_id)) byStudent.set(r.student_id, { days: new Set(), last: r.occurred_at });
+    const e = byStudent.get(r.student_id);
+    e.days.add(d);
+    if (r.occurred_at > e.last) e.last = r.occurred_at;
+  });
+
+  const openDays = centerDays.size;
+  const rows = students
+    .filter(function (s) { return s.active || byStudent.has(s.id); })
+    .map(function (s) {
+      const e = byStudent.get(s.id);
+      const count = e ? e.days.size : 0;
+      return {
+        id: s.id, name: s.full_name, course: s.course, active: s.active,
+        count: count, last: e ? e.last : null,
+        pct: openDays ? Math.round((count / openDays) * 100) : 0,
+        days: e ? Array.from(e.days).sort() : [],
+      };
+    })
+    .sort(function (a, b) { return b.count - a.count || a.name.localeCompare(b.name); });
+
+  const visits = rows.reduce(function (n, r) { return n + r.count; }, 0);
+  const avg = rows.length ? Math.round(rows.reduce(function (n, r) { return n + r.pct; }, 0) / rows.length) : 0;
+  repData = { ym: ym, rows: rows, openDays: openDays, visits: visits, avg: avg };
+
+  $('repTiles').innerHTML = [
+    ['👥', rows.length, "O'quvchi"],
+    ['📅', openDays, 'Ish kuni'],
+    ['✅', visits, 'Tashrif'],
+    ['📈', avg + '%', "O'rtacha davomat"],
+  ].map(function (t) {
+    return '<div class="rep-tile"><b>' + t[0] + ' ' + t[1] + '</b><span>' + t[2] + '</span></div>';
+  }).join('');
+
+  if (!rows.length || !openDays) {
+    $('repBody').innerHTML = '<div class="empty">Bu oyda davomat yozuvlari yo\'q</div>';
+    return;
+  }
+
+  const fmtDate = function (iso) { const d = dayKey(iso); return d.slice(8) + '.' + d.slice(5, 7); };
+  $('repBody').innerHTML = '<div class="rep-wrap"><table class="rep-table">' +
+    '<thead><tr><th>O\'quvchi</th><th style="text-align:center">Kunlar</th><th>Davomat</th><th>Oxirgi tashrif</th></tr></thead><tbody>' +
+    rows.map(function (r) {
+      return '<tr data-rep="' + r.id + '">' +
+        '<td><div class="rep-name">' + esc(r.name) + (r.active ? '' : ' <span class="badge off">arxiv</span>') + '</div>' +
+        '<div class="rep-course">' + esc(r.course) + '</div></td>' +
+        '<td class="rep-num">' + r.count + ' / ' + openDays + '</td>' +
+        '<td><div class="rep-bar"><i style="width:' + Math.min(100, r.pct) + '%"></i></div>' +
+        '<span class="rep-pct">' + r.pct + '%</span></td>' +
+        '<td class="rep-course">' + (r.last ? fmtDate(r.last) : '—') + '</td></tr>' +
+        '<tr class="rep-detail hidden" data-detail="' + r.id + '"><td colspan="4"><div class="rep-days">' +
+        (r.days.length
+          ? r.days.map(function (d) { return '<span class="rep-day">' + d.slice(8) + '.' + d.slice(5, 7) + '</span>'; }).join('')
+          : '<span class="rep-course">Bu oyda kelmagan</span>') +
+        '</div></td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+$('repBody').addEventListener('click', function (e) {
+  const tr = e.target.closest('[data-rep]');
+  if (!tr) return;
+  const d = $('repBody').querySelector('[data-detail="' + tr.dataset.rep + '"]');
+  if (d) d.classList.toggle('hidden');
+});
+
+$('repMonth').addEventListener('change', loadReport);
+
+$('repCsvBtn').addEventListener('click', function () {
+  if (!repData || !repData.rows.length) { toast('Avval hisobotni yuklang', 'bad'); return; }
+  const head = ["O'quvchi", 'Kurs', 'Kelgan kunlar', 'Ish kunlari', 'Davomat %', 'Oxirgi tashrif', 'Kelgan sanalar'];
+  const q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+  const lines = [head.map(q).join(';')].concat(repData.rows.map(function (r) {
+    return [r.name, r.course, r.count, repData.openDays, r.pct, r.last ? dayKey(r.last) : '', r.days.join(' ')]
+      .map(q).join(';');
+  }));
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'parvoz-davomat-' + repData.ym + '.csv';
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  toast('⬇️ CSV yuklandi', 'ok');
+});
+
 /* ---------- Sozlamalar pane ---------- */
 $('botSaveBtn').addEventListener('click', async () => {
   const token = $('botTokenInp').value.trim();
@@ -777,6 +947,7 @@ document.querySelectorAll('.tab').forEach((t) => {
     document.querySelectorAll('.pane').forEach((x) => x.classList.remove('active'));
     t.classList.add('active');
     $(t.dataset.pane).classList.add('active');
+    if (t.dataset.pane === 'paneReport') loadReport();
   });
 });
 
