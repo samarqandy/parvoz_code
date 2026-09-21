@@ -139,18 +139,32 @@
       <div><b>Parvoz</b><small data-t="authTitle">Davomat tizimi</small></div>
     </div>
     <nav class="side-nav" id="sideNav" aria-label="Asosiy menyu"></nav>
-    <div class="side-foot">
-      <div class="user-card" id="userCard"></div>
-      <button class="btn btn-sm btn-ghost btn-block" data-theme-toggle type="button" style="margin-top:6px"></button>
-    </div>
   </aside>
 
   <div class="main">
     <header class="topbar">
       <div class="logo"></div>
       <h1 id="pageTitle" data-t="navToday">Davomat</h1>
+
       <div class="tb-actions">
-        <button class="btn btn-icon btn-ghost" data-theme-toggle type="button"></button>
+        <!-- Til -->
+        <div class="menu-wrap">
+          <button class="tb-btn" id="langBtn" type="button" aria-haspopup="true" aria-expanded="false">
+            <span class="tb-ico" id="langIco"></span><span class="tb-code" id="langCode">UZ</span>
+          </button>
+          <div class="menu" id="langMenu" role="menu" hidden></div>
+        </div>
+
+        <!-- Yorug' / qorong'i -->
+        <button class="tb-btn tb-icon" data-theme-toggle type="button"></button>
+
+        <!-- Hisob -->
+        <div class="menu-wrap">
+          <button class="tb-btn tb-avatar" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+            <span class="avatar" id="userInitials"></span>
+          </button>
+          <div class="menu menu-user" id="userMenu" role="menu" hidden></div>
+        </div>
       </div>
     </header>
 

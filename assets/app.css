@@ -175,24 +175,75 @@ select.inp option, select.inp optgroup { background: var(--sheet-bg); color: var
 .nav-item:hover { background: var(--surface); color: var(--text); }
 .nav-item.active { background: linear-gradient(135deg, #ffb300, #ffd54f); color: var(--on-gold); }
 
-.side-foot { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border); }
-.user-card { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: var(--r-sm); }
-.user-card .avatar { flex-shrink: 0; }
-.user-card .u-meta { min-width: 0; flex: 1; }
-.user-card .u-name { font-weight: 800; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.user-card .u-role { font-size: .74rem; color: var(--faint); font-weight: 700; }
 
 /* Mobil yuqori panel */
+/* Sahifa sarlavhasi: chapda bo'lim nomi, o'ngda til / rejim / hisob */
 .topbar {
-  display: none; position: sticky; top: 0; z-index: 40;
-  height: var(--bar-h); align-items: center; gap: 10px; padding: 0 14px;
+  display: flex; position: sticky; top: 0; z-index: 40;
+  height: var(--bar-h); align-items: center; gap: 10px; padding: 0 20px;
   background: var(--nav-bg);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
-.topbar .logo { width: 28px; aspect-ratio: 447/559; background: var(--logo-url) center/contain no-repeat; }
-.topbar h1 { font-size: 1.05rem; font-weight: 900; }
-.topbar .tb-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.topbar .logo { display: none; width: 28px; aspect-ratio: 447/559; background: var(--logo-url) center/contain no-repeat; flex-shrink: 0; }
+.topbar h1 {
+  font-size: 1.2rem; font-weight: 900; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tb-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+/* Sarlavhadagi tugmalar */
+.tb-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 40px; padding: 0 11px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--muted); font-weight: 800; font-size: .82rem;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.tb-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-2); }
+.tb-btn svg { width: 18px; height: 18px; }
+.tb-btn .tb-ico { display: inline-flex; }
+.tb-btn .tb-code { letter-spacing: .04em; }
+.tb-icon { width: 40px; padding: 0; }
+.tb-avatar { width: 40px; padding: 0; }
+.tb-avatar .avatar { width: 30px; height: 30px; font-size: .72rem; }
+
+/* Ochiladigan menyular */
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 60;
+  min-width: 210px; padding: 6px;
+  background: var(--sheet-bg); border: 1px solid var(--border-2);
+  border-radius: var(--r); box-shadow: var(--shadow);
+  animation: menuIn .13s ease-out;
+}
+@keyframes menuIn { from { opacity: 0; transform: translateY(-4px); } }
+.menu[hidden] { display: none; }
+.menu-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 10px 11px; border-radius: var(--r-sm);
+  color: var(--text); font-weight: 700; font-size: .9rem; text-align: left;
+}
+.menu-item span { flex: 1; min-width: 0; }
+.menu-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+.menu-item:hover { background: var(--surface); }
+.menu-item.on { color: var(--gold-ink); }
+.menu-item.on svg { color: var(--gold-ink); }
+.menu-item.danger { color: var(--red-ink); }
+.menu-item.danger:hover { background: color-mix(in srgb, var(--red) 12%, transparent); }
+
+.menu-user { min-width: 240px; }
+.menu-head { display: flex; align-items: center; gap: 11px; padding: 10px 11px 8px; }
+.menu-head .avatar { width: 38px; height: 38px; font-size: .82rem; flex-shrink: 0; }
+.menu-who { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.menu-who b { font-weight: 900; font-size: .92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-who small { font-size: .74rem; color: var(--faint); font-weight: 700; }
+.menu-mail {
+  padding: 0 11px 10px; margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: .78rem; color: var(--faint); font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* Mobil pastki navigatsiya */
 .tabbar {
@@ -216,7 +267,7 @@ select.inp option, select.inp optgroup { background: var(--sheet-bg); color: var
 .page { max-width: 1060px; margin: 0 auto; padding: 24px 20px 40px; }
 
 .page-head { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-.page-head h2 { font-size: 1.4rem; font-weight: 900; line-height: 1.2; }
+.page-head h2 { display: none; }
 .page-head p { color: var(--muted); font-size: .9rem; margin-top: 2px; }
 .page-head .spacer { flex: 1; }
 
@@ -394,13 +445,21 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 /* ===================== RESPONSIVE ===================== */
 @media (max-width: 999px) {
   .sidebar { display: none; }
-  .topbar, .tabbar { display: flex; }
-  .tabbar { flex-direction: column; }
+  .tabbar { display: flex; flex-direction: column; }
   .main { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
+  .topbar { padding: 0 14px; gap: 9px; }
+  .topbar .logo { display: block; }
+  .topbar h1 { font-size: 1.05rem; }
+  .tb-actions { gap: 6px; }
+  .tb-btn { height: 38px; padding: 0 9px; font-size: .78rem; }
+  .tb-icon, .tb-avatar { width: 38px; }
   .page { padding: 18px 16px 30px; }
-  .page-head h2 { font-size: 1.22rem; }
   .row { padding: 12px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 400px) {
+  .topbar .logo { display: none; }
+  .topbar { padding: 0 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
