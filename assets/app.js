@@ -76,7 +76,7 @@ const STR = {
 
     /* --- umumiy --- */
     all: 'Barchasi', save: 'Saqlash', saved: 'Saqlandi', deleted: "O'chirildi",
-    edit: 'Tahrirlash', del: "O'chirish", add: "Qo'shish", copy: 'Nusxalash',
+    edit: 'Tahrirlash', del: "O'chirish", add: "Qo'shish",
     copied: 'Nusxalandi', archive: 'Arxiv', error: 'Xatolik',
 
     /* --- bugungi davomat --- */
@@ -189,8 +189,7 @@ const STR = {
     delCourse: '"{name}" kursi o\'chirilsinmi?',
 
     /* --- sozlamalar --- */
-    setLook: "\u{1F3A8} Ko'rinish",
-    setLang: '\u{1F310} Til',
+    setLang: 'Til',
     setInstall: "\u{1F4F1} Ilovani o'rnatish",
     setInstallP: "Telefoningizga ilova sifatida o'rnating \u2014 brauzersiz, bitta bosishda ochiladi.",
     setInstallBtn: "O'rnatish",
@@ -212,13 +211,12 @@ const STR = {
     setNotifyBtn: '\u{1F517} Meni ulash havolasini olish',
     nobodyLinked: "Hech kim ulanmagan \u2014 arizalar haqida xabar bormaydi",
     tgUser: 'Telegram foydalanuvchi', linkedBadge: 'Ulangan',
-    setAccount: '\u{1F44B} Hisob', logout: 'Chiqish',
+    logout: 'Chiqish',
     panelName: 'Parvoz Davomat',
     notifyLink: 'Xabarnomalarga ulanish',
     notifyLinkP: 'Quyidagi tugmani bosing \u2014 Telegram ochiladi va "Start" bosganingizdan keyin saytdan kelgan arizalar shu chatga yuboriladi. Havola 30 daqiqa amal qiladi.',
     openInTg: 'Telegramda ochish',
     linkLabel: 'Havola:',
-    darkMode: "\u{1F319} Qorong'i rejim", lightMode: "\u2600\uFE0F Yorug' rejim",
     toDark: "Qorong'i rejimga o'tish", toLight: "Yorug' rejimga o'tish",
     parentsLinkedN: '\u2705 {n} ta ota-ona Telegramga ulandi',
   },
@@ -249,7 +247,7 @@ const STR = {
     sWorkdays: 'Рабочих дней', sVisits: 'Посещений', sAvg: 'В среднем',
 
     all: 'Все', save: 'Сохранить', saved: 'Сохранено', deleted: 'Удалено',
-    edit: 'Изменить', del: 'Удалить', add: 'Добавить', copy: 'Копировать',
+    edit: 'Изменить', del: 'Удалить', add: 'Добавить',
     copied: 'Скопировано', archive: 'Архив', error: 'Ошибка',
 
     noCourseT: 'Вам ещё не назначен предмет',
@@ -355,8 +353,7 @@ const STR = {
     fNameStar: 'Название *', fIcon: 'Значок (эмодзи)', fColor: 'Цвет', fOpen: 'Открыт (активен)',
     delCourse: 'Удалить предмет «{name}»?',
 
-    setLook: '\u{1F3A8} Внешний вид',
-    setLang: '\u{1F310} Язык',
+    setLang: 'Язык',
     setInstall: '\u{1F4F1} Установить приложение',
     setInstallP: 'Установите как приложение на телефон \u2014 без браузера, в одно нажатие.',
     setInstallBtn: 'Установить',
@@ -378,13 +375,12 @@ const STR = {
     setNotifyBtn: '\u{1F517} Получить ссылку для подключения',
     nobodyLinked: 'Никто не подключён \u2014 уведомления о заявках не приходят',
     tgUser: 'Пользователь Telegram', linkedBadge: 'Подключён',
-    setAccount: '\u{1F44B} Аккаунт', logout: 'Выйти',
+    logout: 'Выйти',
     panelName: 'Parvoz Davomat',
     notifyLink: 'Подключение к уведомлениям',
     notifyLinkP: 'Нажмите кнопку ниже \u2014 откроется Telegram, и после нажатия «Start» заявки с сайта будут приходить в этот чат. Ссылка действует 30 минут.',
     openInTg: 'Открыть в Telegram',
     linkLabel: 'Ссылка:',
-    darkMode: '\u{1F319} Тёмная тема', lightMode: '\u2600\uFE0F Светлая тема',
     toDark: 'Перейти на тёмную тему', toLight: 'Перейти на светлую тему',
     parentsLinkedN: '\u2705 Родителей подключилось: {n}',
   },
@@ -424,6 +420,7 @@ const I = {
   note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
   checks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>',
   bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="m2 2 20 20"/><path d="M8.8 4.3A5.99 5.99 0 0 1 18 9v2c0 1.2.3 2 .8 2.8"/><path d="M6 9v2c0 2-1 3-2 4.5V17h13"/></svg>',
+  globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>',
   chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
@@ -542,14 +539,6 @@ function setTheme(mode) {
     b.innerHTML = mode === 'light' ? I.sun : I.moon;
     b.setAttribute('aria-label', mode === 'light' ? t('toDark') : t('toLight'));
   });
-  paintThemeBtn();
-}
-
-// Sozlamalardagi katta tugma har safar qayta chizilgani uchun alohida
-function paintThemeBtn() {
-  const big = $('themeBtnBig');
-  if (!big) return;
-  big.innerHTML = currentTheme() === 'light' ? `${I.moon} ${t('darkMode')}` : `${I.sun} ${t('lightMode')}`;
 }
 
 /* ============================================================
@@ -627,6 +616,7 @@ async function enterApp() {
 
   buildNav();
   renderUserCard();
+  renderLangBtn();
   await refreshAll();
   go(location.hash.replace('#', '') || 'today');
 
@@ -725,13 +715,51 @@ function renderCounts() {
   });
 }
 
+/* ---------------- Sarlavhadagi boshqaruvlar ---------------- */
+
+// Til tugmasi: hozirgi tilning kodi + ro'yxat
+function renderLangBtn() {
+  const l = currentLang();
+  const ico = $('langIco'); if (ico) ico.innerHTML = I.globe;
+  const code = $('langCode'); if (code) code.textContent = l.toUpperCase();
+  $('langBtn')?.setAttribute('aria-label', t('setLang'));
+  const menu = $('langMenu');
+  if (menu) menu.innerHTML = LANGS.map((x) =>
+    `<button class="menu-item ${x === l ? 'on' : ''}" data-lang="${x}" role="menuitem" type="button">
+      <span>${LANG_NAME[x]}</span>${x === l ? I.check : ''}</button>`).join('');
+}
+
+// Hisob tugmasi: avatar + ism, rol, email va chiqish
 function renderUserCard() {
   const me = state.me;
-  const roleTxt = isAdmin() ? t('roleAdmin') : t('roleTeacher');
-  $('userCard').innerHTML =
-    `<div class="avatar" style="--acc:var(--gold)">${esc(initials(me.full_name || me.email))}</div>
-     <div class="u-meta"><div class="u-name">${esc(me.full_name || me.email.split('@')[0])}</div>
-     <div class="u-role">${roleTxt}</div></div>`;
+  if (!me) return;
+  const name = me.full_name || me.email.split('@')[0];
+  const av = $('userInitials');
+  if (av) { av.textContent = initials(name); av.style.setProperty('--acc', 'var(--gold)'); }
+  const menu = $('userMenu');
+  if (menu) menu.innerHTML = `
+    <div class="menu-head">
+      <span class="avatar" style="--acc:var(--gold)">${esc(initials(name))}</span>
+      <span class="menu-who"><b>${esc(name)}</b><small>${isAdmin() ? t('roleAdmin') : t('roleTeacher')}</small></span>
+    </div>
+    <div class="menu-mail">${esc(me.email)}</div>
+    <button class="menu-item danger" id="logoutBtn" role="menuitem" type="button">${I.out}<span>${t('logout')}</span></button>`;
+}
+
+// Bitta vaqtda bitta menyu ochiq turadi
+function closeMenus(except) {
+  document.querySelectorAll('.menu').forEach((m) => {
+    if (m === except) return;
+    m.hidden = true;
+    m.previousElementSibling?.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function toggleMenu(btn, menu) {
+  const open = menu.hidden;
+  closeMenus(open ? menu : null);
+  menu.hidden = !open;
+  btn.setAttribute('aria-expanded', String(open));
 }
 
 function go(view) {
@@ -751,7 +779,7 @@ function render() {
   else if (state.view === 'students') el.innerHTML = viewStudents();
   else if (state.view === 'report') { el.innerHTML = viewReportShell(); loadReport(); }
   else if (state.view === 'team') { el.innerHTML = viewTeamShell(); loadTeam(); }
-  else { el.innerHTML = viewSettings(); paintThemeBtn(); if (isAdmin()) loadNotifyChats(); }
+  else { el.innerHTML = viewSettings(); if (isAdmin()) loadNotifyChats(); }
 }
 
 /* ============================================================
@@ -1320,17 +1348,6 @@ function viewSettings() {
   return `
     <div class="page-head"><div><h2>${t('tSettings')}</h2><p>${esc(state.me.email)}</p></div></div>
 
-    <div class="card">
-      <div class="card-head"><h3>${t('setLook')}</h3></div>
-      <button class="btn btn-block" id="themeBtnBig" type="button"></button>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>${t('setLang')}</h3></div>
-      <div class="chips">${LANGS.map((l) =>
-        `<button class="chip ${currentLang() === l ? 'on' : ''}" style="--acc:var(--sky)" data-lang="${l}" type="button">${LANG_NAME[l]}</button>`).join('')}</div>
-    </div>
-
     <div class="card" id="installCard" ${state.deferredInstall ? '' : 'hidden'}>
       <div class="card-head"><h3>${t('setInstall')}</h3></div>
       <p class="card-desc">${t('setInstallP')}</p>
@@ -1364,11 +1381,6 @@ function viewSettings() {
       <p class="card-desc">${t('setNotifyP')}</p>
       <div id="notifyOut" class="rows" style="margin-bottom:12px"></div>
       <button class="btn btn-block" id="notifyLinkBtn" type="button">${t('setNotifyBtn')}</button>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>${t('setAccount')}</h3></div>
-      <button class="btn btn-danger btn-block" id="logoutBtn" type="button">${I.out} ${t('logout')}</button>
     </div>
 
     <p style="text-align:center;color:var(--faint);font-size:.8rem;margin-top:18px">
@@ -1669,6 +1681,8 @@ function courseSheet(id) {
 /* ============================================================
    HODISALAR
    ============================================================ */
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(); });
+
 document.addEventListener('click', async (e) => {
   const el = e.target;
 
@@ -1693,11 +1707,17 @@ document.addEventListener('click', async (e) => {
   const edC = el.closest('[data-edit-course]');
   if (edC) return courseSheet(edC.dataset.editCourse);
 
+  const langTrig = el.closest('#langBtn');
+  if (langTrig) { toggleMenu(langTrig, $('langMenu')); return; }
+  const userTrig = el.closest('#userBtn');
+  if (userTrig) { toggleMenu(userTrig, $('userMenu')); return; }
+  if (!el.closest('.menu')) closeMenus();
+
   const langBtn = el.closest('[data-lang], [data-lang-pick]');
   if (langBtn) { setLang(langBtn.dataset.lang || langBtn.dataset.langPick); return; }
 
-  const themeBtn = el.closest('[data-theme-toggle], #themeBtnBig');
-  if (themeBtn) { setTheme(currentTheme() === 'dark' ? 'light' : 'dark'); if (state.view === 'settings') render(); return; }
+  const themeBtn = el.closest('[data-theme-toggle]');
+  if (themeBtn) { setTheme(currentTheme() === 'dark' ? 'light' : 'dark'); return; }
 
   const linkBtn = el.closest('[data-link]');
   if (linkBtn) return parentLinkSheet(linkBtn.dataset.link);
