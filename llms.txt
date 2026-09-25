@@ -57,8 +57,18 @@ O'zbek va rus tillarida. Ingliz tili kursida darsning katta qismi ingliz tilida.
 **Markaz qayerda joylashgan?**
 Samarqand shahri, Dagbit ko'chasi 11 — Gelion chorrahasi, Mone Café ro'parasida.
 
+## Ota-onalar uchun maqolalar
+
+- [Bolaga dasturlashni necha yoshdan boshlash kerak?](https://parvozcode.uz/dasturlashni-necha-yoshdan-boshlash.html)
+- [Samarqandda bolalar uchun kurslar qancha turadi?](https://parvozcode.uz/bolalar-kurslari-narxi-samarqand.html)
+- [Scratch yoki Python — bola qaysi biridan boshlasin?](https://parvozcode.uz/scratch-yoki-python.html)
+- [Robototexnika bolaga nima beradi?](https://parvozcode.uz/robototexnika-bolaga-nima-beradi.html)
+- [Shaxmat bolaning o'qishiga yordam beradimi?](https://parvozcode.uz/shaxmat-bolaga-foydasi.html)
+- [Bolani kursga yozishdan oldin nimalarni tekshirish kerak?](https://parvozcode.uz/kursga-yozishdan-oldin.html)
+
 ## Foydali havolalar
 
 - [Bosh sahifa](https://parvozcode.uz/): barcha yo'nalishlar, narxlar, dars jadvali, FAQ va aloqa ma'lumotlari.
 - [Sinov darsiga yozilish](https://parvozcode.uz/#yozilish): saytdagi ariza formasi.
+- [Barcha maqolalar](https://parvozcode.uz/maqolalar.html)
 - [Maxfiylik siyosati](https://parvozcode.uz/maxfiylik.html)
