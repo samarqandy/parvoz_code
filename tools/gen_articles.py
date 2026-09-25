@@ -23,6 +23,9 @@ SRC = (ROOT / 'dasturlash-kurslari.html').read_text()
 TOP = SRC[SRC.index('<body class="js">'):SRC.index('<main id="main">')]
 BOTTOM = SRC[SRC.index('<footer>'):]
 
+# Yandex Metrika hisoblagichi ham o'sha sahifadan olinadi — ID bir joyda turadi.
+METRIKA = SRC[SRC.index('<!-- Yandex.Metrika counter -->'):SRC.index('</head>')].strip()
+
 BASE = 'https://parvozcode.uz/'
 
 # Qobiqdagi matnlar — ruscha sahifalar uchun
@@ -175,6 +178,8 @@ def head(*, lang, title, desc, url, alt_url, page_type='article', ld=''):
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/config.js"></script>
 <script src="assets/analytics.js" defer></script>
+
+{METRIKA}
 
 <script type="application/ld+json">
 {ld}
