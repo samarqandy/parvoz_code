@@ -1171,3 +1171,44 @@ select.f-inp option { background: var(--bg2); color: var(--text); }
   border-radius: var(--r-md); padding: 20px 22px; margin: 20px 0;
 }
 .btn-block { width: 100%; }
+
+/* ===================== MAQOLALAR ===================== */
+.art .art-lede {
+  font-size: 1.06rem; line-height: 1.7; color: var(--text);
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--r-md); padding: 18px 20px; margin: 0 0 28px;
+}
+.art .art-lede strong { color: var(--text); font-weight: 900; }
+.art h2 { margin-top: 34px; }
+.art li { margin-bottom: 8px; }
+.art em { color: var(--text); font-style: italic; }
+
+.art .faq-list { margin-top: 12px; }
+
+.art-cta {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 26px 24px; margin: 36px 0 22px;
+  text-align: center;
+}
+.art-cta h3 { font-size: 1.1rem; font-weight: 900; color: var(--text); margin-bottom: 8px; }
+.art-cta p { margin-bottom: 18px; }
+.art-cta .cta-row { justify-content: center; }
+
+.art-back { margin-top: 10px; font-weight: 700; }
+
+/* Ro'yxat sahifasi */
+.art-grid { display: grid; gap: 14px; margin: 26px 0 8px; }
+@media (min-width: 720px) { .art-grid { grid-template-columns: 1fr 1fr; } }
+.art-card {
+  display: flex; flex-direction: column; gap: 8px;
+  text-decoration: none;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 20px 22px;
+  transition: transform .15s, border-color .15s;
+}
+.art-card:hover { transform: translateY(-2px); border-color: var(--gold); }
+.art-card h2, .art-card p, .art-card .art-more { text-decoration: none; }
+.art-card h2 { font-size: 1.04rem; font-weight: 900; color: var(--text); margin: 0; line-height: 1.35; }
+.art-card p { font-size: .9rem; margin: 0; flex: 1; }
+.art-more { color: var(--gold-ink); font-weight: 800; font-size: .88rem; }
