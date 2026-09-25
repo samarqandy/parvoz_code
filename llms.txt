@@ -31,7 +31,34 @@
 - [Shaxmat kursi](https://parvozcode.uz/shaxmat-kurslari.html): noldan boshlab qoidalar, debyut, taktika, endshpil, haftalik turnirlar.
 - [Ingliz tili kursi](https://parvozcode.uz/ingliz-tili-kurslari.html): jonli muloqot, tinglab tushunish, talaffuz, o'yin orqali grammatika.
 
+## Tez-tez so'raladigan savollar
+
+**Necha yoshdan qabul qilinadi?**
+6 yoshdan boshlab. Har bir yo'nalish uchun alohida yosh guruhlari mavjud.
+
+**Kursning narxi qancha?**
+Barcha yo'nalishlar uchun oyiga 300 000 so'm. Haftada 3 kun, har dars 2 soat. Qo'shimcha to'lov yo'q — jihozlar markaz hisobidan.
+
+**Sinov darsi bormi?**
+Ha, birinchi dars to'liq bepul. Saytdagi ariza formasi orqali yozilish mumkin.
+
+**Kompyuter yoki shaxmat doskasi olib kelish kerakmi?**
+Yo'q. Kompyuter, robot to'plamlari va shaxmat doskalari markazda mavjud.
+
+**Bir vaqtda bir necha kursga qatnasa bo'ladimi?**
+Ha. Jadval to'qnashmasa, bir vaqtda bir necha yo'nalishda o'qish mumkin.
+
+**To'lovni qanday qilish mumkin?**
+Naqd, Click yoki Payme orqali. Har oyning boshida.
+
+**Dars qaysi tilda olib boriladi?**
+O'zbek va rus tillarida. Ingliz tili kursida darsning katta qismi ingliz tilida.
+
+**Markaz qayerda joylashgan?**
+Samarqand shahri, Dagbit ko'chasi 11 — Gelion chorrahasi, Mone Café ro'parasida.
+
 ## Foydali havolalar
 
 - [Bosh sahifa](https://parvozcode.uz/): barcha yo'nalishlar, narxlar, dars jadvali, FAQ va aloqa ma'lumotlari.
-- [Sinov darsiga yozilish formasi](https://docs.google.com/forms/d/e/1FAIpQLSdjJW3ACj7IaLaGtpP1YwQF8eh3rbQxyCEkX0l1oqUmu1kidA/viewform)
+- [Sinov darsiga yozilish](https://parvozcode.uz/#yozilish): saytdagi ariza formasi.
+- [Maxfiylik siyosati](https://parvozcode.uz/maxfiylik.html)
