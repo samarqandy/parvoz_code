@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://parvozcode.uz/</loc>
     <lastmod>2026-09-25</lastmod>
@@ -38,42 +39,126 @@
   </url>
   <url>
     <loc>https://parvozcode.uz/maqolalar.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/maqolalar.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/stati.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/maqolalar.html"/>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/stati.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/maqolalar.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/stati.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/maqolalar.html"/>
     <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://parvozcode.uz/dasturlashni-necha-yoshdan-boshlash.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/dasturlashni-necha-yoshdan-boshlash.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/vozrast-dlya-programmirovaniya.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/dasturlashni-necha-yoshdan-boshlash.html"/>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/vozrast-dlya-programmirovaniya.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/dasturlashni-necha-yoshdan-boshlash.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/vozrast-dlya-programmirovaniya.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/dasturlashni-necha-yoshdan-boshlash.html"/>
     <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://parvozcode.uz/bolalar-kurslari-narxi-samarqand.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/bolalar-kurslari-narxi-samarqand.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/stoimost-kursov-samarkand.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/bolalar-kurslari-narxi-samarqand.html"/>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/stoimost-kursov-samarkand.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/bolalar-kurslari-narxi-samarqand.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/stoimost-kursov-samarkand.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/bolalar-kurslari-narxi-samarqand.html"/>
     <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://parvozcode.uz/scratch-yoki-python.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/scratch-yoki-python.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/scratch-ili-python.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/scratch-yoki-python.html"/>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/scratch-ili-python.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/scratch-yoki-python.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/scratch-ili-python.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/scratch-yoki-python.html"/>
     <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://parvozcode.uz/robototexnika-bolaga-nima-beradi.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/robototexnika-bolaga-nima-beradi.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/chto-daet-robototehnika.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/robototexnika-bolaga-nima-beradi.html"/>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/chto-daet-robototehnika.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/robototexnika-bolaga-nima-beradi.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/chto-daet-robototehnika.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/robototexnika-bolaga-nima-beradi.html"/>
     <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://parvozcode.uz/shaxmat-bolaga-foydasi.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/shaxmat-bolaga-foydasi.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/polza-shahmat-dlya-rebenka.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/shaxmat-bolaga-foydasi.html"/>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/polza-shahmat-dlya-rebenka.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/shaxmat-bolaga-foydasi.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/polza-shahmat-dlya-rebenka.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/shaxmat-bolaga-foydasi.html"/>
     <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://parvozcode.uz/kursga-yozishdan-oldin.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/kursga-yozishdan-oldin.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/pered-zapisyu-na-kursy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/kursga-yozishdan-oldin.html"/>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/pered-zapisyu-na-kursy.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/kursga-yozishdan-oldin.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/pered-zapisyu-na-kursy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/kursga-yozishdan-oldin.html"/>
     <lastmod>2026-09-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

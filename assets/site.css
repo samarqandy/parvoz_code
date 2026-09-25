@@ -1212,3 +1212,6 @@ select.f-inp option { background: var(--bg2); color: var(--text); }
 .art-card h2 { font-size: 1.04rem; font-weight: 900; color: var(--text); margin: 0; line-height: 1.35; }
 .art-card p { font-size: .9rem; margin: 0; flex: 1; }
 .art-more { color: var(--gold-ink); font-weight: 800; font-size: .88rem; }
+
+/* Maqolada til almashtirish havolasi */
+.art-lang { color: var(--gold-ink); font-weight: 800; white-space: nowrap; }

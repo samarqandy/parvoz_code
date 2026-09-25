@@ -66,9 +66,18 @@ Samarqand shahri, Dagbit ko'chasi 11 — Gelion chorrahasi, Mone Café ro'parasi
 - [Shaxmat bolaning o'qishiga yordam beradimi?](https://parvozcode.uz/shaxmat-bolaga-foydasi.html)
 - [Bolani kursga yozishdan oldin nimalarni tekshirish kerak?](https://parvozcode.uz/kursga-yozishdan-oldin.html)
 
+## Статьи для родителей (на русском)
+
+- [С какого возраста учить ребёнка программированию?](https://parvozcode.uz/vozrast-dlya-programmirovaniya.html)
+- [Сколько стоят детские курсы в Самарканде?](https://parvozcode.uz/stoimost-kursov-samarkand.html)
+- [Scratch или Python: с чего начать ребёнку?](https://parvozcode.uz/scratch-ili-python.html)
+- [Что даёт ребёнку робототехника?](https://parvozcode.uz/chto-daet-robototehnika.html)
+- [Помогают ли шахматы ребёнку в учёбе?](https://parvozcode.uz/polza-shahmat-dlya-rebenka.html)
+- [Что проверить перед записью ребёнка на курсы?](https://parvozcode.uz/pered-zapisyu-na-kursy.html)
+
 ## Foydali havolalar
 
 - [Bosh sahifa](https://parvozcode.uz/): barcha yo'nalishlar, narxlar, dars jadvali, FAQ va aloqa ma'lumotlari.
 - [Sinov darsiga yozilish](https://parvozcode.uz/#yozilish): saytdagi ariza formasi.
-- [Barcha maqolalar](https://parvozcode.uz/maqolalar.html)
+- [Barcha maqolalar](https://parvozcode.uz/maqolalar.html) · [Все статьи](https://parvozcode.uz/stati.html)
 - [Maxfiylik siyosati](https://parvozcode.uz/maxfiylik.html)
