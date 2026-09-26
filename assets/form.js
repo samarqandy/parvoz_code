@@ -11,26 +11,26 @@
   var L = {
     uz: {
       course: ["Yo'nalishni tanlang", 'Dasturlash', 'Robototexnika', 'Matematika', 'Shaxmat', 'Ingliz tili', 'Hali tanlamadim'],
-      time: ['Qulay vaqt', 'Ertalab (10:00–12:00)', 'Tushdan keyin (13:00–15:00)', 'Farqi yo`q'],
+      time: ['Qulay vaqt', 'Ertalab (10:00–12:00)', 'Tushdan keyin (13:00–15:00)', 'Kechqurun (16:00–18:00)', 'Farqi yo`q'],
       note: 'Bolaning yoshi, savollaringiz...',
       sending: 'Yuborilmoqda...',
     },
     ru: {
       course: ['Выберите направление', 'Программирование', 'Робототехника', 'Математика', 'Шахматы', 'Английский язык', 'Ещё не выбрал(а)'],
-      time: ['Удобное время', 'Утро (10:00–12:00)', 'День (13:00–15:00)', 'Не важно'],
+      time: ['Удобное время', 'Утро (10:00–12:00)', 'День (13:00–15:00)', 'Вечер (16:00–18:00)', 'Не важно'],
       note: 'Возраст ребёнка, ваши вопросы...',
       sending: 'Отправка...',
     },
     en: {
       course: ['Choose a course', 'Programming', 'Robotics', 'Mathematics', 'Chess', 'English', 'Not decided yet'],
-      time: ['Preferred time', 'Morning (10:00–12:00)', 'Afternoon (13:00–15:00)', 'Either works'],
+      time: ['Preferred time', 'Morning (10:00–12:00)', 'Afternoon (13:00–15:00)', 'Evening (16:00–18:00)', 'Either works'],
       note: "Child's age, your questions...",
       sending: 'Sending...',
     },
   };
   // Kurs qiymatlari bazadagi nomlar bilan mos bo'lishi kerak
   var COURSE_VALUES = ['', 'Dasturlash', 'Robototexnika', 'Matematika', 'Shaxmat', 'Ingliz tili', ''];
-  var TIME_VALUES = ['', 'Ertalab (10:00-12:00)', 'Tushdan keyin (13:00-15:00)', 'Farqi yo`q'];
+  var TIME_VALUES = ['', 'Ertalab (10:00-12:00)', 'Tushdan keyin (13:00-15:00)', 'Kechqurun (16:00-18:00)', 'Farqi yo`q'];
 
   function fill(sel, labels, values) {
     sel.innerHTML = labels.map(function (t, i) {

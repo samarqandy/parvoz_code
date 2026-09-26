@@ -702,6 +702,12 @@ section { padding:56px 0; }
   color:var(--muted); font-weight:700; font-size:.97rem;
   padding:7px 0;
 }
+.sched-note {
+  margin-top:8px; padding-top:10px;
+  border-top:1px dashed var(--border);
+  color:var(--muted); font-weight:700; font-size:.84rem; line-height:1.45;
+  opacity:.85;
+}
 .sched-special {
   background:linear-gradient(150deg, rgba(167,139,250,.14), var(--soft-05));
   border-color:rgba(167,139,250,.35);
@@ -875,6 +881,7 @@ section { padding:56px 0; }
 }
 .ci-lbl { font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); }
 .ci-val { font-weight:800; font-size:.97rem; margin-top:2px; }
+.ci-val small { display:inline-block; margin-top:3px; font-size:.84rem; font-weight:700; color:var(--muted); }
 
 .map-card {
   display:flex; flex-wrap:wrap; gap:20px; align-items:center; justify-content:space-between;

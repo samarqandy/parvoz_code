@@ -98,7 +98,7 @@ ARTICLES = [
      "<li>Haftada 3 kun, har dars 2 soat — oyiga ~24 soat.</li>"
      "<li>Kompyuter, robot to'plamlari, shaxmat doskalari — hammasi markazda. Uydan hech narsa olib kelish shart emas.</li>"
      "<li>Birinchi sinov darsi — <strong>bepul</strong>, oldindan to'lovsiz.</li>"
-     "<li>Yakshanba kunlari ochiq darslar va turnirlar — alohida to'lovsiz.</li>"
+     "<li>Ochiq darslar va turnirlar — alohida to'lovsiz, kuni oldindan e'lon qilinadi.</li>"
      "<li>Ota-onaga farzandi kelgani va ketgani haqida Telegram orqali xabar.</li>"
      "</ul>",
      "<p>Ro'yxatdan o'tish to'lovi, sertifikat to'lovi va majburiy kitob xarajati yo'q.</p>",
@@ -254,7 +254,7 @@ ARTICLES = [
    ]),
    ("Turnir nega kerak", [
      "<p>Turnirda bola boshqacha o'ynaydi: vaqt chegarasi bor, raqib notanish, natija yoziladi. Bu bosim bilan ishlashni o'rgatadi.</p>",
-     "<p>Parvozda yakshanba kunlari ichki turnirlar o'tkaziladi — bosim past, muhit tanish. Bu katta turnirlarga eng yumshoq tayyorgarlik.</p>",
+     "<p>Parvozda muntazam ichki turnirlar o'tkaziladi — bosim past, muhit tanish. Bu katta turnirlarga eng yumshoq tayyorgarlik.</p>",
    ]),
  ],
  "faq": [
