@@ -15,9 +15,10 @@
 - **Asos solingan:** 2025-yil
 - **Qabul yoshi:** 6 yoshdan
 - **Narx:** barcha yo'nalishlar uchun oyiga 300 000 so'm
+- **Ish vaqti:** dushanba–shanba 09:00–18:00; yakshanba — dam olish kuni
 - **Dars tartibi:** haftada 3 kun, har dars 2 soat
-- **Guruh vaqtlari:** ertalab 10:00–12:00, tushdan keyin 13:00–15:00
-- **Yakshanba:** ochiq darslar, turnirlar va ochiq eshiklar kuni
+- **Guruh vaqtlari:** ertalab 10:00–12:00, tushdan keyin 13:00–15:00, kechqurun 16:00–18:00
+- **Ochiq darslar va turnirlar:** muntazam o'tkaziladi, kuni oldindan Telegram va Instagramda e'lon qilinadi
 - **To'lov:** naqd, Click yoki Payme
 - **Sinov darsi:** birinchi dars bepul
 - **Qo'shimcha:** iqtidorli o'quvchilar uchun scholarship (bepul o'qish) imkoniyati; barcha jihozlar (kompyuter, robot to'plamlari, shaxmat doskalari) markaz tomonidan taqdim etiladi
