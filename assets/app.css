@@ -29,6 +29,13 @@
   --red-ink:    #fca5a5;
   --violet-ink: #c4b5fd;
 
+  /* Diagramma bo'laklari — holat tokenlaridan alohida pog'ona: ustunda qizil
+     yashilga tegib turadi, shuning uchun uchala juftlik ham deyteranopiya
+     simulyatsiyasida ΔE ≥ 9 bo'lishi va sirtga nisbatan ≥ 3:1 bo'lishi tekshirilgan. */
+  --viz-in:      #26ad75;
+  --viz-excused: #9c7cea;
+  --viz-absent:  #c2454d;
+
   --nav-bg:   rgba(9,17,38,.92);
   --sheet-bg: #0c1630;
   --on-gold:  #14161c;
@@ -67,6 +74,10 @@
   --green-ink:  #0b7a50;
   --red-ink:    #c33434;
   --violet-ink: #5b2fb8;
+
+  --viz-in:      #12a06c;
+  --viz-excused: #7c4ddb;
+  --viz-absent:  #c03033;
 
   --logo-url: url(logo.webp);
   --nav-bg:   rgba(255,255,255,.92);
@@ -741,3 +752,157 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 /* Kirish ekranidagi til tanlash */
 .auth-langs { justify-content: center; margin-top: 16px; }
 .auth-langs .chip { --acc: var(--sky); font-size: .82rem; padding: 6px 12px; }
+
+/* =========================================================
+   OYLIK HISOBOT — filtrlar, bo'limlar, jurnal, diagrammalar
+   ========================================================= */
+.rep-filters { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.rep-filters .field { max-width: 220px; margin: 0; flex: none; }
+.rep-filters .chips { margin: 0; }
+
+/* Qayta yuklashda eski ko'rinish so'niq turadi — skelet miltillamaydi */
+#repOut { transition: opacity .15s; }
+#repOut.is-loading { opacity: .5; pointer-events: none; }
+
+/* Segmentli tanlagich */
+.seg {
+  display: flex; gap: 4px; padding: 4px; margin: 4px 0 16px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm);
+}
+.seg-btn {
+  flex: 1; min-height: 44px; padding: 0 10px; border-radius: 8px;
+  font: inherit; font-weight: 800; font-size: .9rem; color: var(--muted);
+}
+.seg-btn:hover { color: var(--text); background: var(--surface-2); }
+.seg-btn.on { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border-2); }
+
+/* Afsona: rang doim ikonka bilan — qizil/yashil rang ko'rlikda farqlanmaydi */
+.viz-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0 0 10px; }
+.lg-item { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+.lg-item > svg { width: 14px; height: 14px; color: var(--muted); }
+.lg-swatch { width: 12px; height: 12px; border-radius: 3px; background: var(--tone); }
+.lg-cell {
+  width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--tone) 20%, transparent); color: var(--tone-ink);
+}
+.lg-cell svg { width: 13px; height: 13px; }
+.lg-cell.is-closed { background: var(--surface-2); border: 1px solid var(--border); }
+.viz-hint { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; font-size: .8rem; font-weight: 700; color: var(--muted); }
+.viz-hint svg { width: 14px; height: 14px; flex: none; }
+
+/* ---------- JURNAL ---------- */
+.jg-wrap {
+  overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+  border: 1px solid var(--border); border-radius: var(--r); background: var(--surface);
+}
+.jg { border-collapse: separate; border-spacing: 0; font-size: .82rem; }
+.jg th, .jg td { padding: 0; }
+
+/* Ism ustuni yopishqoq — gorizontal siljiganda ham ko'rinib turadi */
+.jg-name {
+  position: sticky; left: 0; z-index: 2;
+  min-width: 150px; max-width: 150px; padding: 0 10px !important; height: 38px;
+  text-align: left; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--bg); border-right: 1px solid var(--border);
+}
+.jg thead th { position: sticky; top: 0; z-index: 1; background: var(--bg); border-bottom: 1px solid var(--border); }
+.jg thead .jg-corner { z-index: 3; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+
+.jg-day { min-width: 32px; height: 42px; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.jg-day b { display: block; font-size: .8rem; font-weight: 800; color: var(--text); }
+.jg-day span { display: block; font-size: .6rem; font-weight: 700; }
+.jg-day.is-today b { color: var(--gold-ink); }
+.jg-day.is-closed { color: var(--faint); }
+.jg-day.is-closed b { color: var(--faint); }
+
+.jg-group th { height: 30px; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.jg-group td { background: var(--surface-2); }
+.jg-group th { background: var(--surface-2); }
+/* Kurs nomi bo'sh qator bo'ylab davom etadi — 112px ustunda qirqilmaydi */
+.jg-group .jg-name { overflow: visible; text-overflow: clip; }
+/* Ism ikki qatorgacha — "Aziza Kari…" o'rniga "Aziza / Karimova" */
+.jg-nm {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+}
+
+.jg-cell {
+  width: 32px; height: 38px; text-align: center; vertical-align: middle;
+  border-bottom: 1px solid var(--border);
+}
+.jg-cell svg { width: 15px; height: 15px; display: block; margin: auto; }
+/* Rangli katak: fon — holat rangi, ikonka — holat siyohi */
+.jg-cell[class*="tone-"] {
+  background: color-mix(in srgb, var(--tone) 22%, transparent);
+  color: var(--tone-ink);
+  box-shadow: inset 0 0 0 1px var(--bg);          /* 1px sirt oralig'i — qo'shni kataklar ajralib turadi */
+}
+/* Yopiq kun — tekis fon (burchakli naqsh standart holatda ishlatilmaydi) */
+.jg-cell.is-closed:not([class*="tone-"]) { background: var(--surface-2); }
+.jg-cell.is-future { opacity: .35; }
+.jg-cell.is-today { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--gold) 65%, transparent); }
+.jg-cell.is-fix { cursor: pointer; }
+.jg-cell.is-fix:hover, .jg-cell:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+.jg-sum {
+  position: sticky; right: 0; min-width: 56px; padding: 0 8px !important; text-align: right;
+  background: var(--bg); border-left: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.jg-sum b { display: block; font-size: .82rem; }
+.jg-sum span { display: block; font-size: .66rem; color: var(--muted); font-weight: 700; }
+.jg tbody tr:last-child td, .jg tbody tr:last-child th { border-bottom: 0; }
+
+/* ---------- DIAGRAMMALAR ---------- */
+.viz-card { margin-bottom: 14px; }
+.viz-head h3 { margin: 0; font-size: 1rem; font-weight: 900; }
+.viz-head p { margin: 3px 0 12px; font-size: .84rem; color: var(--muted); font-weight: 600; }
+.viz-plot { width: 100%; }
+.viz { display: block; width: 100%; height: auto; overflow: visible; }
+.viz:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 6px; }
+
+/* Chiziqlar — sirtdan bir pog'ona farqli, 1px, to'liq (hech qachon uzuq emas) */
+.viz-grid { stroke: var(--border); stroke-width: 1; shape-rendering: crispEdges; }
+/* Matn — matn tokenlarida, hech qachon ma'lumot rangida emas */
+.viz-axis { fill: var(--muted); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.viz-label { fill: var(--text); font-size: 13px; font-weight: 800; }
+.viz-value { fill: var(--muted); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.viz-in      { fill: var(--viz-in); }
+.viz-excused { fill: var(--viz-excused); }
+.viz-absent  { fill: var(--viz-absent); }
+.viz-legend .lg-swatch.tone-green  { background: var(--viz-in); }
+.viz-legend .lg-swatch.tone-violet { background: var(--viz-excused); }
+.viz-legend .lg-swatch.tone-red    { background: var(--viz-absent); }
+.viz-closed  { fill: var(--surface-2); }
+.viz-cross   { stroke: var(--text); stroke-width: 1; opacity: .45; pointer-events: none; }
+.viz-cross[hidden] { display: none; }
+.viz-track   { fill: var(--surface-2); }
+.viz-bar     { fill: var(--sky); }
+.viz-hit { cursor: default; outline: none; }
+.viz-hit:hover .viz-bar, .viz-hit:focus-visible .viz-bar { opacity: .82; }
+.viz-hit:focus-visible .viz-track { stroke: var(--gold); stroke-width: 2; }
+
+/* Jadval ko'rinishi — har bir diagrammaning ekvivalenti */
+.viz-table { margin-top: 12px; }
+.viz-table summary {
+  display: inline-flex; align-items: center; min-height: 40px; cursor: pointer;
+  font-size: .84rem; font-weight: 800; color: var(--sky-ink);
+}
+.viz-table .table-wrap { margin-top: 8px; max-height: 320px; overflow: auto; }
+
+/* Ko'rsatkich: avval qiymat (kuchli), keyin nom (ikkilamchi) */
+.viz-tip {
+  position: fixed; z-index: 90; pointer-events: none;
+  max-width: 240px; padding: 9px 12px; border-radius: 10px;
+  background: var(--sheet-bg); border: 1px solid var(--border-2); box-shadow: var(--shadow);
+}
+.viz-tip[hidden] { display: none; }
+.viz-tip-v { font-size: .86rem; font-weight: 800; line-height: 1.45; color: var(--text); font-variant-numeric: tabular-nums; }
+.viz-tip-t { margin-top: 4px; font-size: .74rem; font-weight: 700; color: var(--muted); }
+
+@media (max-width: 999px) {
+  .jg-name { min-width: 112px; max-width: 112px; font-size: .78rem; }
+  .jg-day, .jg-cell { min-width: 30px; width: 30px; }
+  .rep-filters .field { max-width: none; flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) { #repOut { transition: none; } }

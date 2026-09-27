@@ -15,6 +15,7 @@ const state = {
   students: [],
   today: [],          // tanlangan kundagi yozuvlar
   day: null,          // YYYY-MM-DD — null bo'lsa bugun
+  repTab: (() => { try { return localStorage.getItem('parvoz-rep-tab') || 'grid'; } catch (_) { return 'grid'; } })(),
   leads: [],
   leadFilter: 'new',
   view: 'today',
@@ -72,6 +73,16 @@ const STR = {
     r1: 'Kasal', r2: 'Oilaviy sabab', r3: "Ta'til / safar", r4: 'Maktab ishi',
 
     /* --- kun tanlash va guruhni belgilash --- */
+    tabGrid: 'Jurnal', tabCharts: 'Diagrammalar', tabList: "Ro'yxat",
+    chDaily: "Kunlar bo'yicha davomat",
+    chDailySub: "Har kuni nechta o'quvchi keldi, sababli yoki sababsiz qoldi",
+    chCourses: "Kurslar bo'yicha davomat",
+    chCoursesSub: "O'rtacha davomat — har bir kurs o'z dars kunlariga nisbatan",
+    asTable: "Jadval ko'rinishida", colDate: 'Sana', colCourse: 'Kurs',
+    closedDay: 'Dam olish kuni', noMark: 'Belgilanmagan', futureDay: 'Hali kelmagan kun',
+    gridHint: "Katakni bosing — o'sha kunni tuzatish uchun",
+    tooOld: "30 kundan eski kunni tuzatib bo'lmaydi",
+    wdShort: 'Ya,Du,Se,Ch,Pa,Ju,Sh',
     offline: 'Internet yo\'q',
     offlineRetry: 'Internet yo\'q. Ulanishni tekshiring va qaytadan kiring.',
     today: 'Bugun', yesterday: 'Kecha', backToToday: 'Bugunga qaytish',
@@ -257,6 +268,16 @@ const STR = {
     mIn: 'Пришёл', mOut: 'Ушёл', mAbsent: 'Не пришёл', mExcused: 'По причине', mDone: 'Завершено',
     r1: 'Болезнь', r2: 'Семейные обстоятельства', r3: 'Отпуск / поездка', r4: 'Дела в школе',
 
+    tabGrid: 'Журнал', tabCharts: 'Графики', tabList: 'Список',
+    chDaily: 'Посещаемость по дням',
+    chDailySub: 'Сколько учеников пришло, отсутствовало по причине и без',
+    chCourses: 'Посещаемость по курсам',
+    chCoursesSub: 'Средняя посещаемость — каждый курс относительно своих учебных дней',
+    asTable: 'В виде таблицы', colDate: 'Дата', colCourse: 'Курс',
+    closedDay: 'Выходной', noMark: 'Не отмечен', futureDay: 'Этот день ещё не наступил',
+    gridHint: 'Нажмите на ячейку, чтобы исправить этот день',
+    tooOld: 'Дни старше 30 дней исправить нельзя',
+    wdShort: 'Вс,Пн,Вт,Ср,Чт,Пт,Сб',
     offline: 'Нет интернета',
     offlineRetry: 'Нет интернета. Проверьте подключение и войдите снова.',
     today: 'Сегодня', yesterday: 'Вчера', backToToday: 'Вернуться к сегодня',
@@ -1349,31 +1370,47 @@ function viewReportShell() {
       <div class="spacer"></div>
       <button class="btn" id="csvBtn" type="button">${I.download} CSV</button>
     </div>
-    <label class="field" style="max-width:220px">
-      <span>${t('month')}</span>
-      <input class="inp" type="month" id="repMonth" value="${currentYm()}">
-    </label>
-    ${list.length > 1 ? courseChips() : ''}
+    <div class="rep-filters">
+      <label class="field">
+        <span>${t('month')}</span>
+        <input class="inp" type="month" id="repMonth" value="${repData?.ym || currentYm()}" max="${currentYm()}">
+      </label>
+      ${list.length > 1 ? courseChips() : ''}
+    </div>
     <div id="repOut" style="margin-top:16px"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>`;
 }
 
 let repData = null;
 
+/* ------------------------------------------------------------
+   Hisob-kitob.
+   Jadval (dars kunlari) bazada yo'q, shuning uchun har bir kursning
+   ish kunlari — o'sha kurs o'quvchilaridan kimdir belgilangan kunlar.
+   Avval butun markaz kunlari olinardi: Dasturlash Du/Chor/Ju, Shaxmat
+   Se/Pay/Sh o'qisa, markaz haftada 6 kun "ishlaydi" va har kuni kelgan
+   o'quvchi ham ~50% olardi.
+   ------------------------------------------------------------ */
 async function loadReport() {
   const ym = $('repMonth')?.value || currentYm();
+  const out = $('repOut');
+  // Qayta yuklashda eski ko'rinish so'niq turadi — sakrash va miltillash yo'q
+  if (out && repData) out.classList.add('is-loading');
+
   const [from, to] = monthRange(ym);
   const { data, error } = await sb.from('attendance')
     .select('student_id,kind,note,occurred_at').gte('occurred_at', from).lt('occurred_at', to).order('occurred_at');
+  if (!$('repOut')) return;                               // foydalanuvchi boshqa bo'limga o'tib ketgan
   if (error) { $('repOut').innerHTML = `<div class="card"><div class="empty"><b>${t('error')}</b><p>${esc(error.message)}</p></div></div>`; return; }
 
   const allowed = new Set(myCourses().map((c) => c.id));
   const scoped = state.students.filter((s) => allowed.has(s.course_id) &&
     (state.courseFilter === 'all' || s.course_id === state.courseFilter));
   const scopedIds = new Set(scoped.map((s) => s.id));
+  const courseOf = new Map(scoped.map((s) => [s.id, s.course_id]));
 
-  // Har bir o'quvchi uchun kunlarni holatiga qarab ajratamiz
   const by = new Map();
-  const openDays = new Set();
+  const openDays = new Set();                       // markaz ishlagan kunlar (plitka uchun)
+  const courseDays = new Map();                     // kurs -> o'sha kursning dars kunlari
   const entry = (sid) => {
     if (!by.has(sid)) by.set(sid, { in: new Map(), absent: new Map(), excused: new Map(), last: null });
     return by.get(sid);
@@ -1381,8 +1418,11 @@ async function loadReport() {
   (data ?? []).forEach((r) => {
     if (!scopedIds.has(r.student_id)) return;
     const d = dayKey(r.occurred_at);
-    if (r.kind === 'out') return;                 // "ketdi" alohida kun hisoblanmaydi
-    openDays.add(d);                              // markaz ishlagan kun
+    if (r.kind === 'out') return;                   // "ketdi" alohida kun hisoblanmaydi
+    openDays.add(d);
+    const cid = courseOf.get(r.student_id);
+    if (!courseDays.has(cid)) courseDays.set(cid, new Set());
+    courseDays.get(cid).add(d);
     const e = entry(r.student_id);
     if (r.kind === 'in') {
       e.in.set(d, r.occurred_at);
@@ -1399,54 +1439,366 @@ async function loadReport() {
     const absentDays = e ? [...e.absent.keys()].sort() : [];
     const excusedDays = e ? [...e.excused.keys()].sort() : [];
     const count = days.length;
+    const own = courseDays.get(s.course_id)?.size || 0;
     return {
-      id: s.id, name: s.full_name, course: courseById(s.course_id), active: s.active,
+      id: s.id, name: s.full_name, course: courseById(s.course_id), courseId: s.course_id, active: s.active,
       count, absent: absentDays.length, excused: excusedDays.length,
       last: e ? e.last : null,
-      pct: total ? Math.round((count / total) * 100) : 0,
+      daysTotal: own,
+      pct: own ? Math.round((count / own) * 100) : 0,
       days, absentDays, excusedDays,
+      inAt: e ? Object.fromEntries(e.in) : {},
       notes: e ? Object.fromEntries(e.excused) : {},
     };
-  }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }).sort((a, b) => a.course.name.localeCompare(b.course.name) || a.name.localeCompare(b.name));
+
+  // Kunlar bo'yicha: har kuni nechta keldi / sababli / kelmadi
+  const [y, m] = ym.split('-').map(Number);
+  const nDays = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const daily = Array.from({ length: nDays }, (_, i) => {
+    const key = `${ym}-${String(i + 1).padStart(2, '0')}`;
+    const wd = new Date(Date.UTC(y, m - 1, i + 1)).getUTCDay();
+    let inN = 0, abN = 0, exN = 0;
+    rows.forEach((r) => {
+      if (r.inAt[key]) inN++;
+      else if (r.absentDays.includes(key)) abN++;
+      else if (key in r.notes) exN++;
+    });
+    return { key, d: i + 1, wd, in: inN, absent: abN, excused: exN, open: openDays.has(key) };
+  });
+
+  // Kurslar bo'yicha o'rtacha foiz
+  const byCourse = new Map();
+  rows.forEach((r) => {
+    if (!r.daysTotal) return;
+    const c = byCourse.get(r.courseId) ?? { course: r.course, sum: 0, n: 0, days: r.daysTotal };
+    c.sum += r.pct; c.n += 1;
+    byCourse.set(r.courseId, c);
+  });
+  const courses = [...byCourse.values()]
+    .map((c) => ({ ...c, pct: Math.round(c.sum / c.n) }))
+    .sort((a, b) => b.pct - a.pct || a.course.name.localeCompare(b.course.name));
 
   const visits = rows.reduce((n, r) => n + r.count, 0);
   const absences = rows.reduce((n, r) => n + r.absent, 0);
-  const avg = rows.length ? Math.round(rows.reduce((n, r) => n + r.pct, 0) / rows.length) : 0;
-  repData = { ym, rows, total, visits, absences, avg };
+  const counted = rows.filter((r) => r.daysTotal);
+  const avg = counted.length ? Math.round(counted.reduce((n, r) => n + r.pct, 0) / counted.length) : 0;
+  repData = { ym, rows, total, visits, absences, avg, daily, courses, nDays };
 
-  $('repOut').innerHTML = `
-    <div class="stats">
-      ${statTile(rows.length, t('sStudents'), 'users')}
-      ${statTile(total, t('sWorkdays'), 'clock')}
-      ${statTile(visits, t('sVisits'), MARKS.in.icon, MARKS.in.tone)}
-      ${statTile(absences, MARKS.absent.label, MARKS.absent.icon, MARKS.absent.tone)}
-      ${statTile(avg + '%', t('sAvg'), 'chart')}
+  renderReport();
+}
+
+function renderReport() {
+  const out = $('repOut');
+  if (!out || !repData) return;
+  const d = repData;
+  const empty = !d.rows.length || !d.total;
+
+  const tabs = [['grid', t('tabGrid')], ['charts', t('tabCharts')], ['list', t('tabList')]];
+  const tab = tabs.some(([k]) => k === state.repTab) ? state.repTab : 'grid';
+
+  out.classList.remove('is-loading');
+  out.innerHTML = `
+    <div class="stats stats-compact">
+      ${statTile(d.rows.length, t('sStudents'), 'users')}
+      ${statTile(d.total, t('sWorkdays'), 'clock')}
+      ${statTile(d.visits, t('sVisits'), MARKS.in.icon, MARKS.in.tone)}
+      ${statTile(d.absences, MARKS.absent.label, MARKS.absent.icon, MARKS.absent.tone)}
+      ${statTile(d.avg + '%', t('sAvg'), 'chart')}
     </div>
-    ${(!rows.length || !total)
+    ${empty
       ? `<div class="card"><div class="empty"><div class="e-ico">📭</div><b>${t('noData')}</b><p>${t('noDataP')}</p></div></div>`
-      : `<div class="table-wrap"><table class="tbl"><thead><tr>
-          <th>${t('colStudent')}</th><th class="num">${t('colDays')}</th>
-          <th class="num th-ico" title="${t('colAbsExc')}">
-            <span class="tone-red">${I.alert}</span><span class="tone-violet">${I.note}</span></th>
-          <th>${t('colAtt')}</th><th>${t('colLast')}</th>
-        </tr></thead><tbody>${rows.map((r) => `
-          <tr data-row="${r.id}">
-            <td><div style="font-weight:800">${esc(r.name)}${r.active ? '' : ` <span class="badge">${t('archiveShort')}</span>`}</div>
-                <div style="color:var(--faint);font-size:.8rem;font-weight:700">${r.course.icon} ${esc(r.course.name)}</div></td>
-            <td class="num">${r.count} / ${total}</td>
-            <td class="num"><span class="${r.absent ? 'tone-red num-on' : 'num-off'}">${r.absent}</span>
-                <span class="num-off"> / </span><span class="${r.excused ? 'tone-violet num-on' : 'num-off'}">${r.excused}</span></td>
-            <td><div class="bar"><i style="width:${Math.min(100, r.pct)}%"></i></div>
-                <span style="font-size:.78rem;font-weight:800;color:var(--muted)">${r.pct}%</span></td>
-            <td style="color:var(--muted);font-weight:700;white-space:nowrap">${r.last ? dayKey(r.last).slice(8) + '.' + dayKey(r.last).slice(5, 7) : '—'}</td>
-          </tr>
-          <tr class="hidden" data-detail="${r.id}"><td colspan="5"><div class="day-pills">${
-            [
-              ...r.days.map((d) => pill('in', d)),
-              ...r.absentDays.map((d) => pill('absent', d)),
-              ...r.excusedDays.map((d) => pill('excused', d, r.notes[d])),
-            ].join('') || `<span style="color:var(--faint)">${t('noDaysP')}</span>`}</div></td></tr>`).join('')}
-        </tbody></table></div>`}`;
+      : `<div class="seg" role="tablist" aria-label="${t('tReport')}">${tabs.map(([k, label]) =>
+          `<button class="seg-btn${k === tab ? ' on' : ''}" role="tab" aria-selected="${k === tab}" data-rep-tab="${k}" type="button">${label}</button>`).join('')}</div>
+        <div class="rep-body">${tab === 'grid' ? repGrid(d) : tab === 'charts' ? repCharts(d) : repList(d)}</div>`}`;
+  drawCharts();
+}
+
+/* ------------------------------------------------------------
+   JURNAL — o'quvchi × kun.
+   Qizil va yashil deyteranopiyada farqlanmaydi (tekshirildi: ΔE 5.6),
+   shuning uchun har bir katakda holat IKONKASI bor — rang faqat qo'shimcha.
+   ------------------------------------------------------------ */
+function repGrid(d) {
+  const wd = t('wdShort').split(',');
+  const today = todayKey();
+  const minFix = shiftDay(today, -30);
+
+  const head = d.daily.map((x) => {
+    const cls = [x.wd === 0 ? 'is-closed' : '', x.key === today ? 'is-today' : ''].filter(Boolean).join(' ');
+    return `<th class="jg-day ${cls}" scope="col"><b>${x.d}</b><span>${wd[x.wd]}</span></th>`;
+  }).join('');
+
+  const byCourse = new Map();
+  d.rows.forEach((r) => { if (!byCourse.has(r.courseId)) byCourse.set(r.courseId, []); byCourse.get(r.courseId).push(r); });
+
+  const body = [...byCourse.values()].map((list) => {
+    const c = list[0].course;
+    const title = `<tr class="jg-group"><th class="jg-name" scope="rowgroup">${c.icon} ${esc(c.name)}</th>
+      <td colspan="${d.nDays + 1}"></td></tr>`;
+    return title + list.map((r) => {
+      const cells = d.daily.map((x) => {
+        const inAt = r.inAt[x.key];
+        const isAbs = r.absentDays.includes(x.key);
+        const isExc = x.key in r.notes;
+        const kind = inAt ? 'in' : isAbs ? 'absent' : isExc ? 'excused' : null;
+        const future = x.key > today;
+        const closed = x.wd === 0;
+        const fixable = !future && x.key >= minFix;
+
+        const dateTxt = uzDate(new Date(`${x.key}T00:00:00+05:00`));
+        // O'tgan kunga keyin qo'yilgan belgi kun boshiga (00:00) yoziladi — bu soxta soat, ko'rsatmaymiz
+        const time = inAt ? hhmm(inAt) : '';
+        const status = kind === 'in' ? MARKS.in.label + (time && time !== '00:00' ? ' · ' + time : '')
+          : kind === 'absent' ? MARKS.absent.label
+          : kind === 'excused' ? MARKS.excused.label + (r.notes[x.key] ? ' · ' + r.notes[x.key] : '')
+          : future ? t('futureDay') : closed ? t('closedDay') : t('noMark');
+
+        const cls = ['jg-cell', kind ? 'tone-' + MARKS[kind].tone : '', closed ? 'is-closed' : '',
+          future ? 'is-future' : '', x.key === today ? 'is-today' : '', fixable ? 'is-fix' : ''].filter(Boolean).join(' ');
+        return `<td class="${cls}" ${fixable ? `data-jump="${x.key}"` : ''} tabindex="${kind || fixable ? 0 : -1}"
+          data-tip-t="${esc(r.name)}" data-tip-v="${esc(dateTxt + '\n' + status)}"
+          aria-label="${esc(r.name + ', ' + dateTxt + ': ' + status)}">${kind ? ico(MARKS[kind]) : ''}</td>`;
+      }).join('');
+      return `<tr>
+        <th class="jg-name" scope="row" title="${esc(r.name)}"><span class="jg-nm">${esc(r.name)}${r.active ? '' : ` <span class="badge">${t('archiveShort')}</span>`}</span></th>
+        ${cells}
+        <td class="jg-sum"><b>${r.pct}%</b><span>${r.count}/${r.daysTotal}</span></td>
+      </tr>`;
+    }).join('');
+  }).join('');
+
+  const legend = ['in', 'excused', 'absent'].map((k) =>
+    `<span class="lg-item"><span class="lg-cell tone-${MARKS[k].tone}">${ico(MARKS[k])}</span>${MARKS[k].label}</span>`).join('') +
+    `<span class="lg-item"><span class="lg-cell is-closed"></span>${t('closedDay')}</span>`;
+
+  return `
+    <div class="viz-legend">${legend}</div>
+    <p class="viz-hint">${I.note} ${t('gridHint')}</p>
+    <div class="jg-wrap" tabindex="0" aria-label="${t('tabGrid')}">
+      <table class="jg">
+        <thead><tr><th class="jg-name jg-corner" scope="col">${t('colStudent')}</th>${head}
+          <th class="jg-sum" scope="col">%</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+}
+
+/* ------------------------------------------------------------
+   DIAGRAMMALAR — qo'lda yozilgan SVG (panel CDN'siz ishlaydi).
+   Ranglar CSS tokenlaridan: yorug'/qorong'i mavzuda o'zi almashadi,
+   ikkalasi ham validator bilan tekshirilgan.
+   ------------------------------------------------------------ */
+
+// Yuqori uchi 4px yumaloq, asosi to'g'ri ustun
+function colPath(x, y, w, h, r) {
+  if (h <= 0) return '';
+  r = Math.min(r, w / 2, h);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+// O'ng uchi yumaloq, chap asosi to'g'ri gorizontal ustun
+function barPath(x, y, w, h, r) {
+  if (w <= 0) return '';
+  r = Math.min(r, h / 2, w);
+  return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
+}
+const niceMax = (v) => {
+  if (v <= 4) return 4;
+  const step = v <= 10 ? 2 : v <= 20 ? 5 : v <= 50 ? 10 : 20;
+  return Math.ceil(v / step) * step;
+};
+
+function repCharts(d) {
+  return `
+    <div class="card viz-card">
+      <div class="viz-head"><h3>${t('chDaily')}</h3><p>${t('chDailySub')}</p></div>
+      <div class="viz-legend">${['in', 'excused', 'absent'].map((k) =>
+        `<span class="lg-item"><span class="lg-swatch tone-${MARKS[k].tone}"></span>${ico(MARKS[k])}${MARKS[k].label}</span>`).join('')}</div>
+      <div class="viz-plot" data-chart="daily"></div>
+      <details class="viz-table"><summary>${t('asTable')}</summary>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>${t('colDate')}</th>
+          <th class="num">${MARKS.in.label}</th><th class="num">${MARKS.excused.label}</th><th class="num">${MARKS.absent.label}</th></tr></thead>
+          <tbody>${d.daily.filter((x) => x.open).map((x) => `<tr><td>${esc(shortDate(x.key))}</td>
+            <td class="num">${x.in}</td><td class="num">${x.excused}</td><td class="num">${x.absent}</td></tr>`).join('')}</tbody></table></div>
+      </details>
+    </div>
+    ${d.courses.length > 1 ? `
+    <div class="card viz-card">
+      <div class="viz-head"><h3>${t('chCourses')}</h3><p>${t('chCoursesSub')}</p></div>
+      <div class="viz-plot" data-chart="courses"></div>
+      <details class="viz-table"><summary>${t('asTable')}</summary>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>${t('colCourse')}</th>
+          <th class="num">${t('colAtt')}</th><th class="num">${t('sStudents')}</th><th class="num">${t('sWorkdays')}</th></tr></thead>
+          <tbody>${d.courses.map((c) => `<tr><td>${c.course.icon} ${esc(c.course.name)}</td>
+            <td class="num">${c.pct}%</td><td class="num">${c.n}</td><td class="num">${c.days}</td></tr>`).join('')}</tbody></table></div>
+      </details>
+    </div>` : ''}`;
+}
+
+// Kunlik ustunlar: keldi (pastda) · sababli · kelmadi (yuqorida) — tartib doim bir xil.
+// Sababli bo'lmagan kuni qizil yashil ustiga to'g'ridan-to'g'ri tushadi, shuning
+// uchun diagramma ranglari (--viz-*) uchala juftlikda ham daltonizm tekshiruvidan
+// o'tkazilgan (deyteranopiyada ΔE ≥ 9), bo'laklar orasida 2px sirt oralig'i bor.
+function chartDaily(d, W) {
+  const H = W < 480 ? 200 : 240, L = 30, R = 8, T = 10, B = 26;
+  const pw = W - L - R, ph = H - T - B;
+  const max = niceMax(Math.max(1, ...d.daily.map((x) => x.in + x.excused + x.absent)));
+  const slot = pw / d.nDays;
+  const bw = Math.min(24, Math.max(3, slot - 2));          // ustun <=24px, 2px oraliq
+  const yOf = (v) => T + ph - (v / max) * ph;
+  const ticks = [0, max / 2, max].map((v) => Math.round(v));
+
+  const grid = ticks.map((v) => `<line class="viz-grid" x1="${L}" x2="${W - R}" y1="${yOf(v)}" y2="${yOf(v)}"/>
+    <text class="viz-axis" x="${L - 6}" y="${yOf(v) + 4}" text-anchor="end">${v}</text>`).join('');
+
+  const cols = d.daily.map((x, i) => {
+    const x0 = L + i * slot + (slot - bw) / 2;
+    const segs = [['in', x.in], ['excused', x.excused], ['absent', x.absent]].filter(([, v]) => v > 0);
+    let acc = 0;
+    const paths = segs.map(([k, v], j) => {
+      const top = j === segs.length - 1;                     // faqat eng yuqori bo'lak yumaloq
+      const yTop = yOf(acc + v), yBot = yOf(acc);
+      acc += v;
+      const h = Math.max(0, yBot - yTop - (j > 0 ? 2 : 0));  // bo'laklar orasida 2px sirt oralig'i
+      return `<path class="viz-${k}" d="${colPath(x0, yTop, bw, h, top ? 4 : 0)}"/>`;
+    }).join('');
+    const closed = x.wd === 0 ? `<rect class="viz-closed" x="${L + i * slot}" y="${T}" width="${slot}" height="${ph}"/>` : '';
+    return closed + paths;
+  }).join('');
+
+  // X o'qi: 1, 5, 10, 15, 20, 25 va oxirgi kun
+  const marks = [1, 5, 10, 15, 20, 25, d.nDays].filter((v, i, a) => v <= d.nDays && a.indexOf(v) === i);
+  const xAxis = marks.map((v) => `<text class="viz-axis" x="${L + (v - 0.5) * slot}" y="${H - 8}" text-anchor="middle">${v}</text>`).join('');
+
+  const tip = d.daily.map((x) => ({
+    t: uzDate(new Date(`${x.key}T00:00:00+05:00`)),
+    v: x.wd === 0 && !x.open ? t('closedDay')
+      : `${MARKS.in.label}: ${x.in}\n${MARKS.excused.label}: ${x.excused}\n${MARKS.absent.label}: ${x.absent}`,
+  }));
+
+  return `
+    <svg class="viz" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" tabindex="0"
+      aria-label="${esc(t('chDaily'))}" data-cross='${esc(JSON.stringify({ L, slot, T, ph, n: d.nDays, tip }))}'>
+      ${grid}${cols}${xAxis}
+      <line class="viz-cross" x1="0" x2="0" y1="${T}" y2="${T + ph}" hidden/>
+    </svg>`;
+}
+
+// Kurslar: bitta rang (nominal toifa — qiymatga qarab bo'yalmaydi), qiymat uchida
+function chartCourses(d, W) {
+  // Tor ekranda nom ustun ustida turadi — yonida qolsa ustunga joy qolmaydi
+  const narrow = W < 480;
+  const rowH = narrow ? 50 : 34, bh = 18, T = 4, R = 46;
+  const L = narrow ? 0 : 150;
+  const H = T + d.courses.length * rowH + 4;
+  const pw = Math.max(40, W - L - R);
+  const max = narrow ? 34 : 20;
+  const bars = d.courses.map((c, i) => {
+    const y = T + i * rowH + (narrow ? 24 : (rowH - bh) / 2);
+    const w = Math.max(0, (c.pct / 100) * pw);
+    const label = `${c.course.icon} ${c.course.name}`;
+    const short = label.length > max ? label.slice(0, max - 1) + '…' : label;
+    const lx = narrow ? 0 : L - 10, ly = narrow ? T + i * rowH + 16 : y + bh / 2 + 5;
+    return `<g class="viz-hit" tabindex="0" data-tip-t="${esc(label)}"
+        data-tip-v="${esc(`${t('colAtt')}: ${c.pct}%\n${t('sStudents')}: ${c.n}\n${t('sWorkdays')}: ${c.days}`)}">
+      <rect x="0" y="${T + i * rowH}" width="${W}" height="${rowH}" fill="transparent"/>
+      <rect class="viz-track" x="${L}" y="${y}" width="${pw}" height="${bh}" rx="4"/>
+      <path class="viz-bar" d="${barPath(L, y, w, bh, 4)}"/>
+      <text class="viz-label" x="${lx}" y="${ly}" text-anchor="${narrow ? 'start' : 'end'}">${esc(short)}</text>
+      <text class="viz-value" x="${L + w + 8}" y="${y + bh / 2 + 5}">${c.pct}%</text>
+    </g>`;
+  }).join('');
+  return `<svg class="viz viz-h" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
+    aria-label="${esc(t('chCourses'))}">${bars}</svg>`;
+}
+
+/* Diagrammalar konteyner enida chiziladi: 1 birlik = 1px. viewBox cho'zilsa
+   matn mobilda 5px gacha kichrayib, kompyuterda ustunlar 24px dan kengayardi. */
+let vizRO = null;
+function drawCharts() {
+  const plots = document.querySelectorAll('.viz-plot[data-chart]');
+  vizRO?.disconnect();
+  if (!plots.length) return;
+  if (!vizRO && 'ResizeObserver' in window) vizRO = new ResizeObserver((es) => es.forEach((e) => drawPlot(e.target)));
+  plots.forEach((el) => { drawPlot(el); vizRO?.observe(el); });
+}
+function drawPlot(el) {
+  const w = Math.floor(el.clientWidth);
+  if (!w || !repData || String(w) === el.dataset.w || !el.isConnected) return;
+  el.dataset.w = w;
+  const focused = el.contains(document.activeElement);
+  el.innerHTML = el.dataset.chart === 'daily' ? chartDaily(repData, w) : chartCourses(repData, w);
+  if (focused) el.querySelector('svg[tabindex], [tabindex]')?.focus();
+}
+
+function repList(d) {
+  return `<div class="table-wrap"><table class="tbl"><thead><tr>
+      <th>${t('colStudent')}</th><th class="num">${t('colDays')}</th>
+      <th class="num th-ico" title="${t('colAbsExc')}">
+        <span class="tone-red">${I.alert}</span><span class="tone-violet">${I.note}</span></th>
+      <th>${t('colAtt')}</th><th>${t('colLast')}</th>
+    </tr></thead><tbody>${[...d.rows].sort((a, b) => b.pct - a.pct || a.name.localeCompare(b.name)).map((r) => `
+      <tr data-row="${r.id}">
+        <td><div style="font-weight:800">${esc(r.name)}${r.active ? '' : ` <span class="badge">${t('archiveShort')}</span>`}</div>
+            <div style="color:var(--faint);font-size:.8rem;font-weight:700">${r.course.icon} ${esc(r.course.name)}</div></td>
+        <td class="num">${r.count} / ${r.daysTotal}</td>
+        <td class="num"><span class="${r.absent ? 'tone-red num-on' : 'num-off'}">${r.absent}</span>
+            <span class="num-off"> / </span><span class="${r.excused ? 'tone-violet num-on' : 'num-off'}">${r.excused}</span></td>
+        <td><div class="bar"><i style="width:${Math.min(100, r.pct)}%"></i></div>
+            <span style="font-size:.78rem;font-weight:800;color:var(--muted)">${r.pct}%</span></td>
+        <td style="color:var(--muted);font-weight:700;white-space:nowrap">${r.last ? dayKey(r.last).slice(8) + '.' + dayKey(r.last).slice(5, 7) : '—'}</td>
+      </tr>
+      <tr class="hidden" data-detail="${r.id}"><td colspan="5"><div class="day-pills">${
+        // Xronologik tartibda — avval holat bo'yicha guruhlanardi
+        [...r.days.map((x) => [x, 'in']), ...r.absentDays.map((x) => [x, 'absent']), ...r.excusedDays.map((x) => [x, 'excused'])]
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .map(([x, k]) => pill(k, x, k === 'excused' ? r.notes[x] : undefined)).join('')
+        || `<span style="color:var(--faint)">${t('noDaysP')}</span>`}</div></td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+/* ------------------------------------------------------------
+   Diagramma ko'rsatkichi (tooltip). Ismlar bazadan keladi —
+   faqat textContent orqali qo'yiladi, innerHTML emas.
+   ------------------------------------------------------------ */
+function vizTip() {
+  let el = $('vizTip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'vizTip'; el.className = 'viz-tip'; el.setAttribute('role', 'tooltip'); el.hidden = true;
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function showTip(title, value, x, y) {
+  const el = vizTip();
+  el.replaceChildren();
+  const v = document.createElement('div'); v.className = 'viz-tip-v';
+  String(value).split('\n').forEach((line, i) => {
+    if (i) v.appendChild(document.createElement('br'));
+    v.appendChild(document.createTextNode(line));
+  });
+  const tt = document.createElement('div'); tt.className = 'viz-tip-t'; tt.textContent = title;
+  el.append(v, tt);                                   // qiymat oldin, nom keyin
+  el.hidden = false;
+  const r = el.getBoundingClientRect();
+  const left = Math.min(window.innerWidth - r.width - 8, Math.max(8, x - r.width / 2));
+  const top = y - r.height - 12 < 8 ? y + 18 : y - r.height - 12;
+  el.style.left = left + 'px'; el.style.top = top + 'px';
+}
+function hideTip() { const el = $('vizTip'); if (el) el.hidden = true; }
+
+// Kunlik diagrammada kursor eng yaqin kunga "yopishadi" — 12px ustunni nishonga olish shart emas
+function crossAt(svg, idx) {
+  const c = JSON.parse(svg.dataset.cross);
+  idx = Math.max(0, Math.min(c.n - 1, idx));
+  svg.dataset.idx = idx;
+  const x = c.L + (idx + 0.5) * c.slot;
+  const line = svg.querySelector('.viz-cross');
+  line.setAttribute('x1', x); line.setAttribute('x2', x); line.removeAttribute('hidden');
+  const box = svg.getBoundingClientRect();
+  const sx = box.left + (x / svg.viewBox.baseVal.width) * box.width;
+  showTip(c.tip[idx].t, c.tip[idx].v, sx, box.top + (c.T / svg.viewBox.baseVal.height) * box.height);
 }
 
 function exportCsv() {
@@ -1456,7 +1808,7 @@ function exportCsv() {
                 t('csvCameDates'), t('csvAbsentDates'), t('csvExcusedDates')];
   const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
   const lines = [head.map(q).join(';')].concat(repData.rows.map((r) =>
-    [r.name, r.course.name, r.count, r.absent, r.excused, repData.total, r.pct,
+    [r.name, r.course.name, r.count, r.absent, r.excused, r.daysTotal, r.pct,
      r.last ? dayKey(r.last) : '', r.days.join(' '), r.absentDays.join(' '),
      r.excusedDays.map((d) => r.notes[d] ? `${d} (${r.notes[d]})` : d).join(' ')].map(q).join(';')));
   const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
@@ -1880,7 +2232,36 @@ document.addEventListener('click', async (e) => {
   if (leadBtn) return leadSheet(leadBtn.dataset.lead);
 
   const chip = el.closest('[data-chip]');
-  if (chip) { state.courseFilter = chip.dataset.chip; render(); if (state.view === 'report') loadReport(); return; }
+  if (chip) {
+    state.courseFilter = chip.dataset.chip;
+    if (state.view === 'report') {
+      document.querySelectorAll('[data-chip]').forEach((b) => b.classList.toggle('on', b.dataset.chip === state.courseFilter));
+      loadReport();
+    } else render();
+    return;
+  }
+
+  // Hisobot bo'limlari: Jurnal / Diagrammalar / Ro'yxat
+  const repTab = el.closest('[data-rep-tab]');
+  if (repTab) {
+    state.repTab = repTab.dataset.repTab;
+    try { localStorage.setItem('parvoz-rep-tab', state.repTab); } catch (_) {}
+    hideTip();
+    return renderReport();
+  }
+
+  // Jurnal katagi: o'sha kunni Davomat ekranida ochamiz (tuzatish uchun)
+  const jump = el.closest('[data-jump]');
+  if (jump) {
+    hideTip();
+    const key = jump.dataset.jump;
+    if (key < shiftDay(todayKey(), -30)) { toast(t('tooOld')); return; }
+    state.day = key === todayKey() ? null : key;
+    state.today = [];
+    go('today');
+    await loadToday(); render();
+    return;
+  }
 
   if (el.closest('[data-add-student]')) return studentSheet(null);
   const edS = el.closest('[data-edit-student]');
@@ -2019,8 +2400,51 @@ document.addEventListener('input', (e) => {
   }
 });
 
+/* ---- Diagramma va jurnal ko'rsatkichi: sichqoncha, barmoq va klaviatura ---- */
+document.addEventListener('pointermove', (e) => {
+  const svg = e.target.closest?.('svg[data-cross]');
+  if (svg) {
+    const c = JSON.parse(svg.dataset.cross);
+    const box = svg.getBoundingClientRect();
+    const vx = ((e.clientX - box.left) / box.width) * svg.viewBox.baseVal.width;
+    return crossAt(svg, Math.floor((vx - c.L) / c.slot));
+  }
+  const tip = e.target.closest?.('[data-tip-t]');
+  if (tip) return showTip(tip.dataset.tipT, tip.dataset.tipV, e.clientX, e.clientY);
+  hideTip();
+});
+document.addEventListener('pointerleave', hideTip);
+document.addEventListener('pointerout', (e) => {
+  const svg = e.target.closest?.('svg[data-cross]');
+  if (svg && !svg.contains(e.relatedTarget)) {
+    svg.querySelector('.viz-cross')?.setAttribute('hidden', '');
+    hideTip();
+  }
+});
+document.addEventListener('focusin', (e) => {
+  const svg = e.target.closest?.('svg[data-cross]');
+  if (svg) return crossAt(svg, Number(svg.dataset.idx ?? 0));
+  const tip = e.target.closest?.('[data-tip-t]');
+  if (tip) {
+    const r = tip.getBoundingClientRect();
+    showTip(tip.dataset.tipT, tip.dataset.tipV, r.left + r.width / 2, r.top);
+  }
+});
+document.addEventListener('focusout', (e) => {
+  if (e.target.closest?.('svg[data-cross]')) e.target.querySelector?.('.viz-cross')?.setAttribute('hidden', '');
+  hideTip();
+});
+document.addEventListener('keydown', (e) => {
+  const svg = e.target.closest?.('svg[data-cross]');
+  if (!svg || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+  e.preventDefault();
+  crossAt(svg, Number(svg.dataset.idx ?? 0) + (e.key === 'ArrowRight' ? 1 : -1));
+});
+// Ko'rsatkich ekranga qadalgan — sahifa yoki jurnal siljisa yashiramiz
+window.addEventListener('scroll', hideTip, { passive: true, capture: true });
+
 document.addEventListener('change', (e) => {
-  if (e.target.id === 'repMonth') loadReport();
+  if (e.target.id === 'repMonth') { hideTip(); loadReport(); }
   if (e.target.id === 'dayPick') setDay(e.target.value);
 });
 
