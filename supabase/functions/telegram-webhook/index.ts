@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
       await say(
         `✅ <b>${esc(pend.full_name)}</b> uchun davomat xabarlari ulandi!` +
         (courseName ? `\n📚 ${esc(courseName)}` : '') +
-        `\n\nEndi farzandingiz markazga kelganda va ketganda, shuningdek to'lov eslatmalari shu yerga keladi.\n\nXabarlarni to'xtatish uchun /stop yuboring.`,
+        `\n\nEndi farzandingiz markazga kelganda va ketganda, shuningdek to'lov haqidagi xabarlar shu yerga keladi.\n\nXabarlarni to'xtatish uchun /stop yuboring.`,
         { reply_markup: HIDE_KEYBOARD }
       );
       return new Response('ok');

@@ -5,7 +5,7 @@ qilinadi; repodagi nusxa — manba va tarix uchun.
 
 | Funksiya | `verify_jwt` | Vazifasi |
 |---|---|---|
-| `admin-api` | ✅ | Panel uchun boshqaruv: o'qituvchilar, kurslar, bot sozlamalari, ariza xabarnomalari, ota-onaga xabar shablonlari, to'lov eslatmalari |
+| `admin-api` | ✅ | Panel uchun boshqaruv: o'qituvchilar, kurslar, bot sozlamalari, ariza xabarnomalari, ota-onaga xabar shablonlari, to'lov eslatmalari va "to'lov qabul qilindi" xabari |
 | `mark-attendance` | ✅ | Kelgan/ketganni belgilash + ota-onaga Telegram xabari (shablon bo'yicha) |
 | `student-link` | ✅ | Ota-ona uchun muddatli (48 soat) ulanish havolasini yaratish |
 | `submit-lead` | ❌ | Saytdagi ariza formasi (ochiq endpoint, honeypot + cheklovlar bilan) |
@@ -36,7 +36,9 @@ Matnni admin paneldan (Sozlamalar → Ota-onaga xabarlar) tahrirlaydi. Saqlanadi
 `app_config.msg_templates` — `{"in": {"on": true, "text": "..." | null}, ...}`.
 `text: null` — standart matn (`mark-attendance` dagi `DEFAULT_TPL`).
 
-- O'zgaruvchilar: `{ism}` `{vaqt}` `{kurs}` `{sana}` `{sabab}` — har bir turda
+- Turlar: `in` `out` `absent` `excused` (davomat), `pay` (to'lov eslatmasi, faqat qo'lda),
+  `paid` (to'lov qabul qilindi).
+- O'zgaruvchilar: `{ism}` `{vaqt}` `{kurs}` `{sana}` `{sabab}` `{oy}` `{oylar}` `{summa}` — har bir turda
   faqat mosi ruxsat (`admin-api` → `TPL_VARS`). `{ism}` har doim shart:
   oilada bir nechta farzand o'qishi mumkin.
 - `*matn*` — qalin. Qolgan hamma narsa ekranlanadi (`parse_mode: HTML`).
@@ -45,7 +47,8 @@ Matnni admin paneldan (Sozlamalar → Ota-onaga xabarlar) tahrirlaydi. Saqlanadi
 
 Ko'rsatish mantig'i (`renderTpl`) `assets/app.js` da ham bor — admin ko'rgan
 namuna ota-ona oladigan xabarning o'zi bo'lishi uchun. Birini o'zgartirsangiz,
-ikkinchisini ham o'zgartiring.
+ikkinchisini ham o'zgartiring. `pay` va `paid` ning standart matni `admin-api` da
+(`DEFAULT_PAY`, `DEFAULT_PAID`) va panelda (`TPL_DEFAULT`) bir xil turishi shart.
 
 ## To'lov eslatmalari (`admin-api` → `send_reminders`)
 
@@ -69,3 +72,26 @@ yuboradi. So'rov: `{ action: 'send_reminders', month: 'YYYY-MM', student_ids: [.
   emas; 21:00–08:00 da ovozsiz (`disable_notification`).
 - Bot tokeni hech qachon javobga yoki jurnalga tushmaydi: `tg()` throw qilmaydi, xato
   matnlari `redact()` dan o'tadi. Shu himoya `mark-attendance` da ham bor.
+
+## To'lov qabul qilindi (`admin-api` → `notify_payment`)
+
+Admin yangi to'lov yozganda ota-onaga Telegramda xabar ketadi.
+So'rov: `{ action: 'notify_payment', payment_id: '<uuid>' }`.
+
+- Faqat admin. Bir to'lovga bitta xabar: yuborishdan **oldin**
+  `update payments set notified_at = now() where id = … and notified_at is null`
+  bilan band qilinadi — ikki oyna yoki qayta bosish ikkinchi xabar bermaydi.
+  Telegram yetkazmasa (`blocked`, `no_chat`, tarmoq, timeout) band bo'shatiladi
+  va admin to'lovni ochib qayta yuborishi mumkin.
+- Javob: `{ sent: true }` yoki `{ sent: false, code }` — `already` / `no_tg` /
+  `no_bot` / `muted` (Sozlamalarda o'chirilgan) / Telegram xato kodlari.
+- Panel xabarni darhol emas, "Bekor qilish" tugmasi yo'qolgach (7 s) yuboradi:
+  admin adashib boshqa o'quvchini belgilab, bekor qilsa, ota-onaga xabar bormaydi.
+  Sahifa shu orada yopilsa — `keepalive` bilan darhol yuboriladi.
+- Oynadagi belgi joriy va o'tgan oy uchun o'z-o'zidan belgilangan, eski oylar
+  uchun (tarixni kiritish) belgilanmagan — ota-onalarga o'tgan oylar bo'yicha
+  xabarlar yog'ilmasin.
+- To'lovni tahrirlaganda xabar qayta ketmaydi. Yuborilmagan bo'lsa, tahrir oynasida
+  "qabul qilindi xabarini yuborish" tugmasi bor; yuborilganlari ro'yxatda ✓✓ bilan.
+- `notified_at` ni server yozganda `marked_by_email` saqlanib qoladi
+  (`private.stamp_payment` faqat foydalanuvchi so'rovida emailni yozadi).

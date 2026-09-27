@@ -988,6 +988,10 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .tpl-count { align-self: flex-end; padding-top: 0; }
   .tpl-actions .btn { flex: 1; min-width: 0; white-space: normal; line-height: 1.2; text-align: center; padding: 10px 12px; }
 }
+/* 6 ta tur telefonda bir qatorga sig'maydi (ayniqsa ruschada) — 3 tadan ikki qator */
+@media (max-width: 599px) {
+  .seg-tpl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 /* ---------- OYLIK TO'LOVLAR ---------- */
 .monthbar { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; }
@@ -1023,6 +1027,10 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 }
 .pay-badge svg { width: 14px; height: 14px; flex: none; }
 .pay-state .pay-owed { color: var(--red-ink); font-weight: 800; }
+.pay-sent { display: inline-flex; vertical-align: -2px; margin-left: 5px; color: var(--green-ink); }
+.pay-sent svg { width: 13px; height: 13px; }
+.pay-tell { margin: 0 0 14px; font-weight: 600; font-size: .9rem; line-height: 1.35; }
+.pay-tell input { accent-color: var(--green); }
 
 /* To'lov oynasi */
 .pay-who { display: flex; flex-direction: column; gap: 2px; margin: 0 0 12px; }
