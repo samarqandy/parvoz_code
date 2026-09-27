@@ -13,7 +13,8 @@ const state = {
   me: null,            // { email, role, full_name, course_ids }
   courses: [],
   students: [],
-  today: [],
+  today: [],          // tanlangan kundagi yozuvlar
+  day: null,          // YYYY-MM-DD — null bo'lsa bugun
   leads: [],
   leadFilter: 'new',
   view: 'today',
@@ -69,6 +70,19 @@ const STR = {
     /* --- holatlar --- */
     mIn: 'Keldi', mOut: 'Ketdi', mAbsent: 'Kelmadi', mExcused: 'Sababli', mDone: 'Tugadi',
     r1: 'Kasal', r2: 'Oilaviy sabab', r3: "Ta'til / safar", r4: 'Maktab ishi',
+
+    /* --- kun tanlash va guruhni belgilash --- */
+    offline: 'Internet yo\'q',
+    offlineRetry: 'Internet yo\'q. Ulanishni tekshiring va qaytadan kiring.',
+    today: 'Bugun', yesterday: 'Kecha', backToToday: 'Bugunga qaytish',
+    pastDay: 'O\'tgan kun — ota-onaga xabar yuborilmaydi',
+    pickDay: 'Kunni tanlash', prevDay: 'Oldingi kun', nextDay: 'Keyingi kun',
+    allArrived: 'Hammasi keldi', markGroup: 'Guruhni belgilash',
+    groupAsk: '{course} guruhidagi {n} o\'quvchiga «{label}» qo\'yilsinmi?',
+    groupDone: '{n} ta belgilandi',
+    groupDoneSkip: '{n} ta belgilandi, {k} tasi o\'tkazib yuborildi',
+    groupNone: 'Belgilanadigan o\'quvchi qolmadi',
+    undo: 'Bekor qilish',
 
     /* --- statistika --- */
     sStudents: "O'quvchi", sPending: 'Kutilmoqda',
@@ -242,6 +256,18 @@ const STR = {
 
     mIn: 'Пришёл', mOut: 'Ушёл', mAbsent: 'Не пришёл', mExcused: 'По причине', mDone: 'Завершено',
     r1: 'Болезнь', r2: 'Семейные обстоятельства', r3: 'Отпуск / поездка', r4: 'Дела в школе',
+
+    offline: 'Нет интернета',
+    offlineRetry: 'Нет интернета. Проверьте подключение и войдите снова.',
+    today: 'Сегодня', yesterday: 'Вчера', backToToday: 'Вернуться к сегодня',
+    pastDay: 'Прошедший день — родителям уведомление не отправляется',
+    pickDay: 'Выбрать день', prevDay: 'Предыдущий день', nextDay: 'Следующий день',
+    allArrived: 'Все пришли', markGroup: 'Отметить группу',
+    groupAsk: 'Поставить «{label}» всем {n} ученикам группы {course}?',
+    groupDone: 'Отмечено: {n}',
+    groupDoneSkip: 'Отмечено: {n}, пропущено: {k}',
+    groupNone: 'Некого отмечать',
+    undo: 'Отменить',
 
     sStudents: 'Учеников', sPending: 'Ожидается',
     sWorkdays: 'Рабочих дней', sVisits: 'Посещений', sAvg: 'В среднем',
@@ -422,6 +448,8 @@ const I = {
   bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="m2 2 20 20"/><path d="M8.8 4.3A5.99 5.99 0 0 1 18 9v2c0 1.2.3 2 .8 2.8"/><path d="M6 9v2c0 2-1 3-2 4.5V17h13"/></svg>',
   globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>',
   chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+  chevL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+  chevR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
 };
@@ -454,12 +482,30 @@ function showAuth() {
 const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-function toast(msg, kind = '') {
+// toast('matn') yoki toast('matn', 'ok', { label: 'Bekor qilish', fn })
+function toast(msg, kind = '', action) {
   const el = document.createElement('div');
   el.className = 'toast ' + kind;
-  el.textContent = msg;
+  const span = document.createElement('span');
+  span.textContent = msg;
+  el.appendChild(span);
+
+  let timer;
+  if (action && typeof action.fn === 'function') {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toast-act';
+    btn.textContent = action.label || t('undo');
+    btn.addEventListener('click', () => {
+      clearTimeout(timer);
+      el.remove();
+      action.fn();
+    });
+    el.appendChild(btn);
+  }
+
   $('toasts').appendChild(el);
-  setTimeout(() => el.remove(), 4200);
+  timer = setTimeout(() => el.remove(), action ? 6500 : 4200);
 }
 
 async function edge(fn, payload) {
@@ -468,11 +514,19 @@ async function edge(fn, payload) {
     const { data } = await sb.auth.getSession();
     if (data.session) { state.session = data.session; token = data.session.access_token; }
   } catch (_) { token = state.session?.access_token ?? SUPABASE_ANON; }
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${token}` },
-    body: JSON.stringify(payload),
-  });
+  let res;
+  try {
+    res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    });
+  } catch (_) {
+    // Tarmoq yiqildi — buni ruxsat xatosi bilan aralashtirmaymiz
+    const err = new Error(t('offline'));
+    err.offline = true;
+    throw err;
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Xatolik (${res.status})`);
   return data;
@@ -508,6 +562,31 @@ function uzDate(d = new Date()) {
   return n.fmt(day, n.m[m - 1], n.d[wd]);
 }
 const currentYm = () => todayKey().slice(0, 7);
+
+/* --- Tanlangan kun. state.day null bo'lsa — bugun. --- */
+const selDay = () => state.day || todayKey();
+const isToday = () => selDay() === todayKey();
+const shiftDay = (key, n) => {
+  const d = new Date(`${key}T00:00:00+05:00`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return dayKey(d);
+};
+// Qisqa sana: "27-sentabr" / "27 сентября"
+function shortDate(key) {
+  const [, m, d] = key.split('-').map(Number);
+  const n = DATE_NAMES[currentLang()] || DATE_NAMES.uz;
+  return currentLang() === 'ru' ? `${d} ${n.m[m - 1]}` : `${d}-${n.m[m - 1]}`;
+}
+// Kun tanlagich yorlig'i: "Bugun · 27-sentabr", "Kecha · 26-sentabr", yoki "24-sentabr"
+const dayLabel = (key) => key === todayKey() ? `${t('today')} · ${shortDate(key)}`
+  : key === shiftDay(todayKey(), -1) ? `${t('yesterday')} · ${shortDate(key)}`
+  : shortDate(key);
+// Hafta kuni — guruhlar shunga qarab o'qiydi, yakshanba esa markaz yopiq
+function weekdayOf(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  const n = DATE_NAMES[currentLang()] || DATE_NAMES.uz;
+  return n.d[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+}
 
 function monthRange(ym) {
   const [y, m] = ym.split('-').map(Number);
@@ -602,7 +681,14 @@ async function logout() {
 async function enterApp() {
   try {
     state.me = await edge('admin-api', { action: 'me' });
-  } catch (_) {
+  } catch (err) {
+    // Internet yo'qligi — ruxsat yo'qligi EMAS. Sessiyani saqlab qolamiz,
+    // aks holda o'qituvchi har uzilishda qaytadan parol kiritishga majbur bo'ladi.
+    if (err.offline || !navigator.onLine) {
+      showAuth();
+      $('authErr').textContent = t('offlineRetry');
+      return;
+    }
     await sb.auth.signOut();
     state.session = null;
     showAuth();
@@ -641,8 +727,11 @@ async function loadStudents() {
   state.students = data ?? [];
 }
 async function loadToday() {
-  const start = new Date(`${todayKey()}T00:00:00+05:00`).toISOString();
-  const { data } = await sb.from('attendance').select('*').gte('occurred_at', start).order('occurred_at');
+  const key = selDay();
+  const start = new Date(`${key}T00:00:00+05:00`).toISOString();
+  const end = new Date(new Date(start).getTime() + 86400000).toISOString();
+  const { data } = await sb.from('attendance').select('*')
+    .gte('occurred_at', start).lt('occurred_at', end).order('occurred_at');
   state.today = data ?? [];
 }
 async function loadLeadsData() {
@@ -774,7 +863,10 @@ function go(view) {
 
 function render() {
   const el = $('page');
-  if (state.view === 'today') el.innerHTML = viewToday();
+  if (state.view === 'today') {
+    el.innerHTML = viewToday();
+    $('pageTitle').textContent = isToday() ? t('tToday') : t('navToday');
+  }
   else if (state.view === 'leads') { el.innerHTML = viewLeadsShell(); loadLeads(); }
   else if (state.view === 'students') el.innerHTML = viewStudents();
   else if (state.view === 'report') { el.innerHTML = viewReportShell(); loadReport(); }
@@ -831,9 +923,27 @@ const pill = (kind, day, note) => {
 // "Sababli" uchun tayyor sabablar
 const REASONS = [t('r1'), t('r2'), t('r3'), t('r4')];
 
+// Kun tanlagich: < kun > va sana maydoni. Bugundan keyingi kunga o'tib bo'lmaydi.
+function dayBar() {
+  const key = selDay();
+  const atToday = isToday();
+  return `
+    <div class="daybar">
+      <button class="daybar-nav" data-day-shift="-1" type="button" aria-label="${t('prevDay')}">${I.chevL || '‹'}</button>
+      <label class="daybar-mid">
+        <span class="daybar-label">${esc(dayLabel(key))}</span>
+        <span class="daybar-sub">${esc(weekdayOf(key))}</span>
+        <input type="date" id="dayPick" value="${key}" max="${todayKey()}" aria-label="${t('pickDay')}">
+      </label>
+      <button class="daybar-nav" data-day-shift="1" type="button" aria-label="${t('nextDay')}" ${atToday ? 'disabled' : ''}>${I.chevR || '›'}</button>
+    </div>
+    ${atToday ? '' : `<div class="daybar-note">${I.note}<span>${t('pastDay')}</span>
+      <button class="daybar-back" id="dayToday" type="button">${t('backToToday')}</button></div>`}`;
+}
+
 function viewToday() {
   const list = visibleStudents().filter((s) => s.active);
-  const dateTxt = uzDate();
+  const dateTxt = uzDate(new Date(`${selDay()}T00:00:00+05:00`));
   const ids = new Set(list.map((s) => s.id));
   const seen = (kind) => new Set(state.today.filter((r) => r.kind === kind && ids.has(r.student_id)).map((r) => r.student_id));
   const inCount = seen('in').size;
@@ -856,16 +966,23 @@ function viewToday() {
        ${state.search ? '' : `<button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('addStudent')}</button>`}</div></div>`
     : Object.entries(groups).map(([cid, arr]) => {
       const c = courseById(cid);
-      return `<div class="group-title">${c.icon} ${esc(c.name)} · ${arr.length}</div>
+      // Hali "keldi" belgilanmaganlar bo'lsa — guruhni bir bosishda belgilash
+      const left = arr.filter((s) => !state.today.some((r) => r.student_id === s.id && r.kind === 'in')).length;
+      return `<div class="group-title">
+          <span>${c.icon} ${esc(c.name)} · ${arr.length}</span>
+          ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}" type="button">
+            ${ico(MARKS.in)} ${t('allArrived')} · ${left}</button>` : ''}
+        </div>
         <div class="rows">${arr.map((s) => rowToday(s, c)).join('')}</div>`;
     }).join('');
 
   return `
     <div class="page-head">
-      <div><h2>${t('tToday')}</h2><p>${dateTxt}</p></div>
+      <div><h2>${isToday() ? t('tToday') : t('navToday')}</h2></div>
       <div class="spacer"></div>
     </div>
-    <div class="stats">
+    ${dayBar()}
+    <div class="stats stats-compact">
       ${statTile(list.length, t('sStudents'), 'users')}
       ${statTile(inCount, MARKS.in.label, MARKS.in.icon, MARKS.in.tone)}
       ${statTile(absentCount, MARKS.absent.label, MARKS.absent.icon, MARKS.absent.tone)}
@@ -898,8 +1015,10 @@ function rowToday(s, c) {
   // Hozirgi holat: rangi, ikonkasi va matni shu yerdan
   const cur = away ? MARKS[away.kind] : (rout ? DONE : (rin ? MARKS.in : null));
   const tone = cur ? cur.tone : 'pending';
+  // Bugun — aniq soat bor. O'tgan kun — faqat holat nomi (soat yozilmagan).
   const text =
       away ? MARKS[away.kind].label + (away.note ? ' · ' + esc(away.note) : '')
+    : !isToday() ? (rout ? DONE.label : rin ? MARKS.in.label : t('fresh'))
     : rout ? `${hhmm(rin.occurred_at)} → ${hhmm(rout.occurred_at)}`
     : rin  ? t('sinceHere', { time: hhmm(rin.occurred_at) })
     :        t('fresh');
@@ -914,7 +1033,9 @@ function rowToday(s, c) {
   // Belgi qo'yilgan bo'lsa, qatorni bosish bekor qilish oynasini ochadi
   const openAttr = marked ? ` data-more="${s.id}"` : '';
 
-  return `<div class="row rt tone-${tone}${marked ? '' : ' is-fresh'}"${openAttr}>
+  const pending = state.today.some((r) => r.student_id === s.id && r._pending);
+
+  return `<div class="row rt tone-${tone}${marked ? '' : ' is-fresh'}${pending ? ' is-pending' : ''}"${openAttr}>
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
@@ -945,7 +1066,7 @@ function markSheet(id) {
   if (!marked.length) return;
 
   const when = (r) => (r.kind === 'in' || r.kind === 'out')
-    ? hhmm(r.occurred_at)
+    ? (isToday() ? hhmm(r.occurred_at) : dayLabel(selDay()))
     : (r.note || MARKS[r.kind].label);
 
   openSheet(esc(s.full_name), `
@@ -996,14 +1117,78 @@ function reasonSheet(s) {
 
 async function sendMark(studentId, kind, note) {
   const s = state.students.find((x) => x.id === studentId);
+
+  // Darhol ko'rsatamiz — server javobini kutmaymiz. Xato bo'lsa qaytaramiz.
+  const optimistic = {
+    id: 'tmp-' + studentId + '-' + kind,
+    student_id: studentId, kind, note: note || null,
+    occurred_at: new Date().toISOString(),
+    _pending: true,
+  };
+  const before = state.today;
+  state.today = [...state.today.filter((r) => !(r.student_id === studentId && r.kind === kind)), optimistic];
+  render();
+
   try {
-    const r = await edge('mark-attendance', { student_id: studentId, kind, note });
+    const r = await edge('mark-attendance', { student_id: studentId, kind, note, date: state.day || undefined });
     await loadToday();
-    const v = { name: s?.full_name ?? '', label: MARKS[kind].label };
-    toast(r.notified ? t('sentToParent', v)
-                     : t('markedOk', v) + (s?.telegram_chat_id ? '' : t('tgOff')), 'ok');
     render();
-  } catch (err) { toast('❌ ' + err.message, 'bad'); render(); }
+
+    const v = { name: s?.full_name ?? '', label: MARKS[kind].label };
+    const msg = r.notified ? t('sentToParent', v)
+                           : t('markedOk', v) + (isToday() && !s?.telegram_chat_id ? t('tgOff') : '');
+    toast(msg, 'ok', r.id ? { fn: () => undoMark(r.id) } : undefined);
+  } catch (err) {
+    state.today = before;                       // qaytaramiz
+    render();
+    toast('❌ ' + err.message, 'bad');
+  }
+}
+
+// Toastdagi "Bekor qilish" — bitta yozuvni o'chiradi
+async function undoMark(rowId) {
+  const before = state.today;
+  state.today = state.today.filter((r) => r.id !== rowId);
+  render();
+  const { error } = await sb.from('attendance').delete().eq('id', rowId);
+  if (error) { state.today = before; render(); toast('❌ ' + error.message, 'bad'); return; }
+  await loadToday(); render();
+  toast(t('undone'), 'ok');
+}
+
+// Kunni almashtirish: kelajakka o'tkazmaymiz
+async function setDay(key) {
+  if (!key || key > todayKey()) return;
+  state.day = key === todayKey() ? null : key;
+  state.today = [];
+  render();
+  await loadToday();
+  render();
+}
+
+/* ---- Butun guruhni bir bosishda belgilash ---- */
+async function sendGroupMark(courseId, kind) {
+  const c = courseById(courseId);
+  const targets = visibleStudents()
+    .filter((s) => s.active && s.course_id === courseId)
+    .filter((s) => !state.today.some((r) => r.student_id === s.id && r.kind === kind));
+
+  if (!targets.length) { toast(t('groupNone')); return; }
+  if (!confirm(t('groupAsk', { course: c.name, n: targets.length, label: MARKS[kind].label }))) return;
+
+  const btn = document.querySelector(`[data-group-mark="${courseId}"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>'; }
+
+  try {
+    const r = await edge('mark-attendance', {
+      student_ids: targets.map((s) => s.id), kind, date: state.day || undefined,
+    });
+    await loadToday(); render();
+    toast(r.skipped ? t('groupDoneSkip', { n: r.marked, k: r.skipped }) : t('groupDone', { n: r.marked }), 'ok');
+  } catch (err) {
+    render();
+    toast('❌ ' + err.message, 'bad');
+  }
 }
 
 
@@ -1722,10 +1907,18 @@ document.addEventListener('click', async (e) => {
   const linkBtn = el.closest('[data-link]');
   if (linkBtn) return parentLinkSheet(linkBtn.dataset.link);
 
+  // Kun tanlagich
+  const shift = el.closest('[data-day-shift]');
+  if (shift) return setDay(shiftDay(selDay(), Number(shift.dataset.dayShift)));
+  if (el.closest('#dayToday')) return setDay(todayKey());
+
+  // Butun guruhni "Keldi" qilish
+  const grp = el.closest('[data-group-mark]');
+  if (grp) return sendGroupMark(grp.dataset.groupMark, 'in');
+
   const mark = el.closest('[data-mark]');
   if (mark) {
-    mark.disabled = true;
-    mark.innerHTML = '<span class="spin"></span>';
+    // Darhol javob beradi — render() tugmani baribir qayta chizadi
     await sendMark(mark.dataset.id, mark.dataset.mark);
     return;
   }
@@ -1737,8 +1930,6 @@ document.addEventListener('click', async (e) => {
       const st = state.students.find((x) => x.id === set.dataset.id);
       return st && reasonSheet(st);
     }
-    set.disabled = true;
-    set.innerHTML = '<span class="spin"></span>';
     await sendMark(set.dataset.id, 'absent');
     return;
   }
@@ -1830,6 +2021,7 @@ document.addEventListener('input', (e) => {
 
 document.addEventListener('change', (e) => {
   if (e.target.id === 'repMonth') loadReport();
+  if (e.target.id === 'dayPick') setDay(e.target.value);
 });
 
 $('sheet').addEventListener('click', (e) => { if (e.target === $('sheet')) closeSheet(); });
