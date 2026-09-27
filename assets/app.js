@@ -23,6 +23,10 @@ const state = {
   search: '',
   botUsername: null,
   tgMode: null,
+  pay: null,          // { ym, rows } — tanlangan oy va 11 oy oldingi to'lovlar
+  payYm: null,        // YYYY-MM — null bo'lsa joriy oy
+  payTab: (() => { try { return localStorage.getItem('parvoz-pay-tab') || 'unpaid'; } catch (_) { return 'unpaid'; } })(),
+  payQ: '',
   tpls: {},           // app_config.msg_templates — admin saqlagan shablonlar
   tplKind: 'in',      // muharrirda ochiq tur
   tplDraft: {},       // saqlanmagan tahrirlar: { kind: { on, text } }
@@ -226,6 +230,25 @@ const STR = {
     setTeamBtn: "O'qituvchilar va kurslar",
     setBot: '\u{1F916} Telegram bot',
     setBotP: 'Bot ota-onalarga farzandi kelgani va ketgani haqida avtomatik xabar yuboradi.',
+    navPay: "To'lovlar", tPay: "Oylik to'lovlar", tPaySub: "Kim to'ladi, kim qarzdor",
+    payPaid: "To'ladi", payUnpaid: "To'lamadi", payMark: "To'landi",
+    payTabUnpaid: 'Qarzdorlar', payTabPaid: "To'laganlar", payTabAll: 'Hammasi',
+    payCollected: "Yig'ildi, so'm", payDebtors2: '2+ oy qarz',
+    payAmount: "Summa (so'm)", payDate: "To'langan sana", payNote: 'Izoh',
+    payNotePh: 'Masalan: naqd, Click, chegirma',
+    payDelete: "To'lovni o'chirish", payDeleteQ: "{name}: {month} uchun to'lov o'chirilsinmi?",
+    paySaved: "{name}: to'lov yozildi", payRemoved: "To'lov o'chirildi",
+    payAlready: "Bu oy uchun to'lov allaqachon yozilgan — ro'yxat yangilandi",
+    payArrears: '{n} oy qarz', payArrearsList: "To'lanmagan oylar",
+    paySum: "{n} so'm", payNoAmount: 'summasiz', payBadAmount: "Summa noto'g'ri",
+    payQuick: 'Tez tanlash', paySearch: 'Ism yoki telefon',
+    payNoneUnpaid: "Hamma to'lagan", payNoneUnpaidP: "Bu oy uchun qarzdor yo'q.",
+    payNonePaid: "Hali hech kim to'lamagan", payNonePaidP: "To'lov yozilganda shu yerda ko'rinadi.",
+    payNoStudents: "O'quvchi yo'q", payNoStudentsP: "Bu oyda (yoki tanlangan kursda) o'quvchi topilmadi.",
+    payPrevMonth: 'Oldingi oy', payNextMonth: 'Keyingi oy', payPickMonth: 'Oyni tanlash',
+    payFutureNote: "Keyingi oy — oldindan to'lovlarni yozish uchun",
+    payCsvName: "O'quvchi", payCsvStatus: 'Holat', payCsvOwed: "To'lanmagan oylar",
+    delHasPayments: "Bu o'quvchida to'lovlar yozilgan — o'chirib bo'lmaydi. O'rniga uni arxivlang.",
     setTpl: '\u{1F4AC} Ota-onaga xabarlar',
     setTplP: "Farzand kelganda, ketganda yoki darsga kelmaganda ota-onaga Telegramda boradigan matn. Faqat bugungi belgilashda yuboriladi.",
     tplOn: 'Xabar yuborilsin',
@@ -433,6 +456,25 @@ const STR = {
     setTeamBtn: 'Преподаватели и предметы',
     setBot: '\u{1F916} Telegram-бот',
     setBotP: 'Бот автоматически сообщает родителям, когда ребёнок пришёл и ушёл.',
+    navPay: 'Оплаты', tPay: 'Ежемесячные оплаты', tPaySub: 'Кто оплатил, кто должен',
+    payPaid: 'Оплатил', payUnpaid: 'Не оплатил', payMark: 'Оплачено',
+    payTabUnpaid: 'Должники', payTabPaid: 'Оплатили', payTabAll: 'Все',
+    payCollected: 'Собрано, сум', payDebtors2: 'Долг 2+ мес.',
+    payAmount: 'Сумма (сум)', payDate: 'Дата оплаты', payNote: 'Комментарий',
+    payNotePh: 'Например: наличные, Click, скидка',
+    payDelete: 'Удалить оплату', payDeleteQ: 'Удалить оплату {name} за {month}?',
+    paySaved: '{name}: оплата записана', payRemoved: 'Оплата удалена',
+    payAlready: 'Оплата за этот месяц уже записана — список обновлён',
+    payArrears: 'долг {n} мес.', payArrearsList: 'Неоплаченные месяцы',
+    paySum: '{n} сум', payNoAmount: 'без суммы', payBadAmount: 'Неверная сумма',
+    payQuick: 'Быстрый выбор', paySearch: 'Имя или телефон',
+    payNoneUnpaid: 'Все оплатили', payNoneUnpaidP: 'Должников за этот месяц нет.',
+    payNonePaid: 'Пока никто не оплатил', payNonePaidP: 'Оплаты появятся здесь.',
+    payNoStudents: 'Нет учеников', payNoStudentsP: 'В этом месяце (или курсе) учеников не найдено.',
+    payPrevMonth: 'Предыдущий месяц', payNextMonth: 'Следующий месяц', payPickMonth: 'Выбрать месяц',
+    payFutureNote: 'Следующий месяц — для записи предоплат',
+    payCsvName: 'Ученик', payCsvStatus: 'Статус', payCsvOwed: 'Неоплаченные месяцы',
+    delHasPayments: 'У ученика есть оплаты — удалить нельзя. Переведите его в архив.',
     setTpl: '\u{1F4AC} Сообщения родителям',
     setTplP: 'Текст, который родитель получает в Telegram, когда ребёнок пришёл, ушёл или не пришёл. Отправляется только при отметке за сегодня.',
     tplOn: 'Отправлять сообщение',
@@ -516,6 +558,7 @@ const I = {
   chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
   chevL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
   chevR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+  wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M21 9h-6a3 3 0 0 0 0 6h6z"/><circle cx="15.5" cy="12" r=".6" fill="currentColor"/></svg>',
   undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
@@ -832,6 +875,7 @@ const VIEWS = [
   { id: 'leads',    label: t('navLeads'),    icon: 'inbox', title: t('tLeads') },
   { id: 'students', label: t('navStudents'), icon: 'users', title: t('tStudents') },
   { id: 'report',   label: t('navReport'),   icon: 'chart', title: t('tReport') },
+  { id: 'payments', label: t('navPay'),      icon: 'wallet', title: t('tPay'), admin: true },
   { id: 'team',     label: t('navTeam'),     icon: 'team',  title: t('tTeam'), admin: true },
   { id: 'settings', label: t('navSettings'), icon: 'gear',  title: t('tSettings') },
 ];
@@ -938,6 +982,7 @@ function render() {
   else if (state.view === 'leads') { el.innerHTML = viewLeadsShell(); loadLeads(); }
   else if (state.view === 'students') el.innerHTML = viewStudents();
   else if (state.view === 'report') { el.innerHTML = viewReportShell(); loadReport(); }
+  else if (state.view === 'payments') { el.innerHTML = viewPayShell(); loadPayments(); }
   else if (state.view === 'team') { el.innerHTML = viewTeamShell(); loadTeam(); }
   else { el.innerHTML = viewSettings(); if (isAdmin()) { loadNotifyChats(); tplLive(); } }
 }
@@ -1928,6 +1973,287 @@ async function loadTeam() {
    KO'RINISH: SOZLAMALAR
    ============================================================ */
 /* ============================================================
+   OYLIK TO'LOVLAR — faqat admin (RLS ham faqat adminga ochiq).
+   O'quvchiga oyiga bitta yozuv: yozuv bor = to'lagan, yo'q = qarzdor.
+   Qarz oylari o'quvchi qo'shilgan oydan (ko'pi bilan 12 oy orqaga) sanaladi.
+   ============================================================ */
+const PAY_LOOKBACK = 11;          // tanlangan oydan tashqari yana 11 oy
+const PAY_MAX = 100000000;        // bazadagi cheklov bilan bir xil
+let paySeq = 0;
+
+const MONTHS_NOM = {
+  uz: ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'],
+  ru: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+};
+function ymShift(ym, n) {
+  const [y, m] = ym.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + n, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+const ymLabel = (ym) => `${(MONTHS_NOM[currentLang()] || MONTHS_NOM.uz)[Number(ym.slice(5, 7)) - 1]} ${ym.slice(0, 4)}`;
+const ymShort = (ym) => (MONTHS_NOM[currentLang()] || MONTHS_NOM.uz)[Number(ym.slice(5, 7)) - 1].toLowerCase();
+const payYm = () => state.payYm || currentYm();
+const payMaxYm = () => ymShift(currentYm(), 1);   // keyingi oy — oldindan to'lov uchun
+
+// 300000 -> "300 000" (bo'linmas probel, qatorga bo'linmaydi)
+const fmtSum = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const sumText = (n) => t('paySum', { n: fmtSum(n) });
+function parseSum(raw) {
+  const digits = String(raw ?? '').replace(/\D+/g, '');
+  if (!digits) return null;
+  const n = Number(digits);
+  return Number.isSafeInteger(n) ? n : NaN;
+}
+
+function viewPayShell() {
+  const ym = payYm();
+  const max = payMaxYm();
+  return `
+    <div class="page-head">
+      <div><h2>${t('tPay')}</h2><p>${t('tPaySub')}</p></div>
+      <div class="spacer"></div>
+      <button class="btn" id="payCsv" type="button">${I.download} CSV</button>
+    </div>
+    <div class="monthbar">
+      <button class="daybar-nav" data-pay-shift="-1" type="button" aria-label="${t('payPrevMonth')}">${I.chevL}</button>
+      <label class="daybar-mid">
+        <span class="daybar-label" id="payMonthLabel">${esc(ymLabel(ym))}</span>
+        <input type="month" id="payMonth" value="${ym}" max="${max}" aria-label="${t('payPickMonth')}">
+      </label>
+      <button class="daybar-nav" data-pay-shift="1" type="button" aria-label="${t('payNextMonth')}" ${ym >= max ? 'disabled' : ''}>${I.chevR}</button>
+    </div>
+    ${ym > currentYm() ? `<div class="daybar-note">${I.note}<span>${t('payFutureNote')}</span></div>` : ''}
+    ${courseChips()}
+    <div id="payOut">${'<div class="skel"></div>'.repeat(4)}</div>`;
+}
+
+async function loadPayments() {
+  const ym = payYm();
+  const seq = ++paySeq;
+  const out = $('payOut');
+  if (out && state.pay) out.classList.add('is-loading');
+  const { data, error } = await sb.from('payments')
+    .select('id,student_id,month,amount,paid_on,note')
+    .gte('month', ymShift(ym, -PAY_LOOKBACK) + '-01').lte('month', ym + '-01');
+  // Oy tez-tez almashtirilsa eski javob yangisini bosib ketmasin
+  if (seq !== paySeq || state.view !== 'payments' || !$('payOut')) return;
+  if (error) {
+    $('payOut').innerHTML = `<div class="card"><div class="empty"><b>${t('error')}</b><p>${esc(error.message)}</p></div></div>`;
+    return;
+  }
+  state.pay = { ym, rows: data ?? [] };
+  renderPayments();
+}
+
+function payModel() {
+  const { ym, rows } = state.pay;
+  const byStudent = new Map();
+  rows.forEach((r) => {
+    if (!byStudent.has(r.student_id)) byStudent.set(r.student_id, new Map());
+    byStudent.get(r.student_id).set(r.month.slice(0, 7), r);
+  });
+  const allowed = new Set(myCourses().map((c) => c.id));
+  const items = state.students
+    .filter((s) => allowed.has(s.course_id) && (state.courseFilter === 'all' || s.course_id === state.courseFilter))
+    .map((s) => {
+      const pm = byStudent.get(s.id) || new Map();
+      const start = dayKey(s.created_at || new Date().toISOString()).slice(0, 7);
+      const p = pm.get(ym) || null;
+      // Arxivdagi o'quvchi qarzdor hisoblanmaydi; faqat shu oy to'lagan bo'lsa ko'rinadi
+      if (!p && (!s.active || start > ym)) return null;
+      const owed = [];
+      if (s.active) {
+        for (let i = PAY_LOOKBACK; i >= 0; i--) {
+          const m = ymShift(ym, -i);
+          if (m >= start && !pm.has(m)) owed.push(m);
+        }
+      }
+      const withAmount = [...pm.values()].filter((r) => r.amount != null).sort((a, b) => b.month.localeCompare(a.month));
+      return { s, c: courseById(s.course_id), p, owed, last: withAmount[0]?.amount ?? null };
+    })
+    .filter(Boolean);
+
+  const paid = items.filter((x) => x.p);
+  const unpaid = items.filter((x) => !x.p);
+  return {
+    ym, items, paid, unpaid,
+    collected: paid.reduce((n, x) => n + (x.p.amount || 0), 0),
+    multi: unpaid.filter((x) => x.owed.length >= 2).length,
+  };
+}
+
+function payFilter(list) {
+  const q = state.payQ.trim().toLowerCase();
+  const qd = q.replace(/\D+/g, '');
+  if (!q) return list;
+  return list.filter(({ s }) => s.full_name.toLowerCase().includes(q) ||
+    (qd.length >= 3 && String(s.parent_phone || '').replace(/\D+/g, '').includes(qd)) ||
+    String(s.parent_name || '').toLowerCase().includes(q));
+}
+
+function renderPayments() {
+  const out = $('payOut');
+  if (!out || !state.pay) return;
+  const d = payModel();
+  const tab = ['unpaid', 'paid', 'all'].includes(state.payTab) ? state.payTab : 'unpaid';
+  out.classList.remove('is-loading');
+  out.innerHTML = `
+    <div class="stats stats-compact pay-stats">
+      ${statTile(d.paid.length, t('payPaid'), 'check', 'green')}
+      ${statTile(d.unpaid.length, t('payUnpaid'), 'alert', 'red')}
+      ${statTile(d.multi, t('payDebtors2'), 'clock', d.multi ? 'red' : '')}
+      <div class="stat stat-sum"><b>${fmtSum(d.collected)}</b><span>${I.wallet}${t('payCollected')}</span></div>
+    </div>
+    <div class="seg seg-pay" role="tablist" aria-label="${t('tPay')}">${[
+      ['unpaid', t('payTabUnpaid'), d.unpaid.length], ['paid', t('payTabPaid'), d.paid.length], ['all', t('payTabAll'), d.items.length],
+    ].map(([k, label, n]) => `<button class="seg-btn${k === tab ? ' on' : ''}" role="tab" aria-selected="${k === tab}" data-pay-tab="${k}" type="button">${label} <span class="seg-n">${n}</span></button>`).join('')}</div>
+    <label class="field pay-search">
+      <span class="sr-only">${t('paySearch')}</span>
+      <input class="inp" id="payQ" type="search" placeholder="${t('paySearch')}" value="${esc(state.payQ)}" autocomplete="off">
+    </label>
+    <div id="payList">${payListHtml(d, tab)}</div>`;
+}
+
+function payListHtml(d, tab) {
+  const base = tab === 'paid' ? d.paid : tab === 'unpaid' ? d.unpaid : d.items;
+  const list = payFilter(base).sort((a, b) =>
+    tab === 'unpaid' ? b.owed.length - a.owed.length || a.s.full_name.localeCompare(b.s.full_name)
+    : tab === 'all' ? (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name)
+    : a.s.full_name.localeCompare(b.s.full_name));
+  if (!list.length) {
+    const [ico, title, sub] = state.payQ.trim() ? ['🔍', t('noStudentsT'), ''] : !d.items.length ? ['🧑‍🎓', t('payNoStudents'), t('payNoStudentsP')]
+      : tab === 'unpaid' ? ['🎉', t('payNoneUnpaid'), t('payNoneUnpaidP')] : ['🧾', t('payNonePaid'), t('payNonePaidP')];
+    return `<div class="card"><div class="empty"><div class="e-ico">${ico}</div><b>${title}</b>${sub ? `<p>${sub}</p>` : ''}</div></div>`;
+  }
+  return `<div class="rows">${list.map(payRow).join('')}</div>`;
+}
+
+function payRow({ s, c, p, owed }) {
+  const state_ = p
+    ? `<span class="pay-badge tone-green">${I.check}${t('payPaid')}</span>
+       <small>${p.amount != null ? sumText(p.amount) : t('payNoAmount')} · ${esc(shortDate(p.paid_on))}</small>`
+    : `<span class="pay-badge tone-red">${I.alert}${t('payUnpaid')}</span>
+       ${owed.length >= 2 ? `<small class="pay-owed">${t('payArrears', { n: owed.length })}</small>` : ''}`;
+  return `<div class="row pay-row${p ? ' is-paid' : ''}">
+    <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
+    <div class="row-main">
+      <div class="row-title">${esc(s.full_name)}${s.active ? '' : ` <span class="badge">${t('archive')}</span>`}</div>
+      <div class="row-sub"><span>${c.icon} ${esc(c.name)}</span>${s.parent_phone ? `<span>📞 ${esc(s.parent_phone)}</span>` : ''}</div>
+    </div>
+    <div class="pay-state">${state_}</div>
+    <div class="row-actions">
+      ${p ? `<button class="btn btn-sm" data-pay-open="${s.id}" type="button" aria-label="${t('edit')}: ${esc(s.full_name)}">${I.edit}</button>`
+          : `<button class="btn btn-sm btn-green" data-pay-open="${s.id}" type="button">${I.check} ${t('payMark')}</button>`}
+    </div>
+  </div>`;
+}
+
+// Tez tanlash: shu oy va oldingi oylarda eng ko'p yozilgan summalar
+function payQuickAmounts(extra) {
+  const freq = new Map();
+  (state.pay?.rows ?? []).forEach((r) => { if (r.amount) freq.set(r.amount, (freq.get(r.amount) || 0) + 1); });
+  const top = [...freq.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0]).map(([n]) => n);
+  return [...new Set([extra, ...top].filter(Boolean))].slice(0, 4);
+}
+
+function paySheet(sid) {
+  const d = payModel();
+  const it = d.items.find((x) => x.s.id === sid);
+  if (!it) return;
+  const { s, c, p, owed, last } = it;
+  const prefill = p ? p.amount : last;
+  const quick = payQuickAmounts(last);
+  const pastOwed = owed.filter((m) => m !== d.ym);
+  openSheet(`${t('navPay')} · ${esc(ymLabel(d.ym))}`, `
+    <div class="pay-who"><b>${esc(s.full_name)}</b><span>${c.icon} ${esc(c.name)}</span></div>
+    ${pastOwed.length ? `<p class="pay-owed-list">${I.alert}<span>${t('payArrearsList')}: ${pastOwed.map((m) => esc(ymShort(m))).join(', ')}</span></p>` : ''}
+    <form id="payForm" novalidate>
+      <label class="field"><span>${t('payAmount')}</span>
+        <input class="inp pay-amount" id="payAmount" inputmode="numeric" autocomplete="off" placeholder="0"
+          value="${prefill != null ? fmtSum(prefill) : ''}"></label>
+      ${quick.length ? `<div class="chips pay-quick" aria-label="${t('payQuick')}">${quick.map((n) =>
+        `<button class="chip" style="--acc:var(--green)" data-pay-quick="${n}" type="button">${fmtSum(n)}</button>`).join('')}</div>` : ''}
+      <label class="field"><span>${t('payDate')}</span>
+        <input class="inp" type="date" id="payDate" value="${p ? p.paid_on : todayKey()}" max="${todayKey()}"></label>
+      <label class="field"><span>${t('payNote')}</span>
+        <input class="inp" id="payNote" maxlength="200" placeholder="${t('payNotePh')}" value="${esc(p?.note ?? '')}"></label>
+      <p class="tpl-err" id="payErr" role="alert" hidden></p>
+      <button class="btn btn-green btn-block" id="paySave" type="submit">${I.check} ${p ? t('save') : t('payMark')}</button>
+      ${p ? `<button class="btn btn-danger btn-block" style="margin-top:9px" id="payDel" type="button">${I.trash} ${t('payDelete')}</button>` : ''}
+    </form>`, () => {
+    const amt = $('payAmount');
+    // Yozayotganda raqamlarni guruhlaymiz: 300000 -> 300 000
+    amt.addEventListener('input', () => {
+      const n = parseSum(amt.value);
+      amt.value = n == null || Number.isNaN(n) ? amt.value.replace(/[^\d\s]/g, '') : fmtSum(n);
+      $('payErr').hidden = true;
+    });
+    document.querySelectorAll('[data-pay-quick]').forEach((b) => b.addEventListener('click', () => {
+      amt.value = fmtSum(Number(b.dataset.payQuick));
+      $('payErr').hidden = true;
+    }));
+    $('payForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const amount = parseSum(amt.value);
+      const paidOn = $('payDate').value || todayKey();
+      const bad = Number.isNaN(amount) || (amount != null && (amount < 0 || amount > PAY_MAX)) || paidOn > todayKey();
+      if (bad) { const er = $('payErr'); er.textContent = t('payBadAmount'); er.hidden = false; amt.focus(); return; }
+      const row = { amount, paid_on: paidOn, note: $('payNote').value.trim() || null };
+      const btn = $('paySave'); btn.disabled = true;
+      const q = p
+        ? await sb.from('payments').update(row).eq('id', p.id).select('id').single()
+        : await sb.from('payments').insert({ ...row, student_id: s.id, month: d.ym + '-01' }).select('id').single();
+      btn.disabled = false;
+      if (q.error) {
+        // Boshqa admin shu daqiqada yozib qo'ygan
+        if (q.error.code === '23505') { closeSheet(); toast(t('payAlready'), 'bad'); return loadPayments(); }
+        toast('❌ ' + q.error.message, 'bad'); return;
+      }
+      closeSheet();
+      const newId = q.data?.id;
+      toast(t('paySaved', { name: s.full_name }), 'ok', !p && newId ? { fn: async () => {
+        const { error } = await sb.from('payments').delete().eq('id', newId);
+        if (error) toast('❌ ' + error.message, 'bad'); else toast(t('payRemoved'), 'ok');
+        loadPayments();
+      } } : undefined);
+      loadPayments();
+    });
+    if (p) $('payDel').addEventListener('click', async () => {
+      if (!confirm(t('payDeleteQ', { name: s.full_name, month: ymLabel(d.ym) }))) return;
+      const { error } = await sb.from('payments').delete().eq('id', p.id);
+      if (error) { toast('❌ ' + error.message, 'bad'); return; }
+      closeSheet(); toast(t('payRemoved'), 'ok');
+      loadPayments();
+    });
+  });
+}
+
+function setPayYm(ym) {
+  if (!/^\d{4}-\d{2}$/.test(ym || '')) return;
+  const max = payMaxYm();
+  state.payYm = ym > max ? max : ym;
+  state.pay = null;
+  render();
+}
+
+function exportPayCsv() {
+  if (!state.pay) return;
+  const d = payModel();
+  const head = [t('payCsvName'), t('csvCourse'), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed')];
+  const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const rows = [...d.items].sort((a, b) => (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name));
+  const lines = [head.map(q).join(';')].concat(rows.map(({ s, c, p, owed }) =>
+    [s.full_name, c.name, s.parent_phone, p ? t('payPaid') : t('payUnpaid'), p?.amount ?? '', p?.paid_on ?? '', p?.note ?? '',
+     owed.map(ymShort).join(', ')].map(q).join(';')));
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `parvoz-tolovlar-${d.ym}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* ============================================================
    OTA-ONAGA XABAR SHABLONLARI
    Yuborish mark-attendance funksiyasida. Standart matn, o'zgaruvchilar va
    renderTpl u yerdagi bilan AYNAN bir xil — namuna ota-ona oladigan xabarning
@@ -2228,7 +2554,7 @@ function studentSheet(id) {
     if (s) $('stDelete').addEventListener('click', async () => {
       if (!confirm(t('delStudent', { name: s.full_name }))) return;
       const { error } = await sb.from('students').delete().eq('id', s.id);
-      if (error) { toast('❌ ' + error.message, 'bad'); return; }
+      if (error) { toast('❌ ' + (error.code === '23503' ? t('delHasPayments') : error.message), 'bad'); return; }
       closeSheet(); toast(t('deleted'), 'ok');
       await Promise.all([loadStudents(), loadToday()]); render();
     });
@@ -2452,6 +2778,10 @@ document.addEventListener('click', async (e) => {
     if (state.view === 'report') {
       document.querySelectorAll('[data-chip]').forEach((b) => b.classList.toggle('on', b.dataset.chip === state.courseFilter));
       loadReport();
+    } else if (state.view === 'payments' && state.pay) {
+      // Kurs filtri faqat ro'yxatni o'zgartiradi — bazaga qayta so'rov shart emas
+      document.querySelectorAll('[data-chip]').forEach((b) => b.classList.toggle('on', b.dataset.chip === state.courseFilter));
+      renderPayments();
     } else render();
     return;
   }
@@ -2588,6 +2918,18 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
+  const payShift = el.closest('[data-pay-shift]');
+  if (payShift && !payShift.disabled) return setPayYm(ymShift(payYm(), Number(payShift.dataset.payShift)));
+  const payTab = el.closest('[data-pay-tab]');
+  if (payTab) {
+    state.payTab = payTab.dataset.payTab;
+    try { localStorage.setItem('parvoz-pay-tab', state.payTab); } catch (_) {}
+    return renderPayments();
+  }
+  const payOpen = el.closest('[data-pay-open]');
+  if (payOpen) return paySheet(payOpen.dataset.payOpen);
+  if (el.closest('#payCsv')) return exportPayCsv();
+
   const tplTab = el.closest('[data-tpl-kind]');
   if (tplTab) {
     state.tplKind = tplTab.dataset.tplKind;
@@ -2632,6 +2974,12 @@ document.addEventListener('click', async (e) => {
 
 document.addEventListener('input', (e) => {
   if (e.target.id === 'tplText') return tplSetDraft({ text: e.target.value });
+  if (e.target.id === 'payQ') {
+    state.payQ = e.target.value;
+    const d = payModel();
+    $('payList').innerHTML = payListHtml(d, ['unpaid', 'paid', 'all'].includes(state.payTab) ? state.payTab : 'unpaid');
+    return;
+  }
   if (e.target.id === 'searchInp') {
     state.search = e.target.value;
     const pos = e.target.selectionStart;
@@ -2688,6 +3036,7 @@ document.addEventListener('change', (e) => {
   if (e.target.id === 'repMonth') { hideTip(); loadReport(); }
   if (e.target.id === 'dayPick') setDay(e.target.value);
   if (e.target.id === 'tplOn') tplSetDraft({ on: e.target.checked });
+  if (e.target.id === 'payMonth') setPayYm(e.target.value);
 });
 // Saqlanmagan shablon bilan sahifani yopishdan oldin ogohlantiramiz
 window.addEventListener('beforeunload', (e) => {
