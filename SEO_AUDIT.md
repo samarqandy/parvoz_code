@@ -3,7 +3,12 @@
 **Property:** https://parvozcode.uz/ · **Repository:** `/home/user/parvoz_code` at commit `62710b4`
 **Audit date:** 2026-09-26 · **Method:** static analysis of the repository, unauthenticated `curl` against production, and lab measurement in Chromium (Playwright).
 
-**Rules observed:** no production code was modified. No review, rating, teacher, student, statistic, certification or achievement was invented. Anything that could not be established from the repository or an unauthenticated request is marked **NOT VERIFIED**.
+> **Status update — 2026-09-27.** Four of the five P0 findings have been fixed and verified
+> (commit follows this report). **P0-2 (`www`) remains open** and cannot be fixed from the
+> repository — it needs a change in the Vercel dashboard. Each P0 section below carries its
+> own status line. Everything from P1 downward is unchanged and still open.
+
+**Rules observed:** no production code was modified when this report was written. No review, rating, teacher, student, statistic, certification or achievement was invented. Anything that could not be established from the repository or an unauthenticated request is marked **NOT VERIFIED**.
 
 ---
 
@@ -58,6 +63,15 @@ Nothing here requires rewriting the site. The architecture is sound; it is incom
 
 ### P0-1 — Edge-function and build-tool source is served publicly
 
+> **FIXED (2026-09-27).** `.vercelignore` now excludes `supabase/`, `tools/`, `*.md` and
+> `.gitignore` from the deployment, so the files never reach the CDN rather than being
+> blocked at it. Verified locally that all 12 intended files are excluded and all 49 site
+> files are kept. Confirm against production after the next deploy.
+>
+> This also caught something the audit itself created: `SEO_AUDIT.md` — this file — would
+> have become publicly readable on the next deploy, publishing a description of the site's
+> weaknesses. It is excluded too.
+
 ```
 $ curl -o /dev/null -w "%{http_code} %{size_download}\n" https://parvozcode.uz/supabase/functions/admin-api/index.ts
 200 12835
@@ -79,6 +93,12 @@ Secondary: `.ts` files are served as `content-type: video/mp2t` (Vercel's extens
 
 ### P0-2 — `www.parvozcode.uz` is a broken dead end
 
+> **STILL OPEN — needs a dashboard change, not a code change.** The certificate is issued
+> by Vercel for the apex only. No file in this repository can add a `www` SAN, and a
+> `vercel.json` redirect would not help: the TLS handshake fails before any redirect is
+> served. Fix in Vercel → Project → Settings → Domains → add `www.parvozcode.uz` → set it
+> to redirect to `parvozcode.uz`. Verify with `curl -sSIL https://www.parvozcode.uz/`.
+
 ```
 $ getent hosts www.parvozcode.uz
 66.33.60.193    cname.vercel-dns.com www.parvozcode.uz
@@ -96,6 +116,14 @@ DNS for `www` is live and points at Vercel. Plain HTTP on `www` issues a 308 to 
 **NOT VERIFIED:** whether the cause is a missing domain in the Vercel project or a failed domain verification. The symptom is verified; the cause is not.
 
 ### P0-3 — The Russian conversion path terminates in Uzbek
+
+> **FIXED (2026-09-27).** The seven Russian pages now persist the language choice, so the
+> homepage renders in Russian when a Russian reader arrives there. Re-ran the exact
+> reproduction below in a clean browser profile: the CTA now lands on a Russian `<h1>` and a
+> Russian form heading, with `<html lang="ru">`. The Uzbek control path is unchanged.
+>
+> This closes the conversion leak. It does **not** give Russian a rankable homepage URL —
+> that still needs the split described in §20, which remains Phase 4 work.
 
 Reproduced in Chromium with an empty profile, 390 × 844:
 
@@ -115,6 +143,13 @@ Every Russian visitor therefore hits an Uzbek wall at exactly the moment they we
 
 ### P0-4 — Session recording runs on the page that collects personal data
 
+> **FIXED (2026-09-27).** The parent's name, phone number, free-text note and the honeypot
+> now carry Yandex's `ym-disable-keys` class, so their contents are replaced with asterisks
+> in Session Replay. The two `<select>` fields are deliberately left unmasked — course and
+> preferred time are not personal data and are useful analytics. Webvisor stays on
+> elsewhere. `maxfiylik.html` now discloses session recording and states that form field
+> contents are excluded from it.
+
 `index.html:252` (byte-identical on all 21 content pages):
 
 ```js
@@ -130,6 +165,11 @@ A repository-wide grep for Metrika masking directives — `data-ym-disable-recor
 The admin panel, which holds pupil names and parent phone numbers, is clean: no analytics at all, `noindex, nofollow`, and `Disallow`ed.
 
 ### P0-5 — FAQPage answer does not match the visible answer
+
+> **FIXED (2026-09-27).** The JSON-LD answer was aligned to the visible text (the visible
+> copy is the better wording, so it was kept). A programmatic comparison across all 18
+> FAQ-bearing pages now reports **71 Q&A pairs, 0 mismatches**; the checker was
+> negative-controlled against the old string to confirm it can actually detect a mismatch.
 
 | Source | Text |
 |---|---|
@@ -941,11 +981,11 @@ Organisation attribution exists on every article via `author` and `publisher`.
 
 | # | Issue | Evidence |
 |---|---|---|
-| 1 | Edge-function and build-tool source served publicly | `/supabase/functions/admin-api/index.ts` → 200; `/tools/*.py` → 200 |
-| 2 | `www.parvozcode.uz` TLS dead end, no redirect to apex | cert `CN=parvozcode.uz`, no `www` SAN |
-| 3 | Russian conversion path ends in an Uzbek form and pins `parvoz-lang=uz` | reproduced in a clean profile |
-| 4 | Webvisor records name + phone + child's age; zero masking directives | `index.html:252` + `:1072` |
-| 5 | FAQPage answer ≠ visible answer (Google policy) | `index.html:233` vs `:990` |
+| 1 | ~~Edge-function and build-tool source served publicly~~ **FIXED** | `.vercelignore` excludes `supabase/`, `tools/`, `*.md` |
+| 2 | `www.parvozcode.uz` TLS dead end, no redirect to apex — **STILL OPEN, dashboard** | cert `CN=parvozcode.uz`, no `www` SAN |
+| 3 | ~~Russian conversion path ends in an Uzbek form~~ **FIXED** | re-verified in a clean profile: lands on `lang="ru"` |
+| 4 | ~~Webvisor records name + phone + child's age~~ **FIXED** | `ym-disable-keys` on 4 fields; privacy policy updated |
+| 5 | ~~FAQPage answer ≠ visible answer~~ **FIXED** | 71 pairs / 18 pages, 0 mismatches |
 
 ### P1 — High
 
@@ -1069,12 +1109,12 @@ The `www` certificate is fixed in the Vercel dashboard, not in the repository: a
 
 ## 21. Implementation Roadmap
 
-### Phase 1 — Critical (P0)
-1. `vercel.json` blocking `/supabase/` and `/tools/`. *(Verify with `curl` that both return 404.)*
-2. Add `www.parvozcode.uz` in the Vercel dashboard, redirecting to the apex.
-3. Build the Russian homepage and point every Russian CTA at it.
-4. Add Metrika masking to the lead-form inputs; update `maxfiylik.html` to disclose session recording.
-5. Align the homepage FAQ JSON-LD with the visible text.
+### Phase 1 — Critical (P0) — 4 of 5 done
+1. ~~Block `/supabase/` and `/tools/`~~ — **done** via `.vercelignore` (better than a `vercel.json` rewrite: the files are never uploaded). *Verify with `curl` after the next deploy.*
+2. **Add `www.parvozcode.uz` in the Vercel dashboard, redirecting to the apex — STILL OPEN.** The only P0 that cannot be fixed from the repository.
+3. ~~Stop the Russian path landing on an Uzbek form~~ — **done**, minimally: the Russian pages persist the language choice. The full homepage split stays in Phase 4.
+4. ~~Metrika masking + privacy disclosure~~ — **done**.
+5. ~~Align the homepage FAQ JSON-LD with the visible text~~ — **done**.
 
 ### Phase 2 — SEO foundation
 6. Security headers, `/page.html/` redirect, branded `404.html`.
@@ -1210,12 +1250,12 @@ The second kind is harder, and no amount of markup will fix it. The site asks pa
 
 In implementation order.
 
-1. **Add `vercel.json` and block `/supabase/` and `/tools/`.** Server-side source is public right now. Verify with `curl` that both return 404.
-2. **Fix `www.parvozcode.uz`.** Add the domain in Vercel and redirect it to the apex. Anyone typing the address with `www` currently gets a TLS warning.
-3. **Build the Russian homepage.** Point every Russian CTA at it. This stops the Russian content leaking into an Uzbek form and is the single highest-value SEO change on the list.
-4. **Mask the lead-form fields from Webvisor** and disclose session recording in the privacy policy. It is currently recording a parent's name, phone number and a child's age.
-5. **Align the homepage FAQ JSON-LD with the visible answer.** One line; it is a Google policy violation today.
-6. **Ship the rest of `vercel.json`:** security headers, `/page.html/` → `/page.html` redirect, and a branded `404.html`.
+1. ~~Block `/supabase/` and `/tools/` from the deployment.~~ **Done** — `.vercelignore`. Confirm with `curl` after the next deploy.
+2. **Fix `www.parvozcode.uz`.** ← **now the first thing to do.** Add the domain in Vercel and redirect it to the apex. Anyone typing the address with `www` still gets a TLS warning. This is the only P0 left, and it is a dashboard change, not a code change.
+3. ~~Stop the Russian path landing on an Uzbek form.~~ **Done** minimally. Building the separate Russian homepage is still the highest-value *SEO* change, and is Phase 4.
+4. ~~Mask the lead-form fields from Webvisor and disclose session recording.~~ **Done.**
+5. ~~Align the homepage FAQ JSON-LD with the visible answer.~~ **Done.**
+6. **Ship `vercel.json`:** security headers, `/page.html/` → `/page.html` redirect, and a branded `404.html`.
 7. **Trim the six long titles to ≤60 characters** and the six long descriptions to ≤155.
 8. **Name one teacher per course** — name, photo, one paragraph — and **state the group size.** This does more for conversion than everything above it combined.
 9. **Build the five Russian course pages** with reciprocal hreflang, and delete the `.ru-block` islands.
