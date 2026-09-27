@@ -250,7 +250,27 @@ const STR = {
     payCsvName: "O'quvchi", payCsvStatus: 'Holat', payCsvOwed: "To'lanmagan oylar",
     delHasPayments: "Bu o'quvchida to'lovlar yozilgan — o'chirib bo'lmaydi. O'rniga uni arxivlang.",
     setTpl: '\u{1F4AC} Ota-onaga xabarlar',
-    setTplP: "Farzand kelganda, ketganda yoki darsga kelmaganda ota-onaga Telegramda boradigan matn. Faqat bugungi belgilashda yuboriladi.",
+    setTplP: "Farzand kelganda, ketganda yoki darsga kelmaganda ota-onaga Telegramda boradigan matn. Faqat bugungi belgilashda yuboriladi. To'lov eslatmasi esa faqat To'lovlar bo'limidan qo'lda yuboriladi.",
+    tplPayTab: "To'lov", tplPayManual: "Bu xabar avtomatik ketmaydi — faqat To'lovlar bo'limidan qo'lda yuboriladi.",
+    vOy: 'Oy', vOylar: 'Qarz oylar',
+    remBtn: 'Eslatma yuborish ({n})', remNoBot: 'Avval Sozlamalarda Telegram botni ulang',
+    remTitle: "To'lov eslatmasi", remBySearch: "Qidiruv bo'yicha: {n} ta",
+    remSumDebt: '{n} qarzdor', remSumOk: '{n} tasiga yuboriladi', remSumNoTg: '{n} tasi Telegramga ulanmagan',
+    remSumRecent: '{n} tasiga yaqinda yuborilgan', remSumBad: '{n} tasida ismni tekshiring',
+    remWillGet: 'Kimga yuboriladi ({n})', remAll: 'Hammasi', remNone: 'Hech biri', remSkipped: 'Yuborilmaydi ({n})',
+    remR_no_tg: 'Telegramga ulanmagan', remR_recent: 'yaqinda eslatilgan · {d}', remR_bad_name: 'ismni tekshiring',
+    remR_blocked: 'botni bloklagan', remR_no_chat: 'chat topilmadi', remR_unknown: "yetkazilgani noma'lum",
+    remR_paid: "to'lov yozilgan", remR_inactive: 'arxivda', remR_not_started: "bu oyda hali o'qimagan", remR_failed: 'yuborilmadi',
+    remSend: "{n} ta o'quvchi uchun eslatma yuborish",
+    remConfirm: "{n} ta o'quvchining ota-onasiga Telegram xabari yuboriladi. Davom etasizmi?",
+    remProgress: 'Yuborilmoqda: {n} / {total}…', remDone: '✅ {n} ta yuborildi', remNotReached: 'Yetib bormadi yoki yuborilmadi ({n})',
+    remAllReached: "Hammasiga yuborildi", remClose: 'Yopish',
+    remBroke: "Aloqa uzildi — ba'zi xabarlar yuborilgan bo'lishi mumkin, ro'yxat yangilandi",
+    remAbort_token: 'Bot ulanishi ishlamayapti — Sozlamalarda tokenni qayta ulang',
+    remAbort_format: 'Shablonni Telegram qabul qilmadi — matnni tekshiring',
+    remAbort_rate_limited: "Telegram vaqtincha cheklov qo'ydi — birozdan keyin urinib ko'ring",
+    remAbort_network: "Telegram bilan aloqa yo'q",
+    remBadgeSent: 'Eslatma yuborilgan', remBadgeUnknown: "Eslatma yetkazilgani noma'lum", remBadgeFailed: 'Eslatma yetkazilmadi',
     tplOn: 'Xabar yuborilsin',
     tplOnP: "O'chirilsa, belgi qo'yiladi, lekin ota-onaga xabar bormaydi",
     tplText: 'Xabar matni',
@@ -476,7 +496,27 @@ const STR = {
     payCsvName: 'Ученик', payCsvStatus: 'Статус', payCsvOwed: 'Неоплаченные месяцы',
     delHasPayments: 'У ученика есть оплаты — удалить нельзя. Переведите его в архив.',
     setTpl: '\u{1F4AC} Сообщения родителям',
-    setTplP: 'Текст, который родитель получает в Telegram, когда ребёнок пришёл, ушёл или не пришёл. Отправляется только при отметке за сегодня.',
+    setTplP: 'Текст, который родитель получает в Telegram, когда ребёнок пришёл, ушёл или не пришёл. Отправляется только при отметке за сегодня. Напоминание об оплате отправляется только вручную из раздела «Оплаты».',
+    tplPayTab: 'Оплата', tplPayManual: 'Это сообщение не уходит автоматически — только вручную из раздела «Оплаты».',
+    vOy: 'Месяц', vOylar: 'Долг. месяцы',
+    remBtn: 'Напомнить ({n})', remNoBot: 'Сначала подключите Telegram-бота в Настройках',
+    remTitle: 'Напоминание об оплате', remBySearch: 'По поиску: {n}',
+    remSumDebt: 'должников: {n}', remSumOk: 'отправим: {n}', remSumNoTg: 'не подключены к Telegram: {n}',
+    remSumRecent: 'недавно напоминали: {n}', remSumBad: 'проверьте имя: {n}',
+    remWillGet: 'Получат ({n})', remAll: 'Все', remNone: 'Никого', remSkipped: 'Не получат ({n})',
+    remR_no_tg: 'не подключён к Telegram', remR_recent: 'недавно напоминали · {d}', remR_bad_name: 'проверьте имя',
+    remR_blocked: 'заблокировал бота', remR_no_chat: 'чат не найден', remR_unknown: 'доставка не подтверждена',
+    remR_paid: 'оплата записана', remR_inactive: 'в архиве', remR_not_started: 'ещё не учился в этом месяце', remR_failed: 'не отправлено',
+    remSend: 'Отправить напоминание: {n} учеников',
+    remConfirm: 'Родителям {n} учеников будет отправлено сообщение в Telegram. Продолжить?',
+    remProgress: 'Отправка: {n} / {total}…', remDone: '✅ Отправлено: {n}', remNotReached: 'Не доставлено или не отправлено ({n})',
+    remAllReached: 'Отправлено всем', remClose: 'Закрыть',
+    remBroke: 'Связь прервалась — часть сообщений могла уйти, список обновлён',
+    remAbort_token: 'Бот не работает — переподключите токен в Настройках',
+    remAbort_format: 'Telegram не принял шаблон — проверьте текст',
+    remAbort_rate_limited: 'Telegram временно ограничил отправку — попробуйте позже',
+    remAbort_network: 'Нет связи с Telegram',
+    remBadgeSent: 'Напоминание отправлено', remBadgeUnknown: 'Доставка напоминания не подтверждена', remBadgeFailed: 'Напоминание не доставлено',
     tplOn: 'Отправлять сообщение',
     tplOnP: 'Если выключить, отметка сохранится, но родитель сообщение не получит',
     tplText: 'Текст сообщения',
@@ -558,6 +598,7 @@ const I = {
   chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
   chevL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
   chevR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+  bellOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.96 18 12.5 18 8A6 6 0 0 0 6 8c0 4.5-1.41 5.96-2.74 7.33"/></svg>',
   wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M21 9h-6a3 3 0 0 0 0 6h6z"/><circle cx="15.5" cy="12" r=".6" fill="currentColor"/></svg>',
   undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
@@ -2032,16 +2073,30 @@ async function loadPayments() {
   const seq = ++paySeq;
   const out = $('payOut');
   if (out && state.pay) out.classList.add('is-loading');
-  const { data, error } = await sb.from('payments')
-    .select('id,student_id,month,amount,paid_on,note')
-    .gte('month', ymShift(ym, -PAY_LOOKBACK) + '-01').lte('month', ym + '-01');
+  // Eslatmadagi qarz oylari joriy oygacha sanaladi — shuning uchun oraliq ikkalasini qamraydi
+  const cur = currentYm();
+  const lo = ymShift(ym < cur ? ym : cur, -PAY_LOOKBACK), hi = ym > cur ? ym : cur;
+  const [{ data, error }, rem] = await Promise.all([
+    sb.from('payments').select('id,student_id,month,amount,paid_on,note')
+      .gte('month', lo + '-01').lte('month', hi + '-01'),
+    sb.from('payment_reminders').select('student_id,status,code,sent_at,month')
+      .gte('sent_at', new Date(Date.now() - 31 * 86400e3).toISOString()).order('sent_at', { ascending: false }),
+  ]);
   // Oy tez-tez almashtirilsa eski javob yangisini bosib ketmasin
   if (seq !== paySeq || state.view !== 'payments' || !$('payOut')) return;
   if (error) {
     $('payOut').innerHTML = `<div class="card"><div class="empty"><b>${t('error')}</b><p>${esc(error.message)}</p></div></div>`;
     return;
   }
-  state.pay = { ym, rows: data ?? [] };
+  // Har o'quvchining eng oxirgi eslatmasi — belgi uchun; eng oxirgi YETGAN (failed emas)
+  // eslatma — 7 kunlik chegara uchun (server ham shunday hisoblaydi).
+  // Jurnal o'qilmasa ham to'lovlar ishlayveradi.
+  const remMap = new Map(), remOkMap = new Map();
+  (rem?.data ?? []).forEach((r) => {
+    if (!remMap.has(r.student_id)) remMap.set(r.student_id, r);
+    if (r.status !== 'failed' && !remOkMap.has(r.student_id)) remOkMap.set(r.student_id, r);
+  });
+  state.pay = { ym, rows: data ?? [], rem: remMap, remOk: remOkMap };
   renderPayments();
 }
 
@@ -2068,8 +2123,18 @@ function payModel() {
           if (m >= start && !pm.has(m)) owed.push(m);
         }
       }
+      // Eslatma uchun: joriy oygacha (tanlangan oy emas) barcha qarz oylari
+      const owedNow = [];
+      if (s.active) {
+        const cur = currentYm();
+        for (let i = PAY_LOOKBACK; i >= 0; i--) {
+          const m = ymShift(cur, -i);
+          if (m >= start && !pm.has(m)) owedNow.push(m);
+        }
+      }
       const withAmount = [...pm.values()].filter((r) => r.amount != null).sort((a, b) => b.month.localeCompare(a.month));
-      return { s, c: courseById(s.course_id), p, owed, last: withAmount[0]?.amount ?? null };
+      return { s, c: courseById(s.course_id), p, owed, owedNow, rem: state.pay.rem?.get(s.id) ?? null,
+        remOk: state.pay.remOk?.get(s.id) ?? null, last: withAmount[0]?.amount ?? null };
     })
     .filter(Boolean);
 
@@ -2120,20 +2185,22 @@ function payListHtml(d, tab) {
     tab === 'unpaid' ? b.owed.length - a.owed.length || a.s.full_name.localeCompare(b.s.full_name)
     : tab === 'all' ? (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name)
     : a.s.full_name.localeCompare(b.s.full_name));
+  const bar = tab === 'unpaid' ? remindBar(d, base) : '';
   if (!list.length) {
     const [ico, title, sub] = state.payQ.trim() ? ['🔍', t('noStudentsT'), ''] : !d.items.length ? ['🧑‍🎓', t('payNoStudents'), t('payNoStudentsP')]
       : tab === 'unpaid' ? ['🎉', t('payNoneUnpaid'), t('payNoneUnpaidP')] : ['🧾', t('payNonePaid'), t('payNonePaidP')];
-    return `<div class="card"><div class="empty"><div class="e-ico">${ico}</div><b>${title}</b>${sub ? `<p>${sub}</p>` : ''}</div></div>`;
+    return bar + `<div class="card"><div class="empty"><div class="e-ico">${ico}</div><b>${title}</b>${sub ? `<p>${sub}</p>` : ''}</div></div>`;
   }
-  return `<div class="rows">${list.map(payRow).join('')}</div>`;
+  return bar + `<div class="rows">${list.map(payRow).join('')}</div>`;
 }
 
-function payRow({ s, c, p, owed }) {
+function payRow({ s, c, p, owed, rem }) {
   const state_ = p
     ? `<span class="pay-badge tone-green">${I.check}${t('payPaid')}</span>
        <small>${p.amount != null ? sumText(p.amount) : t('payNoAmount')} · ${esc(shortDate(p.paid_on))}</small>`
     : `<span class="pay-badge tone-red">${I.alert}${t('payUnpaid')}</span>
-       ${owed.length >= 2 ? `<small class="pay-owed">${t('payArrears', { n: owed.length })}</small>` : ''}`;
+       ${owed.length >= 2 ? `<small class="pay-owed">${t('payArrears', { n: owed.length })}</small>` : ''}
+       ${remBadge(rem)}`;
   return `<div class="row pay-row${p ? ' is-paid' : ''}">
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
@@ -2228,6 +2295,167 @@ function paySheet(sid) {
   });
 }
 
+/* ---------- To'lov eslatmasi (Telegram) ----------
+   Yuborish admin-api → send_reminders da; server hammasini qayta tekshiradi.
+   Bu yerda faqat kimga ketishini oldindan ko'rsatamiz. */
+const REMIND_COOLDOWN_DAYS = 7;   // admin-api bilan bir xil
+const REMIND_CHUNK = 50;          // admin-api → REMIND_MAX
+// admin-api dagi normName/badName bilan bir xil: ismda karta raqami yoki havola bo'lmasin
+const remName = (n) => String(n ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
+const remBadName = (n) => /https?:\/\/|www\.|t\.me\/|@/i.test(n) || /\d{7,}/.test(n.replace(/[\s().-]/g, ''));
+const remDate = (iso) => shortDate(dayKey(iso));
+const telHref = (ph) => 'tel:+' + String(ph || '').replace(/\D+/g, '');
+
+function remBadge(rem) {
+  if (!rem) return '';
+  const d = esc(remDate(rem.sent_at));
+  if (rem.status === 'sent') return `<small class="pay-rem" title="${t('remBadgeSent')}">${I.bellOn}${d}</small>`;
+  if (rem.status === 'failed') return `<small class="pay-rem is-failed" title="${t('remBadgeFailed')}">${I.bell}${d}</small>`;
+  return `<small class="pay-rem is-unknown" title="${t('remBadgeUnknown')}">${I.bellOn}${d} ?</small>`;
+}
+
+// Nega yuborilmaydi — null bo'lsa yuboriladi
+function remBlock(it, now = Date.now()) {
+  if (!it.s.telegram_chat_id) return { code: 'no_tg' };
+  if (remBadName(remName(it.s.full_name))) return { code: 'bad_name' };
+  const r = it.remOk;
+  if (r && now - Date.parse(r.sent_at) < REMIND_COOLDOWN_DAYS * 86400e3) {
+    return { code: 'recent', d: remDate(r.sent_at) };
+  }
+  return null;
+}
+const remReason = (b) => t('remR_' + b.code, { d: b.d || '' });
+
+// Eslatma faqat joriy va oldingi 11 oy uchun (keyingi oy — oldindan to'lov, qarz emas)
+const remMonthOk = (ym) => ym <= currentYm() && ym >= ymShift(currentYm(), -PAY_LOOKBACK);
+
+function remindBar(d, base) {
+  if (!remMonthOk(d.ym)) return '';
+  const cands = payFilter(base);
+  const n = cands.filter((it) => !remBlock(it)).length;
+  const noBot = !state.botUsername;
+  return `<div class="rem-bar">
+    <button class="btn btn-sm rem-open" id="remOpen" type="button" ${n && !noBot ? '' : 'disabled'}
+      ${noBot ? `title="${t('remNoBot')}"` : ''}>${I.bellOn} ${t('remBtn', { n })}</button>
+    ${noBot ? `<small>${t('remNoBot')}</small>` : ''}
+  </div>`;
+}
+
+function remVars(it, ym) {
+  const oy = (m) => DATE_NAMES.uz.m[Number(m.slice(5, 7)) - 1];
+  return {
+    ism: remName(it.s.full_name),
+    kurs: it.c?.name || '',
+    oy: oy(ym),
+    oylar: it.owedNow.length === 1 && it.owedNow[0] === ym ? '' : it.owedNow.map(oy).join(', '),
+  };
+}
+
+function remindSheet() {
+  const d = payModel();
+  const cands = payFilter(d.unpaid);
+  const now = Date.now();
+  const ok = [], bad = [];
+  cands.forEach((it) => { const b = remBlock(it, now); (b ? bad : ok).push({ it, b }); });
+  const cnt = (code) => bad.filter((x) => x.b.code === code).length;
+  const summary = [t('remSumDebt', { n: cands.length }), t('remSumOk', { n: ok.length }),
+    cnt('no_tg') && t('remSumNoTg', { n: cnt('no_tg') }), cnt('recent') && t('remSumRecent', { n: cnt('recent') }),
+    cnt('bad_name') && t('remSumBad', { n: cnt('bad_name') })].filter(Boolean).join(' · ');
+  const tplText = tplSaved('pay').text;
+
+  openSheet(`${t('remTitle')} · ${esc(ymLabel(d.ym))}`, `
+    <div id="remBody">
+      ${state.payQ.trim() ? `<p class="rem-scope">${t('remBySearch', { n: cands.length })}</p>` : ''}
+      <p class="rem-summary">${summary}</p>
+      <div class="tpl-prev-head"><span>${t('tplPrev')}</span></div>
+      <div class="tg-chat"><div class="tg-bubble"><div class="tg-text" id="remPrev"></div></div></div>
+      <div class="rem-list-head"><b id="remCount">${t('remWillGet', { n: ok.length })}</b>
+        <button class="btn btn-sm btn-ghost" id="remToggle" type="button">${t('remNone')}</button></div>
+      <div class="check-list rem-list">${ok.map(({ it }) => `
+        <label class="check-item"><input type="checkbox" class="remPick" value="${it.s.id}" checked>
+          <span class="rem-who"><span class="rem-name">${esc(it.s.full_name)}</span><small>${it.c.icon} ${esc(it.c.name)}</small></span></label>`).join('')}</div>
+      ${bad.length ? `<details class="rem-skip"><summary>${t('remSkipped', { n: bad.length })}</summary>
+        <div class="rem-skip-list">${bad.map(({ it, b }) => `<div class="rem-skip-row">
+          <span class="rem-who"><span class="rem-name">${esc(it.s.full_name)}</span><small>${esc(remReason(b))}</small></span>
+          ${it.s.parent_phone ? `<a class="rem-tel" href="${esc(telHref(it.s.parent_phone))}">${esc(it.s.parent_phone)}</a>` : ''}</div>`).join('')}</div></details>` : ''}
+      <div class="sheet-foot"><button class="btn btn-primary btn-block" id="remSend" type="button">${I.bellOn} <span>${t('remSend', { n: ok.length })}</span></button></div>
+    </div>`, () => {
+    const picks = () => [...document.querySelectorAll('.remPick')].filter((x) => x.checked).map((x) => x.value);
+    const byId = new Map(ok.map(({ it }) => [it.s.id, it]));
+    const refresh = () => {
+      const ids = picks();
+      $('remCount').textContent = t('remWillGet', { n: ids.length });
+      $('remSend').querySelector('span').textContent = t('remSend', { n: ids.length });
+      $('remSend').disabled = !ids.length;
+      $('remToggle').textContent = ids.length === ok.length ? t('remNone') : t('remAll');
+      const first = byId.get(ids[0]) || ok[0]?.it;
+      // Namuna — ro'yxatdagi birinchi belgilangan o'quvchi uchun, server ishlatadigan shablon bilan
+      $('remPrev').innerHTML = first ? renderTpl(tplText, remVars(first, d.ym)) : '';
+    };
+    document.querySelectorAll('.remPick').forEach((x) => x.addEventListener('change', refresh));
+    $('remToggle').addEventListener('click', () => {
+      const all = picks().length !== ok.length;
+      document.querySelectorAll('.remPick').forEach((x) => { x.checked = all; });
+      refresh();
+    });
+    $('remSend').addEventListener('click', () => remindSend(picks(), d.ym));
+    refresh();
+  });
+}
+
+async function remindSend(ids, ym) {
+  if (!ids.length || !confirm(t('remConfirm', { n: ids.length }))) return;
+  const btn = $('remSend');
+  btn.disabled = true;
+  const label = btn.querySelector('span');
+  const queue = [...ids];
+  const results = new Map();
+  let aborted = null, broke = false, done = 0;
+  try {
+    while (queue.length) {
+      label.textContent = t('remProgress', { n: done, total: ids.length });
+      const chunk = queue.splice(0, REMIND_CHUNK);
+      const r = await edge('admin-api', { action: 'send_reminders', month: ym, student_ids: chunk });
+      (r.results || []).forEach((x) => results.set(x.student_id, x));
+      done += (r.results || []).length;
+      if (r.aborted) { aborted = r.aborted; break; }
+      // Vaqt chegarasiga yetib qolganlar — keyingi so'rovda birinchi bo'lib
+      if (r.not_sent?.length) queue.unshift(...r.not_sent);
+      if (!(r.results || []).length) break;          // oldinga siljish yo'q — to'xtaymiz
+    }
+  } catch (_e) {
+    broke = true;
+  } finally {
+    loadPayments();
+  }
+  remindResult(ids, results, { aborted, broke });
+}
+
+function remindResult(ids, results, { aborted, broke }) {
+  const body = $('remBody');
+  if (!body) { toast(t('remDone', { n: [...results.values()].filter((x) => x.status === 'sent').length }), 'ok'); return; }
+  const stById = new Map(state.students.map((s) => [s.id, s]));
+  const sent = ids.filter((id) => results.get(id)?.status === 'sent').length;
+  const miss = ids.filter((id) => results.get(id)?.status !== 'sent').map((id) => {
+    const r = results.get(id);
+    const code = !r ? 'failed' : r.status === 'unknown' ? 'unknown'
+      : ['blocked', 'no_chat', 'recent', 'no_tg', 'bad_name', 'paid', 'inactive', 'not_started'].includes(r.code) ? r.code : 'failed';
+    // Ism paneldagi to'liq ko'rinishda (server uni 60 belgigacha qisqartiradi)
+    return { s: stById.get(id), name: stById.get(id)?.full_name || r?.name || '—', code };
+  });
+  body.innerHTML = `
+    ${broke ? `<p class="tpl-err">${t('remBroke')}</p>` : ''}
+    ${aborted ? `<p class="tpl-err">${t('remAbort_' + aborted)}</p>` : ''}
+    <p class="rem-done">${t('remDone', { n: sent })}</p>
+    ${miss.length ? `<div class="rem-list-head"><b>${t('remNotReached', { n: miss.length })}</b></div>
+      <div class="rem-skip-list">${miss.map((m) => `<div class="rem-skip-row">
+        <span class="rem-who"><span class="rem-name">${esc(m.name)}</span><small>${esc(t('remR_' + m.code, { d: '' }).replace(/ · $/, ''))}</small></span>
+        ${m.s?.parent_phone ? `<a class="rem-tel" href="${esc(telHref(m.s.parent_phone))}">${esc(m.s.parent_phone)}</a>` : ''}</div>`).join('')}</div>`
+      : `<p class="rem-summary">${t('remAllReached')}</p>`}
+    <div class="sheet-foot"><button class="btn btn-block" data-close type="button">${t('remClose')}</button></div>`;
+  body.querySelector('[data-close]').addEventListener('click', () => closeSheet());
+}
+
 function setPayYm(ym) {
   if (!/^\d{4}-\d{2}$/.test(ym || '')) return;
   const max = payMaxYm();
@@ -2259,20 +2487,25 @@ function exportPayCsv() {
    renderTpl u yerdagi bilan AYNAN bir xil — namuna ota-ona oladigan xabarning
    o'zi bo'lishi uchun (edge testida ikkalasi bir xil natija berishi tekshiriladi).
    ============================================================ */
-const TPL_KINDS = ['in', 'out', 'absent', 'excused'];
+const TPL_KINDS = ['in', 'out', 'absent', 'excused', 'pay'];
 const TPL_DEFAULT = {
   in:      "✅ *{ism}* soat *{vaqt}* da Parvoz O'quv Markaziga *keldi*.\n📚 {kurs}",
   out:     "🏠 *{ism}* soat *{vaqt}* da markazdan *ketdi*.\n📚 {kurs}",
   absent:  "❗️ *{ism}* bugungi darsga *kelmadi*.\n📚 {kurs}\n\nAgar sabab bo'lsa, iltimos o'qituvchiga xabar bering.",
   excused: "📝 *{ism}* bugun *sababli* qoldi.\n💬 {sabab}\n📚 {kurs}",
+  // admin-api → DEFAULT_PAY bilan aynan bir xil
+  pay:     "💳 Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi bizda hali qayd etilmagan.\n🗓 Qayd etilmagan oylar: {oylar}\n📚 {kurs}\n\nAgar to'lovni qilgan bo'lsangiz, iltimos, o'qituvchiga yoki markaz ma'muriyatiga ayting — tekshirib, belgilab qo'yamiz. Rahmat!",
 };
 const TPL_VARS = {
   in:      ['ism', 'vaqt', 'kurs', 'sana'],
   out:     ['ism', 'vaqt', 'kurs', 'sana'],
   absent:  ['ism', 'kurs', 'sana'],
   excused: ['ism', 'sabab', 'kurs', 'sana'],
+  pay:     ['ism', 'kurs', 'oy', 'oylar'],
 };
-const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', sana: 'vSana', sabab: 'vSabab' };
+const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', sana: 'vSana', sabab: 'vSabab', oy: 'vOy', oylar: 'vOylar' };
+// Tab uchun nom va belgi: holatlar MARKS dan, to'lov eslatmasi alohida
+const tplMeta = (k) => (k === 'pay' ? { label: t('tplPayTab'), icon: 'wallet', tone: 'gold' } : MARKS[k]);
 const TPL_MAX = 1000;
 
 function renderTpl(text, vars) {
@@ -2326,6 +2559,8 @@ function tplSample() {
     // Xabar ota-onaga doim o'zbekcha sana bilan ketadi — panel tili qanday bo'lmasin
     sana: `${Number(key.slice(8, 10))}-${DATE_NAMES.uz.m[Number(key.slice(5, 7)) - 1]}`,
     sabab: t('r1'),
+    oy: DATE_NAMES.uz.m[Number(key.slice(5, 7)) - 1],
+    oylar: [ymShift(key.slice(0, 7), -1), key.slice(0, 7)].map((m) => DATE_NAMES.uz.m[Number(m.slice(5, 7)) - 1]).join(', '),
   };
 }
 
@@ -2334,8 +2569,9 @@ function tplTabs() {
     const on = k === state.tplKind;
     const mark = tplDirty(k) ? `<i class="tpl-dot" title="${t('tplUnsaved')}"></i>`
       : !tplCurrent(k).on ? `<i class="tpl-offdot" title="${t('tplOff')}"></i>` : '';
+    const m = tplMeta(k);
     return `<button class="seg-btn${on ? ' on' : ''}" role="tab" aria-selected="${on}" data-tpl-kind="${k}" type="button">
-      <span class="tone-${MARKS[k].tone}">${ico(MARKS[k])}</span><span class="seg-lbl">${MARKS[k].label}</span>${mark}</button>`;
+      <span class="tone-${m.tone}">${ico(m)}</span><span class="seg-lbl">${m.label}</span>${mark}</button>`;
   }).join('')}</div>`;
 }
 
@@ -2343,11 +2579,12 @@ function tplBody() {
   const k = state.tplKind;
   const cur = tplCurrent(k);
   return `
+    ${k === 'pay' ? `<p class="tpl-manual">${I.wallet}<span>${t('tplPayManual')}</span></p>` : `
     <label class="switch-row">
       <input type="checkbox" role="switch" id="tplOn" ${cur.on ? 'checked' : ''}>
       <span class="switch" aria-hidden="true"></span>
       <span class="switch-txt"><b>${t('tplOn')}</b><small>${t('tplOnP')}</small></span>
-    </label>
+    </label>`}
     <label class="field tpl-field"><span>${t('tplText')}</span>
       <textarea class="inp tpl-text" id="tplText" rows="5" spellcheck="false">${esc(cur.text)}</textarea></label>
     <div class="tpl-tools">
@@ -2926,6 +3163,7 @@ document.addEventListener('click', async (e) => {
     try { localStorage.setItem('parvoz-pay-tab', state.payTab); } catch (_) {}
     return renderPayments();
   }
+  if (el.closest('#remOpen')) return remindSheet();
   const payOpen = el.closest('[data-pay-open]');
   if (payOpen) return paySheet(payOpen.dataset.payOpen);
   if (el.closest('#payCsv')) return exportPayCsv();

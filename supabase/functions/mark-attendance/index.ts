@@ -55,6 +55,10 @@ const REPLACES: Record<Kind, Kind[]> = {
 };
 
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Xato matnidan bot tokenini olib tashlaymiz: tarmoq xatosi URL ni (bot<TOKEN>) iqtibos qiladi
+const redact = (s: string) => s.replace(/bot\d+:[\w-]+/g, 'bot***');
+// ilike da _ va % qolip belgisi — foydalanuvchining o'z emaili qolip bo'lib qolmasin
+const likeEsc = (s: string) => s.replace(/[\\%_]/g, '\\$&');
 
 // Samarqand bo'yicha kun kaliti (UTC+5, yoz vaqti yo'q)
 function dayKeyOf(d: Date): string {
@@ -149,7 +153,7 @@ Deno.serve(async (req) => {
     if (uerr || !email) return json({ error: 'unauthorized' }, 401);
 
     const { data: teacher } = await admin
-      .from('allowed_teachers').select('email, role').ilike('email', email).maybeSingle();
+      .from('allowed_teachers').select('email, role').ilike('email', likeEsc(email)).maybeSingle();
     if (!teacher) return json({ error: 'unauthorized' }, 401);
 
     const body = await req.json();
@@ -185,7 +189,7 @@ Deno.serve(async (req) => {
     let allowedCourses: Set<string> | null = null;
     if (teacher.role !== 'admin') {
       const { data: links } = await admin
-        .from('teacher_courses').select('course_id').ilike('email', email);
+        .from('teacher_courses').select('course_id').ilike('email', likeEsc(email));
       allowedCourses = new Set((links ?? []).map((l) => l.course_id));
     }
 
@@ -264,12 +268,18 @@ Deno.serve(async (req) => {
           sabab: note ?? '',
         });
 
-        const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: student.telegram_chat_id, text, parse_mode: 'HTML' }),
-        });
-        notified = !!(await r.json().catch(() => null))?.ok;
+        // Telegram ishlamasa ham belgi saqlangan — xato butun guruhni to'xtatmasin
+        try {
+          const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: student.telegram_chat_id, text, parse_mode: 'HTML' }),
+            signal: AbortSignal.timeout(10_000),
+          });
+          notified = !!(await r.json().catch(() => null))?.ok;
+        } catch (_e) {
+          notified = false;
+        }
         if (notified) notifiedCount++;
       }
 
@@ -297,6 +307,6 @@ Deno.serve(async (req) => {
     });
 
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    return json({ error: redact(String(e)) }, 500);
   }
 });

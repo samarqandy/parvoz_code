@@ -15,6 +15,9 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+// ilike da _ va % qolip belgisi — foydalanuvchining o'z emaili qolip bo'lib qolmasin
+const likeEsc = (s: string) => s.replace(/[\\%_]/g, '\\$&');
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -58,7 +61,7 @@ Deno.serve(async (req) => {
     if (uerr || !email) return json({ error: 'unauthorized' }, 401);
 
     const { data: teacher } = await admin
-      .from('allowed_teachers').select('email, role').ilike('email', email).maybeSingle();
+      .from('allowed_teachers').select('email, role').ilike('email', likeEsc(email)).maybeSingle();
     if (!teacher) return json({ error: 'unauthorized' }, 401);
 
     const body = await req.json().catch(() => ({}));
@@ -77,7 +80,7 @@ Deno.serve(async (req) => {
     if (teacher.role !== 'admin') {
       const { data: link } = await admin
         .from('teacher_courses').select('course_id')
-        .ilike('email', email).eq('course_id', student.course_id).maybeSingle();
+        .ilike('email', likeEsc(email)).eq('course_id', student.course_id).maybeSingle();
       if (!link) return json({ error: 'Bu kurs sizga biriktirilmagan' }, 403);
     }
 
