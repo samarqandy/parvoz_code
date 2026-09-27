@@ -1,0 +1,15 @@
+# Vercel repo ildizini statik papka sifatida beradi — ya'ni bu yerdagi HAR QANDAY
+# fayl ochiq bo'ladi. Quyidagilar saytga kerak emas va ommaga chiqmasligi kerak.
+
+# Server tomoni. Bu funksiyalar Supabase'ga alohida deploy qilinadi;
+# veb-xostda ularning manbasi hech qachon kerak emas.
+supabase/
+
+# Build vositalari va maqolalar manbasi.
+tools/
+
+# Ichki hujjatlar (SEO_AUDIT.md, tools/README.md, supabase/functions/README.md).
+# Saytning o'zi birorta .md faylni ishlatmaydi.
+*.md
+
+.gitignore

@@ -230,7 +230,7 @@
   "mainEntity": [
     {"@type":"Question","name":"Necha yoshdan qabul qilinadi?","acceptedAnswer":{"@type":"Answer","text":"6 yoshdan boshlab qabul qilamiz. Har bir yo'nalish uchun alohida yosh guruhlari mavjud."}},
     {"@type":"Question","name":"Kompyuter yoki shaxmat doskasi kerakmi?","acceptedAnswer":{"@type":"Answer","text":"Yo'q! Barcha kerakli jihozlar markazda mavjud. Farzandingiz faqat o'zi kelishi kifoya."}},
-    {"@type":"Question","name":"Sinov darsi bormi?","acceptedAnswer":{"@type":"Answer","text":"Ha! Birinchi dars to'liq bepul. Saytdagi tugma orqali yozilishingiz mumkin."}},
+    {"@type":"Question","name":"Sinov darsi bormi?","acceptedAnswer":{"@type":"Answer","text":"Ha! Birinchi dars to'liq bepul. Saytdagi \"Yozilish\" tugmasi orqali ariza qoldiring."}},
     {"@type":"Question","name":"Bir vaqtda bir necha kurs olsa bo'ladimi?","acceptedAnswer":{"@type":"Answer","text":"Ha, mumkin! Jadval bir-biriga to'g'ri kelmasa, bir vaqtda bir necha yo'nalishda o'qish mumkin."}},
     {"@type":"Question","name":"To'lovni qanday amalga oshirish mumkin?","acceptedAnswer":{"@type":"Answer","text":"To'lov naqd yoki Click/Payme orqali amalga oshiriladi. Har oyning boshida to'lanadi."}}
   ]
@@ -1073,11 +1073,11 @@
         <div class="f-row">
           <label class="f-field">
             <span><span data-lang="uz" class="show">Ismingiz *</span><span data-lang="ru">Ваше имя *</span><span data-lang="en">Your name *</span></span>
-            <input class="f-inp" name="full_name" autocomplete="name" required>
+            <input class="f-inp ym-disable-keys" name="full_name" autocomplete="name" required>
           </label>
           <label class="f-field">
             <span><span data-lang="uz" class="show">Telefon *</span><span data-lang="ru">Телефон *</span><span data-lang="en">Phone *</span></span>
-            <input class="f-inp" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___ __ __" required>
+            <input class="f-inp ym-disable-keys" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___ __ __" required>
           </label>
         </div>
         <div class="f-row">
@@ -1092,10 +1092,10 @@
         </div>
         <label class="f-field">
           <span><span data-lang="uz" class="show">Izoh</span><span data-lang="ru">Комментарий</span><span data-lang="en">Comment</span></span>
-          <input class="f-inp" name="note" id="leadNote">
+          <input class="f-inp ym-disable-keys" name="note" id="leadNote">
         </label>
 
-        <input class="f-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input class="f-hp ym-disable-keys" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 
         <label class="f-consent">
           <input type="checkbox" required>

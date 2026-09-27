@@ -130,6 +130,15 @@ def head(*, lang, title, desc, url, alt_url, page_type='article', ld=''):
     """Ikkala tildagi sahifa uchun umumiy <head>."""
     u = UI[lang]
     uz_url, ru_url = (url, alt_url) if lang == 'uz' else (alt_url, url)
+
+    # Ruscha sahifaga kelgan odam uchun til tanlovini saqlab qo'yamiz. Busiz
+    # bosh sahifadagi CTA ("Записаться") o'zbekcha formaga olib borardi:
+    # index.html localStorage'dan o'qiydi va hech narsa yo'q bo'lsa 'uz' qo'yadi.
+    lang_boot = '''
+<script>
+try { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}
+</script>''' if lang == 'ru' else ''
+
     return f'''<!DOCTYPE html>
 <html lang="{u['lang']}">
 <head>
@@ -170,7 +179,7 @@ def head(*, lang, title, desc, url, alt_url, page_type='article', ld=''):
   }}
   document.documentElement.setAttribute('data-theme', t);
 }})();
-</script>
+</script>{lang_boot}
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
