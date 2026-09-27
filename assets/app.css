@@ -336,11 +336,69 @@ select.inp option, select.inp optgroup { background: var(--sheet-bg); color: var
 .row-sub { color: var(--muted); font-size: .8rem; font-weight: 700; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .row-actions { display: flex; gap: 7px; flex-shrink: 0; }
 .group-title {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
   font-size: .76rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase;
   color: var(--faint); margin: 18px 0 9px;
 }
+.group-title > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Guruh tugmasi katta bosiladigan nishon bo'lsin */
+.group-title .btn { flex: none; min-height: 40px; letter-spacing: 0; text-transform: none; }
 .group-title:first-child { margin-top: 0; }
+
+/* ===================== KUN TANLAGICH ===================== */
+.daybar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin: 14px 0 4px;
+}
+.daybar-nav {
+  flex: none; width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text);
+}
+.daybar-nav svg { width: 20px; height: 20px; }
+.daybar-nav:disabled { opacity: .35; }
+.daybar-nav:not(:disabled):hover { background: var(--surface-2); }
+
+/* Sana maydoni ko'rinmas holda ustiga qo'yiladi — butun maydon bosiladi */
+.daybar-mid {
+  position: relative; flex: 1 1 auto; min-width: 150px;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 14px;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); cursor: pointer;
+}
+.daybar-mid:hover { background: var(--surface-2); }
+.daybar-mid { flex-direction: column; gap: 1px; padding: 5px 14px; }
+.daybar-label { font-weight: 900; font-size: .95rem; line-height: 1.2; }
+.daybar-sub { font-size: .72rem; font-weight: 700; color: var(--muted); line-height: 1.2; }
+.daybar-mid input[type="date"] {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; border: 0; padding: 0; cursor: pointer;
+  font: inherit; color: transparent; background: transparent;
+}
+.daybar .btn { flex: none; min-height: 44px; }
+
+.daybar-note {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 0 2px; padding: 10px 13px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--violet) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet) 32%, transparent);
+  color: var(--violet-ink); font-weight: 700; font-size: .84rem; line-height: 1.45;
+}
+.daybar-note svg { flex: none; width: 17px; height: 17px; }
+.daybar-note > span { flex: 1 1 auto; min-width: 0; }
+.daybar-back {
+  flex: none; margin: -6px -5px -6px 0; padding: 0 12px; min-height: 40px;
+  border-radius: var(--r-sm); font: inherit; font-weight: 900; font-size: .8rem;
+  color: var(--violet-ink);
+  background: color-mix(in srgb, var(--violet) 18%, transparent);
+}
+.daybar-back:hover { background: color-mix(in srgb, var(--violet) 28%, transparent); }
+
+/* Server javobini kutayotgan qator biroz so'niq turadi */
+.row.is-pending { opacity: .62; }
 
 /* ===================== TABLE ===================== */
 .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow-x: auto; }
@@ -410,11 +468,20 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   width: min(94vw, 420px); display: flex; flex-direction: column; gap: 8px;
 }
 .toast {
+  display: flex; align-items: center; gap: 12px;
   background: var(--sheet-bg); border: 1px solid var(--border-2);
   border-radius: var(--r-sm); padding: 12px 15px;
   font-weight: 700; font-size: .9rem; box-shadow: var(--shadow);
   animation: toastIn .22s ease;
 }
+.toast-act {
+  flex: none; margin: -8px -7px -8px 0; padding: 10px 12px;
+  min-height: 40px; border-radius: var(--r-sm);
+  color: var(--gold-ink); font: inherit; font-weight: 900;
+  text-transform: uppercase; letter-spacing: .04em; font-size: .78rem;
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+}
+.toast-act:hover { background: color-mix(in srgb, var(--gold) 24%, transparent); }
 .toast.ok  { border-color: color-mix(in srgb, var(--green) 55%, transparent); }
 .toast.bad { border-color: color-mix(in srgb, var(--red) 55%, transparent); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -456,6 +523,15 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .page { padding: 18px 16px 30px; }
   .row { padding: 12px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
+
+  /* Davomat ekranida statistika bitta qatorda — o'quvchilar ro'yxati
+     birinchi ekranda ko'rinishi kerak, asosiy ish shu */
+  .stats.stats-compact { grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 14px; }
+  .stats-compact .stat { padding: 9px 2px 8px; border-radius: var(--r-sm); }
+  .stats-compact .stat b { font-size: 1.15rem; }
+  .stats-compact .stat span { font-size: .6rem; gap: 0; letter-spacing: -.01em; }
+  .stats-compact .stat span svg { display: none; }
+  .page-head:has(+ .daybar) { display: none; }
 }
 @media (max-width: 400px) {
   .topbar .logo { display: none; }
@@ -521,7 +597,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   font-size: .82rem;
   word-break: break-all;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--border-2);
   border-radius: var(--r);
   padding: 11px 13px;
   margin: 12px 0;
