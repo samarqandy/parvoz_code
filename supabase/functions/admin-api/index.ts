@@ -27,12 +27,25 @@ async function setCfg(key: string, value: string) {
   await admin.from('app_config').upsert({ key, value, updated_at: new Date().toISOString() });
 }
 
+// Telegram so'rovi hech qachon throw qilmaydi: tarmoq xatosining matnida URL, ya'ni
+// bot tokeni bo'ladi — u panelga yoki bazaga tushmasligi kerak.
 async function tg(token: string, method: string, payload: Record<string, unknown>) {
-  const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
-  });
-  return await res.json();
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10_000),
+    });
+    return (await res.json().catch(() => null)) ?? { ok: false, description: 'Telegram javobi tushunarsiz' };
+  } catch (e) {
+    return { ok: false, description: (e as Error)?.name === 'TimeoutError' ? 'Telegram javob bermadi' : "Telegram bilan aloqa yo'q", net: true };
+  }
 }
+
+// Xato matnidan bot tokenini olib tashlaymiz (har ehtimolga qarshi)
+const redact = (s: string) => s.replace(/bot\d+:[\w-]+/g, 'bot***');
+
+// ilike da _ va % qolip belgisi — foydalanuvchining o'z emaili qolip bo'lib qolmasin
+const likeEsc = (s: string) => s.replace(/[\\%_]/g, '\\$&');
 
 function randomHex(bytes = 32): string {
   const b = new Uint8Array(bytes);
@@ -66,8 +79,64 @@ const TPL_VARS: Record<string, string[]> = {
   out:     ['ism', 'vaqt', 'kurs', 'sana'],
   absent:  ['ism', 'kurs', 'sana'],
   excused: ['ism', 'sabab', 'kurs', 'sana'],
+  pay:     ['ism', 'kurs', 'oy', 'oylar'],     // to'lov eslatmasi — faqat qo'lda yuboriladi
 };
 const TPL_MAX = 1000;
+
+// To'lov eslatmasining standart matni. Panelda (assets/app.js → TPL_DEFAULT.pay) aynan
+// shu matn — namuna ota-ona oladigan xabar bilan bir xil bo'lishi uchun.
+const DEFAULT_PAY = "💳 Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi bizda hali qayd etilmagan.\n🗓 Qayd etilmagan oylar: {oylar}\n📚 {kurs}\n\nAgar to'lovni qilgan bo'lsangiz, iltimos, o'qituvchiga yoki markaz ma'muriyatiga ayting — tekshirib, belgilab qo'yamiz. Rahmat!";
+
+const escHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+// mark-attendance dagi renderTpl bilan AYNAN bir xil (testda solishtiriladi)
+function renderTpl(text: string, vars: Record<string, string>): string {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter((line) =>
+    line.includes('{ism}') ||
+    [...line.matchAll(/\{(\w+)\}/g)].every(([, n]) => !(n in vars) || vars[n] !== ''));
+  return escHtml(lines.join('\n'))
+    .replace(/\*([^*\n]+)\*/g, '<b>$1</b>')
+    .replace(/\{(\w+)\}/g, (m, n) => (n in vars ? escHtml(vars[n]) : m))
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+// ---- To'lov eslatmalari ----
+const REMIND_COOLDOWN_DAYS = 7;   // bir o'quvchiga (qaysi oy bo'lmasin) haftasiga ko'pi bilan bitta
+const REMIND_MAX = 50;            // bir so'rovda; panel bo'laklab yuboradi
+const REMIND_BUDGET_MS = 60_000;  // so'rov 150 s chegarasiga yetmasin
+const TZ = 'Asia/Samarkand';
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const OYLAR = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const ymOf = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit' }).format(d).slice(0, 7);
+function ymShift(ym: string, n: number): string {
+  const [y, m] = ym.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + n, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+const oyName = (ym: string) => OYLAR[Number(ym.slice(5, 7)) - 1];
+// O'qituvchi yozgan ism — to'lov xabarida karta raqami / havola bo'lib kelmasin
+const normName = (n: unknown) => String(n ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
+const badName = (n: string) => /https?:\/\/|www\.|t\.me\/|@/i.test(n) || /\d{7,}/.test(n.replace(/[\s().-]/g, ''));
+
+// Telegram javobini holatga aylantiramiz. abort — qolganlarini yubormaslik kerak.
+function classify(r: any): { status: 'sent' | 'failed' | 'unknown'; code: string; abort?: string } {
+  if (r?.ok) return { status: 'sent', code: 'sent' };
+  if (r?.net) return { status: 'unknown', code: r.description === 'Telegram javob bermadi' ? 'timeout' : 'network' };
+  const ec = Number(r?.error_code) || 0;
+  const d = String(r?.description ?? '');
+  if (ec === 403) return { status: 'failed', code: 'blocked' };
+  if (ec === 401 || ec === 404) return { status: 'failed', code: 'token', abort: 'token' };
+  if (ec === 429) return { status: 'failed', code: 'rate_limited', abort: 'rate_limited' };
+  if (ec === 400 && /can't parse entities|message is too long|text is empty|must be non-empty/i.test(d)) {
+    return { status: 'failed', code: 'format', abort: 'format' };
+  }
+  if (ec === 400 && /chat not found|PEER_ID_INVALID|user not found/i.test(d)) return { status: 'failed', code: 'no_chat' };
+  if (!ec) return { status: 'unknown', code: 'network' };
+  return { status: 'failed', code: 'failed' };
+}
 
 function checkTemplate(kind: string, text: string): string | null {
   if (text.length > TPL_MAX) return `Xabar ${TPL_MAX} belgidan oshmasin`;
@@ -89,7 +158,7 @@ async function currentActor(req: Request): Promise<Actor | null> {
   const email = data?.user?.email;
   if (error || !email) return null;
   const { data: t } = await admin.from('allowed_teachers')
-    .select('email, role, full_name').ilike('email', email).maybeSingle();
+    .select('email, role, full_name').ilike('email', likeEsc(email)).maybeSingle();
   return t ? { email: t.email, role: t.role, full_name: t.full_name } : null;
 }
 
@@ -151,7 +220,7 @@ Deno.serve(async (req) => {
     const isAdmin = actor.role === 'admin';
 
     if (action === 'me') {
-      const { data: tc } = await admin.from('teacher_courses').select('course_id').ilike('email', actor.email);
+      const { data: tc } = await admin.from('teacher_courses').select('course_id').ilike('email', likeEsc(actor.email));
       return json({ email: actor.email, role: actor.role, full_name: actor.full_name, course_ids: (tc ?? []).map((r) => r.course_id) });
     }
 
@@ -279,6 +348,129 @@ Deno.serve(async (req) => {
       return json({ ok: true, templates: all });
     }
 
+    // ---- To'lov eslatmasi: qarzdor o'quvchilarning ota-onasiga ----
+    if (action === 'send_reminders') {
+      const t0 = Date.now();
+      const month = String(body.month ?? '');
+      if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return json({ error: "Oy formati noto'g'ri" }, 400);
+      const cur = ymOf(new Date());
+      const from = ymShift(cur, -11);
+      if (month > cur || month < from) return json({ error: "Eslatmani joriy oy va oldingi 11 oy uchun yuborish mumkin" }, 400);
+      if (!Array.isArray(body.student_ids)) return json({ error: 'student_ids kerak' }, 400);
+      const ids = [...new Set(body.student_ids.filter((x: unknown) => typeof x === 'string' && UUID_RE.test(x)))] as string[];
+      if (!ids.length) return json({ error: "O'quvchi tanlanmagan" }, 400);
+      if (ids.length > REMIND_MAX) return json({ error: `Bir marta eng ko'p ${REMIND_MAX} o'quvchi` }, 400);
+
+      const token = await getCfg('bot_token');
+      if (!token) return json({ error: 'Avval Telegram botni ulang' }, 400);
+      let tplText = DEFAULT_PAY;
+      try {
+        const all = JSON.parse((await getCfg('msg_templates')) ?? '{}');
+        if (typeof all?.pay?.text === 'string' && all.pay.text.trim()) tplText = all.pay.text;
+      } catch { /* standart matn */ }
+
+      const [{ data: studs }, { data: pays }, { data: recent }] = await Promise.all([
+        admin.from('students').select('id, full_name, active, telegram_chat_id, created_at, courses(name)').in('id', ids),
+        admin.from('payments').select('student_id, month').in('student_id', ids).gte('month', from + '-01').lte('month', cur + '-01'),
+        admin.from('payment_reminders').select('student_id').in('student_id', ids).neq('status', 'failed')
+          .gte('sent_at', new Date(Date.now() - REMIND_COOLDOWN_DAYS * 86400_000).toISOString()),
+      ]);
+      const byId = new Map((studs ?? []).map((s: any) => [s.id, s]));
+      const paid = new Map<string, Set<string>>();
+      (pays ?? []).forEach((p: any) => {
+        if (!paid.has(p.student_id)) paid.set(p.student_id, new Set());
+        paid.get(p.student_id)!.add(String(p.month).slice(0, 7));
+      });
+      const recentSet = new Set((recent ?? []).map((r: any) => r.student_id));
+
+      // Tunda xabar ovozsiz boradi
+      const hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: TZ }).format(new Date()));
+      const quiet = hour < 8 || hour >= 21;
+
+      const results: Record<string, unknown>[] = [];
+      const skipped: Record<string, number> = {};
+      const notSent: string[] = [];
+      let sent = 0, failed = 0, unknown = 0, netStreak = 0, retried429 = false;
+      let aborted: string | null = null;
+      const lastByChat = new Map<number, number>();
+      let lastSend = 0;
+      const skip = (s: any, id: string, code: string) => {
+        skipped[code] = (skipped[code] ?? 0) + 1;
+        results.push({ student_id: id, name: s ? normName(s.full_name) : null, status: 'skipped', code });
+      };
+
+      for (const id of ids) {
+        const s: any = byId.get(id);
+        try {
+          if (!s) { skip(null, id, 'not_found'); continue; }
+          const start = ymOf(new Date(s.created_at ?? Date.now()));
+          const pm = paid.get(id) ?? new Set<string>();
+          const ism = normName(s.full_name);
+          if (s.active === false) { skip(s, id, 'inactive'); continue; }
+          if (start > month) { skip(s, id, 'not_started'); continue; }
+          if (pm.has(month)) { skip(s, id, 'paid'); continue; }
+          if (!s.telegram_chat_id) { skip(s, id, 'no_tg'); continue; }
+          if (badName(ism)) { skip(s, id, 'bad_name'); continue; }
+          if (recentSet.has(id)) { skip(s, id, 'recent'); continue; }
+          if (aborted || Date.now() - t0 > REMIND_BUDGET_MS) { notSent.push(id); continue; }
+
+          // Joriy oygacha qarz oylari (tanlangan oy emas) — ota-ona to'liq qarzni ko'rsin
+          const owed: string[] = [];
+          for (let m = from; m <= cur; m = ymShift(m, 1)) if (m >= start && !pm.has(m)) owed.push(m);
+          const text = renderTpl(tplText, {
+            ism,
+            kurs: String(s.courses?.name ?? ''),
+            oy: oyName(month),
+            oylar: owed.length === 1 && owed[0] === month ? '' : owed.map(oyName).join(', '),
+          });
+
+          // Avval jurnalga "pending" — jarayon yiqilsa ham qayta yuborilmaydi
+          const { data: row, error: insErr } = await admin.from('payment_reminders')
+            .insert({ student_id: id, month: month + '-01', sent_by_email: actor.email, status: 'pending' })
+            .select('id').single();
+          if (insErr) { skip(s, id, insErr.code === '23505' ? 'recent' : 'db'); continue; }
+
+          // Bir chatga sekundiga bittadan ko'p emas (aka-uka bitta ota-onada)
+          const chat = Number(s.telegram_chat_id);
+          const waitChat = 1100 - (Date.now() - (lastByChat.get(chat) ?? 0));
+          const waitAll = 40 - (Date.now() - lastSend);
+          if (Math.max(waitChat, waitAll) > 0) await sleep(Math.max(waitChat, waitAll));
+
+          const payload = {
+            chat_id: chat, text, parse_mode: 'HTML',
+            link_preview_options: { is_disabled: true }, disable_notification: quiet,
+          };
+          let r: any = await tg(token, 'sendMessage', payload);
+          if (!r?.ok && Number(r?.error_code) === 429 && !retried429 && Number(r?.parameters?.retry_after) <= 5) {
+            retried429 = true;
+            await sleep(Number(r.parameters.retry_after) * 1000 + 100);
+            r = await tg(token, 'sendMessage', payload);
+          }
+          lastSend = Date.now();
+          lastByChat.set(chat, lastSend);
+
+          const c = classify(r);
+          const errText = c.status === 'sent' ? null : redact(String(r?.description ?? '')).slice(0, 200) || null;
+          await admin.from('payment_reminders').update({ status: c.status, code: c.code, error: errText }).eq('id', row.id);
+
+          if (c.status === 'sent') { sent++; netStreak = 0; }
+          else if (c.status === 'unknown') { unknown++; netStreak++; }
+          else { failed++; netStreak = 0; }
+          results.push({ student_id: id, name: ism, status: c.status, code: c.code });
+          if (c.abort) aborted = c.abort;
+          else if (netStreak >= 3) aborted = 'network';
+        } catch (_e) {
+          // Bitta o'quvchidagi kutilmagan xato butun ro'yxatni to'xtatmasin
+          skip(s, id, 'db');
+        }
+      }
+
+      return json({
+        ok: true, month, sent, failed, unknown, skipped, results, not_sent: notSent,
+        ...(aborted ? { aborted } : {}),
+      });
+    }
+
     // ---- Telegram bot ----
     if (action === 'save_bot_token') {
       const token = String(body.token ?? '').trim();
@@ -318,6 +510,6 @@ Deno.serve(async (req) => {
 
     return json({ error: 'unknown action' }, 400);
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    return json({ error: redact(String(e)) }, 500);
   }
 });

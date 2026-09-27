@@ -1056,3 +1056,51 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .pay-state { order: 3; flex: 1 1 100%; flex-direction: row; align-items: center; justify-content: flex-start; gap: 8px; }
   .pay-row .row-actions { order: 4; }
 }
+
+/* ---------- TO'LOV ESLATMASI ---------- */
+.tpl-manual {
+  display: flex; align-items: flex-start; gap: 10px; margin: 0 0 14px; padding: 11px 13px;
+  border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--surface);
+  color: var(--muted); font-size: .86rem; font-weight: 700; line-height: 1.45;
+}
+.tpl-manual svg { width: 18px; height: 18px; flex: none; color: var(--gold-ink); margin-top: 1px; }
+
+.pay-rem { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
+.pay-rem svg { width: 13px; height: 13px; flex: none; }
+.pay-rem.is-failed { color: var(--red-ink); }
+.pay-rem.is-unknown { color: var(--gold-ink); }
+
+.rem-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; }
+.rem-bar small { color: var(--muted); font-size: .8rem; font-weight: 700; }
+.rem-open { min-height: 44px; }
+.rem-open svg { width: 17px; height: 17px; }
+
+.rem-scope { margin: 0 0 6px; font-size: .82rem; font-weight: 800; color: var(--gold-ink); }
+.rem-summary { margin: 0 0 12px; color: var(--muted); font-size: .86rem; font-weight: 700; line-height: 1.5; }
+.rem-done { margin: 4px 0 14px; font-size: 1.05rem; font-weight: 900; }
+.rem-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 8px; }
+.rem-list-head b { font-size: .9rem; }
+.rem-list-head .btn { min-height: 40px; }
+.rem-list .check-item { align-items: flex-start; }
+.rem-list .check-item input { margin-top: 2px; }
+/* Ism to'liq ko'rinadi (qisqartirilmaydi) — kimga ketayotgani aniq bo'lsin */
+.rem-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.rem-name { overflow-wrap: anywhere; white-space: normal; }
+.rem-who small { color: var(--muted); font-size: .78rem; font-weight: 700; }
+.rem-skip { margin-top: 14px; }
+.rem-skip summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 800; color: var(--muted); font-size: .9rem; }
+.rem-skip-list { display: flex; flex-direction: column; gap: 7px; margin-top: 6px; }
+.rem-skip-row {
+  display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-radius: var(--r-sm);
+  background: var(--surface); border: 1px solid var(--border); font-weight: 700;
+}
+.rem-tel { flex: none; min-height: 40px; display: inline-flex; align-items: center; font-size: .84rem; font-weight: 800; white-space: nowrap; }
+
+/* Tugma uzun ro'yxat ostida yo'qolmasin — oyna pastiga yopishadi */
+.sheet-foot {
+  position: sticky; bottom: calc(-20px - env(safe-area-inset-bottom)); z-index: 2;
+  margin: 16px -20px calc(-20px - env(safe-area-inset-bottom));
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+  background: var(--sheet-bg); border-top: 1px solid var(--border);
+}
+.sheet-foot .btn { min-height: 50px; white-space: normal; line-height: 1.25; text-align: center; }

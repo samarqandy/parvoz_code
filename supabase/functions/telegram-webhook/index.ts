@@ -14,6 +14,10 @@ const admin = createClient(
   { auth: { persistSession: false } }
 );
 
+// Ism va kurs nomini o'qituvchi yozadi — parse_mode HTML da xom qo'yilsa, "<" yoki "&"
+// belgisi xabarni butunlay buzadi (Telegram "can't parse entities" deb rad etadi)
+const esc = (t: unknown) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
 const PENDING_TTL_MIN = 15;   // raqamni tasdiqlashga beriladigan vaqt
 const MAX_ATTEMPTS = 3;       // noto'g'ri raqam bilan urinishlar chegarasi
 
@@ -165,9 +169,9 @@ Deno.serve(async (req) => {
 
       const courseName = (pend as any).courses?.name ?? '';
       await say(
-        `✅ <b>${pend.full_name}</b> uchun davomat xabarlari ulandi!` +
-        (courseName ? `\n📚 ${courseName}` : '') +
-        `\n\nEndi farzandingiz markazga kelganda va ketganda shu yerga xabar keladi.\n\nXabarlarni to'xtatish uchun /stop yuboring.`,
+        `✅ <b>${esc(pend.full_name)}</b> uchun davomat xabarlari ulandi!` +
+        (courseName ? `\n📚 ${esc(courseName)}` : '') +
+        `\n\nEndi farzandingiz markazga kelganda va ketganda, shuningdek to'lov eslatmalari shu yerga keladi.\n\nXabarlarni to'xtatish uchun /stop yuboring.`,
         { reply_markup: HIDE_KEYBOARD }
       );
       return new Response('ok');
@@ -210,7 +214,7 @@ Deno.serve(async (req) => {
         .eq('id', student!.id);
 
       await say(
-        `👋 <b>${student!.full_name}</b> ning davomat xabarlariga ulanmoqchisiz.\n\n` +
+        `👋 <b>${esc(student!.full_name)}</b> ning davomat xabarlariga ulanmoqchisiz.\n\n` +
         `Xavfsizlik uchun raqamingizni tasdiqlang — u markazga qoldirilgan raqam bilan solishtiriladi.\n\n` +
         `Pastdagi <b>«📱 Raqamimni tasdiqlash»</b> tugmasini bosing.`,
         { reply_markup: ASK_CONTACT }
@@ -224,6 +228,19 @@ Deno.serve(async (req) => {
         .eq('telegram_chat_id', chatId);
       await say(`🔕 Xabarlar o'chirildi. Qayta ulash uchun o'qituvchidan havola oling.`,
         { reply_markup: HIDE_KEYBOARD });
+      return new Response('ok');
+    }
+
+    // Ulangan ota-ona to'lov eslatmasiga javob yozsa ("to'ladim") — bot javob o'qimasligini aytamiz,
+    // aks holda unga "havolani bosing" deb qayta ulanish taklif qilinardi
+    const { data: linked } = await admin.from('students').select('id')
+      .eq('telegram_chat_id', chatId).limit(1).maybeSingle();
+    if (linked) {
+      await say(
+        `ℹ️ Bu bot faqat xabar yuboradi, javoblarni o'qimaydi.\n\n` +
+        `Savol yoki to'lov bo'yicha o'qituvchiga yoki markaz ma'muriyatiga murojaat qiling.`,
+        { reply_markup: HIDE_KEYBOARD }
+      );
       return new Response('ok');
     }
 
