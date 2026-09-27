@@ -242,7 +242,12 @@ Deno.serve(async (req) => {
         .insert({ student_id: student.id, kind, note, marked_by_email: email, occurred_at: occurredAt })
         .select('id, occurred_at, kind, note')
         .single();
-      if (ierr) { skip(ierr.message, 'db'); continue; }
+      if (ierr) {
+        // Ikki qurilmadan bir vaqtda bosildi — bazadagi indeks ikkinchisini rad etdi
+        if (ierr.code === '23505') skip('Allaqachon belgilangan', 'already');
+        else skip(ierr.message, 'db');
+        continue;
+      }
 
       let notified = false;
       // Admin bu turdagi xabarni o'chirib qo'ygan — belgi yoziladi, xabar ketmaydi
