@@ -18,6 +18,9 @@
 // O'tgan kun uchun ota-onaga xabar YUBORILMAYDI: kechagi dars haqida bugun
 // "farzandingiz keldi" deyish ota-onani chalg'itadi. Xabar faqat bugungi
 // belgilashda ketadi.
+//
+// Xabar matni — shablondan (admin paneldan tahrirlaydi, app_config.msg_templates).
+// Shablon yo'q yoki buzilgan bo'lsa — quyidagi standart matn.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const admin = createClient(
@@ -62,6 +65,49 @@ function dayKeyOf(d: Date): string {
 
 const dayStartIso = (key: string) => new Date(`${key}T00:00:00+05:00`).toISOString();
 const dayEndIso = (key: string) => new Date(new Date(`${key}T00:00:00+05:00`).getTime() + 86400_000).toISOString();
+
+// ---- Ota-onaga xabar shablonlari ----
+// {ism} {vaqt} {kurs} {sana} {sabab} — o'zgaruvchilar, *matn* — qalin.
+// Qiymati bo'sh o'zgaruvchi turgan qator yuborilmaydi (masalan, sabab yozilmasa
+// "💬 {sabab}" qatori tushib qoladi) — {ism} turgan asosiy qatordan tashqari.
+// Xuddi shu mantiq panelda ham bor (assets/app.js → renderTpl): admin ko'rgan
+// namuna ota-onaga boradigan xabar bilan bir xil bo'lishi uchun.
+const DEFAULT_TPL: Record<Kind, string> = {
+  in:      "✅ *{ism}* soat *{vaqt}* da Parvoz O'quv Markaziga *keldi*.\n📚 {kurs}",
+  out:     "🏠 *{ism}* soat *{vaqt}* da markazdan *ketdi*.\n📚 {kurs}",
+  absent:  "❗️ *{ism}* bugungi darsga *kelmadi*.\n📚 {kurs}\n\nAgar sabab bo'lsa, iltimos o'qituvchiga xabar bering.",
+  excused: "📝 *{ism}* bugun *sababli* qoldi.\n💬 {sabab}\n📚 {kurs}",
+};
+
+type Tpl = { on: boolean; text: string };
+
+function loadTemplates(raw: string | null | undefined): Record<Kind, Tpl> {
+  let saved: any = {};
+  try { saved = raw ? JSON.parse(raw) : {}; } catch { saved = {}; }
+  if (!saved || typeof saved !== 'object') saved = {};
+  const out = {} as Record<Kind, Tpl>;
+  for (const k of KINDS) {
+    const s = saved[k] && typeof saved[k] === 'object' ? saved[k] : {};
+    const text = typeof s.text === 'string' && s.text.trim() ? s.text : DEFAULT_TPL[k];
+    out[k] = { on: s.on !== false, text };
+  }
+  return out;
+}
+
+function renderTpl(text: string, vars: Record<string, string>): string {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter((line) =>
+    line.includes('{ism}') ||
+    [...line.matchAll(/\{(\w+)\}/g)].every(([, n]) => !(n in vars) || vars[n] !== ''));
+  return esc(lines.join('\n'))
+    .replace(/\*([^*\n]+)\*/g, '<b>$1</b>')
+    .replace(/\{(\w+)\}/g, (m, n) => (n in vars ? esc(vars[n]) : m))
+    .replace(/[ \t]+$/gm, '')                         // bo'sh o'zgaruvchidan qolgan probel
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+const OYLAR = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+const sanaOf = (key: string) => `${Number(key.slice(8, 10))}-${OYLAR[Number(key.slice(5, 7)) - 1]}`;
 
 // Necha kun orqaga tuzatishga ruxsat beramiz
 const MAX_BACKFILL_DAYS = 30;
@@ -159,11 +205,14 @@ Deno.serve(async (req) => {
     const results: Record<string, unknown>[] = [];
     let notifiedCount = 0;
 
-    // Bot tokeni — faqat bugungi belgilashda va faqat bir marta o'qiymiz
+    // Bot tokeni va shablonlar — faqat bugungi belgilashda, bitta so'rovda
     let token: string | null = null;
+    let tpls = loadTemplates(null);
     if (isToday) {
-      const { data: cfgRow } = await admin.from('app_config').select('value').eq('key', 'bot_token').maybeSingle();
-      token = cfgRow?.value ?? null;
+      const { data: cfg } = await admin.from('app_config').select('key, value').in('key', ['bot_token', 'msg_templates']);
+      const byKey = new Map<string, string>((cfg ?? []).map((r) => [r.key, r.value] as [string, string]));
+      token = byKey.get('bot_token') ?? null;
+      tpls = loadTemplates(byKey.get('msg_templates'));
     }
 
     for (const student of students) {
@@ -196,19 +245,19 @@ Deno.serve(async (req) => {
       if (ierr) { skip(ierr.message, 'db'); continue; }
 
       let notified = false;
-      if (isToday && token && student.telegram_chat_id) {
+      // Admin bu turdagi xabarni o'chirib qo'ygan — belgi yoziladi, xabar ketmaydi
+      const muted = isToday && !tpls[kind].on;
+      if (isToday && !muted && token && student.telegram_chat_id) {
         const time = new Intl.DateTimeFormat('uz-UZ', {
           hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ,
         }).format(new Date(row.occurred_at));
-        const courseName = (student as any).courses?.name ?? '';
-        const who = `<b>${esc(student.full_name)}</b>`;
-        const course = courseName ? `\n📚 ${esc(courseName)}` : '';
-
-        const text =
-          kind === 'in'      ? `✅ ${who} soat <b>${time}</b> da Parvoz O'quv Markaziga <b>keldi</b>.${course}`
-        : kind === 'out'     ? `🏠 ${who} soat <b>${time}</b> da markazdan <b>ketdi</b>.${course}`
-        : kind === 'absent'  ? `❗️ ${who} bugungi darsga <b>kelmadi</b>.${course}\n\nAgar sabab bo'lsa, iltimos o'qituvchiga xabar bering.`
-        :                      `📝 ${who} bugun <b>sababli</b> qoldi.${note ? `\n💬 ${esc(note)}` : ''}${course}`;
+        const text = renderTpl(tpls[kind].text, {
+          ism: student.full_name ?? '',
+          vaqt: time,
+          kurs: (student as any).courses?.name ?? '',
+          sana: sanaOf(dayKey!),
+          sabab: note ?? '',
+        });
 
         const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
           method: 'POST',
@@ -222,7 +271,7 @@ Deno.serve(async (req) => {
       results.push({
         student_id: student.id, name: student.full_name, ok: true,
         id: row.id, kind: row.kind, note: row.note, occurred_at: row.occurred_at,
-        removed: drop.length, notified,
+        removed: drop.length, notified, muted,
       });
     }
 

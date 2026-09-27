@@ -57,6 +57,28 @@ async function enableWebhook(token: string) {
   return { ok: false, error: r?.description ?? 'setWebhook muvaffaqiyatsiz' };
 }
 
+// ---- Ota-onaga xabar shablonlari ----
+// Matnni mark-attendance yuboradi; bu yerda faqat tekshirib saqlaymiz.
+// app_config.msg_templates = {"in": {"on": true, "text": "..." | null}, ...}
+// text=null — standart matn (standart keyin yaxshilansa, o'zi yangilanadi).
+const TPL_VARS: Record<string, string[]> = {
+  in:      ['ism', 'vaqt', 'kurs', 'sana'],
+  out:     ['ism', 'vaqt', 'kurs', 'sana'],
+  absent:  ['ism', 'kurs', 'sana'],
+  excused: ['ism', 'sabab', 'kurs', 'sana'],
+};
+const TPL_MAX = 1000;
+
+function checkTemplate(kind: string, text: string): string | null {
+  if (text.length > TPL_MAX) return `Xabar ${TPL_MAX} belgidan oshmasin`;
+  const unknown = [...new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))]
+    .filter((n) => !TPL_VARS[kind].includes(n));
+  if (unknown.length) return `Bu xabarda ishlatib bo'lmaydi: ${unknown.map((n) => `{${n}}`).join(', ')}`;
+  // Oilada bir nechta farzand o'qishi mumkin — ota-ona kim haqida ekanini bilishi shart
+  if (!text.includes('{ism}')) return "Xabarda {ism} bo'lishi shart";
+  return null;
+}
+
 type Actor = { email: string; role: string; full_name: string | null };
 
 async function currentActor(req: Request): Promise<Actor | null> {
@@ -231,6 +253,30 @@ Deno.serve(async (req) => {
       if (!chatId) return json({ error: 'chat_id kerak' }, 400);
       await admin.from('notify_chats').delete().eq('chat_id', chatId);
       return json({ ok: true });
+    }
+
+    if (action === 'save_template') {
+      const kind = String(body.kind ?? '');
+      if (!Object.prototype.hasOwnProperty.call(TPL_VARS, kind)) return json({ error: 'bad kind' }, 400);
+      const on = body.on !== false;
+      const raw = body.text == null ? '' : String(body.text)
+        .replace(/\r\n?/g, '\n')
+        .replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, '');
+      const text = raw.trim() ? raw : null;
+      if (text) {
+        const err = checkTemplate(kind, text);
+        if (err) return json({ error: err }, 400);
+      }
+      let all: Record<string, unknown> = {};
+      try {
+        const parsed = JSON.parse((await getCfg('msg_templates')) ?? '{}');
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) all = parsed;
+      } catch { /* buzilgan bo'lsa — noldan */ }
+      all[kind] = { on, text, updated_at: new Date().toISOString() };
+      const { error } = await admin.from('app_config')
+        .upsert({ key: 'msg_templates', value: JSON.stringify(all), updated_at: new Date().toISOString() });
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true, templates: all });
     }
 
     // ---- Telegram bot ----
