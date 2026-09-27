@@ -23,6 +23,9 @@ const state = {
   search: '',
   botUsername: null,
   tgMode: null,
+  tpls: {},           // app_config.msg_templates — admin saqlagan shablonlar
+  tplKind: 'in',      // muharrirda ochiq tur
+  tplDraft: {},       // saqlanmagan tahrirlar: { kind: { on, text } }
   timer: null,
   deferredInstall: null,
 };
@@ -223,6 +226,27 @@ const STR = {
     setTeamBtn: "O'qituvchilar va kurslar",
     setBot: '\u{1F916} Telegram bot',
     setBotP: 'Bot ota-onalarga farzandi kelgani va ketgani haqida avtomatik xabar yuboradi.',
+    setTpl: '\u{1F4AC} Ota-onaga xabarlar',
+    setTplP: "Farzand kelganda, ketganda yoki darsga kelmaganda ota-onaga Telegramda boradigan matn. Faqat bugungi belgilashda yuboriladi.",
+    tplOn: 'Xabar yuborilsin',
+    tplOnP: "O'chirilsa, belgi qo'yiladi, lekin ota-onaga xabar bormaydi",
+    tplText: 'Xabar matni',
+    tplVars: "Bosing — matnga qo'shiladi",
+    tplHint: "*matn* — qalin yozuv. Qiymati bo'sh o'zgaruvchi turgan qator yuborilmaydi (masalan, sabab yozilmasa).",
+    tplPrev: "Ota-ona shunday ko'radi",
+    tplMuted: 'Bu xabar yuborilmaydi',
+    tplReset: 'Standart matn',
+    tplSave: 'Saqlash',
+    tplSaved: 'Shablon saqlandi',
+    tplUnsaved: 'saqlanmagan',
+    tplOff: "o'chiq",
+    tplDefault: 'Standart matn',
+    tplCustom: "O'zgartirilgan",
+    tplErrIsm: "Xabarda {ism} bo'lishi shart — oilada bir nechta farzand o'qishi mumkin",
+    tplErrVar: "Bu xabarda ishlatib bo'lmaydi: {v}",
+    tplErrLen: 'Xabar {n} belgidan oshmasin',
+    tplSampleName: 'Ali Valiyev',
+    vIsm: 'Ism', vVaqt: 'Soat', vKurs: 'Kurs', vSana: 'Sana', vSabab: 'Sabab',
     botNone: 'Bot ulanmagan', reconnect: 'Qayta ulash',
     newToken: 'Yangi token (BotFather)', saveToken: 'Tokenni saqlash',
     tokenNeeded: 'Token kiriting',
@@ -409,6 +433,27 @@ const STR = {
     setTeamBtn: 'Преподаватели и предметы',
     setBot: '\u{1F916} Telegram-бот',
     setBotP: 'Бот автоматически сообщает родителям, когда ребёнок пришёл и ушёл.',
+    setTpl: '\u{1F4AC} Сообщения родителям',
+    setTplP: 'Текст, который родитель получает в Telegram, когда ребёнок пришёл, ушёл или не пришёл. Отправляется только при отметке за сегодня.',
+    tplOn: 'Отправлять сообщение',
+    tplOnP: 'Если выключить, отметка сохранится, но родитель сообщение не получит',
+    tplText: 'Текст сообщения',
+    tplVars: 'Нажмите — вставится в текст',
+    tplHint: '*текст* — жирный. Строка с пустой переменной не отправляется (например, если причина не указана).',
+    tplPrev: 'Так увидит родитель',
+    tplMuted: 'Это сообщение не отправляется',
+    tplReset: 'По умолчанию',
+    tplSave: 'Сохранить',
+    tplSaved: 'Шаблон сохранён',
+    tplUnsaved: 'не сохранено',
+    tplOff: 'выкл.',
+    tplDefault: 'Стандартный текст',
+    tplCustom: 'Изменён',
+    tplErrIsm: 'В сообщении должно быть {ism} — в семье может учиться несколько детей',
+    tplErrVar: 'В этом сообщении нельзя использовать: {v}',
+    tplErrLen: 'Не более {n} символов',
+    tplSampleName: 'Ali Valiyev',
+    vIsm: 'Имя', vVaqt: 'Время', vKurs: 'Курс', vSana: 'Дата', vSabab: 'Причина',
     botNone: 'Бот не подключён', reconnect: 'Переподключить',
     newToken: 'Новый токен (BotFather)', saveToken: 'Сохранить токен',
     tokenNeeded: 'Введите токен',
@@ -471,6 +516,7 @@ const I = {
   chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
   chevL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
   chevR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+  undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
 };
@@ -761,10 +807,11 @@ async function loadLeadsData() {
 }
 
 async function loadConfig() {
-  const { data } = await sb.from('app_config').select('key,value').in('key', ['bot_username', 'tg_mode']);
+  const { data } = await sb.from('app_config').select('key,value').in('key', ['bot_username', 'tg_mode', 'msg_templates']);
   const cfg = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
   state.botUsername = cfg.bot_username ?? null;
   state.tgMode = cfg.tg_mode ?? null;
+  state.tpls = parseTpls(cfg.msg_templates);
 }
 
 async function refreshLinks() {
@@ -892,7 +939,7 @@ function render() {
   else if (state.view === 'students') el.innerHTML = viewStudents();
   else if (state.view === 'report') { el.innerHTML = viewReportShell(); loadReport(); }
   else if (state.view === 'team') { el.innerHTML = viewTeamShell(); loadTeam(); }
-  else { el.innerHTML = viewSettings(); if (isAdmin()) loadNotifyChats(); }
+  else { el.innerHTML = viewSettings(); if (isAdmin()) { loadNotifyChats(); tplLive(); } }
 }
 
 /* ============================================================
@@ -1157,7 +1204,7 @@ async function sendMark(studentId, kind, note) {
 
     const v = { name: s?.full_name ?? '', label: MARKS[kind].label };
     const msg = r.notified ? t('sentToParent', v)
-                           : t('markedOk', v) + (isToday() && !s?.telegram_chat_id ? t('tgOff') : '');
+                           : t('markedOk', v) + (isToday() && !r.muted && !s?.telegram_chat_id ? t('tgOff') : '');
     toast(msg, 'ok', r.id ? { fn: () => undoMark(r.id) } : undefined);
   } catch (err) {
     state.today = before;                       // qaytaramiz
@@ -1880,6 +1927,167 @@ async function loadTeam() {
 /* ============================================================
    KO'RINISH: SOZLAMALAR
    ============================================================ */
+/* ============================================================
+   OTA-ONAGA XABAR SHABLONLARI
+   Yuborish mark-attendance funksiyasida. Standart matn, o'zgaruvchilar va
+   renderTpl u yerdagi bilan AYNAN bir xil — namuna ota-ona oladigan xabarning
+   o'zi bo'lishi uchun (edge testida ikkalasi bir xil natija berishi tekshiriladi).
+   ============================================================ */
+const TPL_KINDS = ['in', 'out', 'absent', 'excused'];
+const TPL_DEFAULT = {
+  in:      "✅ *{ism}* soat *{vaqt}* da Parvoz O'quv Markaziga *keldi*.\n📚 {kurs}",
+  out:     "🏠 *{ism}* soat *{vaqt}* da markazdan *ketdi*.\n📚 {kurs}",
+  absent:  "❗️ *{ism}* bugungi darsga *kelmadi*.\n📚 {kurs}\n\nAgar sabab bo'lsa, iltimos o'qituvchiga xabar bering.",
+  excused: "📝 *{ism}* bugun *sababli* qoldi.\n💬 {sabab}\n📚 {kurs}",
+};
+const TPL_VARS = {
+  in:      ['ism', 'vaqt', 'kurs', 'sana'],
+  out:     ['ism', 'vaqt', 'kurs', 'sana'],
+  absent:  ['ism', 'kurs', 'sana'],
+  excused: ['ism', 'sabab', 'kurs', 'sana'],
+};
+const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', sana: 'vSana', sabab: 'vSabab' };
+const TPL_MAX = 1000;
+
+function renderTpl(text, vars) {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter((line) =>
+    line.includes('{ism}') ||
+    [...line.matchAll(/\{(\w+)\}/g)].every(([, n]) => !(n in vars) || vars[n] !== ''));
+  return esc(lines.join('\n'))
+    .replace(/\*([^*\n]+)\*/g, '<b>$1</b>')
+    .replace(/\{(\w+)\}/g, (m, n) => (n in vars ? esc(vars[n]) : m))
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function parseTpls(raw) {
+  try {
+    const v = raw ? JSON.parse(raw) : {};
+    return v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+  } catch (_) { return {}; }
+}
+function tplSaved(kind) {
+  const s = state.tpls[kind] && typeof state.tpls[kind] === 'object' ? state.tpls[kind] : {};
+  return { on: s.on !== false, text: typeof s.text === 'string' && s.text.trim() ? s.text : TPL_DEFAULT[kind] };
+}
+const tplCurrent = (kind) => state.tplDraft[kind] || tplSaved(kind);
+const tplDirty = (kind) => {
+  const d = state.tplDraft[kind];
+  if (!d) return false;
+  const s = tplSaved(kind);
+  return d.on !== s.on || d.text !== s.text;
+};
+
+// Server ham xuddi shunday tekshiradi — bu yerda faqat oldindan ko'rsatish uchun
+function tplIssue(kind, text) {
+  if (text.length > TPL_MAX) return t('tplErrLen', { n: TPL_MAX });
+  const unknown = [...new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))].filter((n) => !TPL_VARS[kind].includes(n));
+  if (unknown.length) return t('tplErrVar', { v: unknown.map((n) => `{${n}}`).join(', ') });
+  if (text.trim() && !text.includes('{ism}')) return t('tplErrIsm');
+  return '';
+}
+
+// Namuna: haqiqiy o'quvchi va kurs bo'lsa — o'shalar, bo'lmasa oddiy ism
+function tplSample() {
+  const st = state.students.find((x) => x.active) || state.students[0];
+  const course = st ? courseById(st.course_id) : state.courses[0];
+  const key = todayKey();
+  return {
+    ism: st?.full_name || t('tplSampleName'),
+    vaqt: hhmm(new Date().toISOString()),
+    kurs: course?.name || '',
+    // Xabar ota-onaga doim o'zbekcha sana bilan ketadi — panel tili qanday bo'lmasin
+    sana: `${Number(key.slice(8, 10))}-${DATE_NAMES.uz.m[Number(key.slice(5, 7)) - 1]}`,
+    sabab: t('r1'),
+  };
+}
+
+function tplTabs() {
+  return `<div class="seg seg-tpl" role="tablist" aria-label="${t('setTpl')}">${TPL_KINDS.map((k) => {
+    const on = k === state.tplKind;
+    const mark = tplDirty(k) ? `<i class="tpl-dot" title="${t('tplUnsaved')}"></i>`
+      : !tplCurrent(k).on ? `<i class="tpl-offdot" title="${t('tplOff')}"></i>` : '';
+    return `<button class="seg-btn${on ? ' on' : ''}" role="tab" aria-selected="${on}" data-tpl-kind="${k}" type="button">
+      <span class="tone-${MARKS[k].tone}">${ico(MARKS[k])}</span><span class="seg-lbl">${MARKS[k].label}</span>${mark}</button>`;
+  }).join('')}</div>`;
+}
+
+function tplBody() {
+  const k = state.tplKind;
+  const cur = tplCurrent(k);
+  return `
+    <label class="switch-row">
+      <input type="checkbox" role="switch" id="tplOn" ${cur.on ? 'checked' : ''}>
+      <span class="switch" aria-hidden="true"></span>
+      <span class="switch-txt"><b>${t('tplOn')}</b><small>${t('tplOnP')}</small></span>
+    </label>
+    <label class="field tpl-field"><span>${t('tplText')}</span>
+      <textarea class="inp tpl-text" id="tplText" rows="5" spellcheck="false">${esc(cur.text)}</textarea></label>
+    <div class="tpl-tools">
+      <div class="tpl-vars" aria-label="${t('tplVars')}">${TPL_VARS[k].map((v) =>
+        `<button class="chip tpl-var" data-tpl-var="${v}" type="button" title="${t('tplVars')}"><code>{${v}}</code> ${t(TPL_VAR_LABEL[v])}</button>`).join('')}</div>
+      <span class="tpl-count" id="tplCount"></span>
+    </div>
+    <p class="f-hint tpl-hint">${t('tplHint')}</p>
+    <p class="tpl-err" id="tplErr" role="alert" hidden></p>
+    <div class="tpl-prev-head"><span>${t('tplPrev')}</span><span class="tpl-state" id="tplState"></span></div>
+    <div class="tg-chat" id="tplChat"><div class="tg-bubble"><div class="tg-text" id="tplPrev"></div>
+      <span class="tg-time">${esc(hhmm(new Date().toISOString()))}</span></div></div>
+    <div class="tpl-actions">
+      <button class="btn btn-ghost" id="tplReset" type="button">${I.undo}${t('tplReset')}</button>
+      <button class="btn btn-primary" id="tplSave" type="button">${t('tplSave')}</button>
+    </div>`;
+}
+
+// Matn yozilayotganda butun kartani qayta chizmaymiz — kursor joyida qolsin
+function tplLive() {
+  const k = state.tplKind;
+  const cur = tplCurrent(k);
+  const issue = tplIssue(k, cur.text);
+  const prev = $('tplPrev'); if (!prev) return;
+  prev.innerHTML = cur.text.trim() ? renderTpl(cur.text, tplSample()) : renderTpl(TPL_DEFAULT[k], tplSample());
+  $('tplChat').classList.toggle('is-muted', !cur.on);
+  const err = $('tplErr');
+  err.hidden = !issue; err.textContent = issue;
+  const n = cur.text.length;
+  const cnt = $('tplCount');
+  cnt.textContent = `${n} / ${TPL_MAX}`;
+  cnt.classList.toggle('is-over', n > TPL_MAX);
+  const isDefault = !cur.text.trim() || cur.text === TPL_DEFAULT[k];
+  $('tplState').textContent = !cur.on ? t('tplMuted') : isDefault ? t('tplDefault') : t('tplCustom');
+  $('tplReset').disabled = isDefault;
+  $('tplSave').disabled = !tplDirty(k) || !!issue;
+  $('tplTabs').innerHTML = tplTabs();
+}
+
+function tplSetDraft(patch) {
+  const k = state.tplKind;
+  state.tplDraft[k] = { ...tplCurrent(k), ...patch };
+  if (!tplDirty(k)) delete state.tplDraft[k];
+  tplLive();
+}
+
+async function tplSave() {
+  const k = state.tplKind;
+  const cur = tplCurrent(k);
+  if (tplIssue(k, cur.text)) return;
+  const btn = $('tplSave'); btn.disabled = true;
+  try {
+    // Standart matn bilan bir xil bo'lsa — null: standart keyin yaxshilansa, o'zi yangilanadi
+    const text = !cur.text.trim() || cur.text === TPL_DEFAULT[k] ? null : cur.text;
+    const r = await edge('admin-api', { action: 'save_template', kind: k, on: cur.on, text });
+    state.tpls = r.templates && typeof r.templates === 'object' ? r.templates : state.tpls;
+    delete state.tplDraft[k];
+    toast(t('tplSaved'), 'ok');
+    $('tplBody').innerHTML = tplBody();
+    tplLive();
+  } catch (err) {
+    toast('❌ ' + err.message, 'bad');
+    tplLive();
+  }
+}
+
 function viewSettings() {
   const admin = isAdmin();
   return `
@@ -1911,6 +2119,13 @@ function viewSettings() {
       <label class="field"><span>${t('newToken')}</span>
         <input class="inp" id="botToken" placeholder="123456:AA..." autocomplete="off"></label>
       <button class="btn btn-block" id="botSave" type="button">${t('saveToken')}</button>
+    </div>
+
+    <div class="card" id="tplCard">
+      <div class="card-head"><h3>${t('setTpl')}</h3></div>
+      <p class="card-desc">${t('setTplP')}</p>
+      <div id="tplTabs">${tplTabs()}</div>
+      <div id="tplBody">${tplBody()}</div>
     </div>` : ''}
 
     <div class="card">
@@ -2373,6 +2588,31 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
+  const tplTab = el.closest('[data-tpl-kind]');
+  if (tplTab) {
+    state.tplKind = tplTab.dataset.tplKind;
+    $('tplBody').innerHTML = tplBody();
+    tplLive();
+    $('tplTabs').querySelector('.seg-btn.on')?.focus();
+    return;
+  }
+  const tplVar = el.closest('[data-tpl-var]');
+  if (tplVar) {
+    const ta = $('tplText');
+    const ins = `{${tplVar.dataset.tplVar}}`;
+    ta.focus();
+    ta.setRangeText(ins, ta.selectionStart, ta.selectionEnd, 'end');
+    tplSetDraft({ text: ta.value });
+    return;
+  }
+  if (el.closest('#tplReset')) {
+    const ta = $('tplText');
+    ta.value = TPL_DEFAULT[state.tplKind];
+    tplSetDraft({ text: ta.value });
+    return;
+  }
+  if (el.closest('#tplSave')) return tplSave();
+
   if (el.closest('#whFix')) {
     try {
       const r = await edge('admin-api', { action: 'setup_webhook' });
@@ -2391,6 +2631,7 @@ document.addEventListener('click', async (e) => {
 });
 
 document.addEventListener('input', (e) => {
+  if (e.target.id === 'tplText') return tplSetDraft({ text: e.target.value });
   if (e.target.id === 'searchInp') {
     state.search = e.target.value;
     const pos = e.target.selectionStart;
@@ -2446,6 +2687,11 @@ window.addEventListener('scroll', hideTip, { passive: true, capture: true });
 document.addEventListener('change', (e) => {
   if (e.target.id === 'repMonth') { hideTip(); loadReport(); }
   if (e.target.id === 'dayPick') setDay(e.target.value);
+  if (e.target.id === 'tplOn') tplSetDraft({ on: e.target.checked });
+});
+// Saqlanmagan shablon bilan sahifani yopishdan oldin ogohlantiramiz
+window.addEventListener('beforeunload', (e) => {
+  if (TPL_KINDS.some(tplDirty)) { e.preventDefault(); e.returnValue = ''; }
 });
 
 $('sheet').addEventListener('click', (e) => { if (e.target === $('sheet')) closeSheet(); });
