@@ -250,7 +250,16 @@ const STR = {
     payCsvName: "O'quvchi", payCsvStatus: 'Holat', payCsvOwed: "To'lanmagan oylar",
     delHasPayments: "Bu o'quvchida to'lovlar yozilgan — o'chirib bo'lmaydi. O'rniga uni arxivlang.",
     setTpl: '\u{1F4AC} Ota-onaga xabarlar',
-    setTplP: "Farzand kelganda, ketganda yoki darsga kelmaganda ota-onaga Telegramda boradigan matn. Faqat bugungi belgilashda yuboriladi. To'lov eslatmasi esa faqat To'lovlar bo'limidan qo'lda yuboriladi.",
+    setTplP: "Farzand kelganda, ketganda yoki darsga kelmaganda ota-onaga Telegramda boradigan matn. Faqat bugungi belgilashda yuboriladi. To'lov eslatmasi faqat To'lovlar bo'limidan qo'lda yuboriladi, «qabul qilindi» xabari esa to'lov yozilganda ketadi.",
+    tplPaidTab: 'Qabul qilindi', vSumma: 'Summa',
+    tplOnPaidP: "O'chirilsa, to'lov yoziladi, lekin ota-onaga xabar bormaydi",
+    payTell: "Ota-onaga Telegramda «to'lov qabul qilindi» xabari",
+    payNotifSoon: ' · 📨 ota-onaga xabar ketadi', payNotifBtn: "Ota-onaga «qabul qilindi» xabarini yuborish",
+    payNotifDone: 'Ota-onaga xabar yuborildi', payNotifBadge: 'Ota-onaga xabar yuborilgan',
+    payNotifNoTg: 'Ota-ona Telegramga ulanmagan — xabar yuborilmadi',
+    payNotifMuted: "Bu xabar Sozlamalarda o'chirilgan",
+    payNotifBadName: "O'quvchi ismida raqam yoki havola bor — ismni tekshiring, xabar yuborilmadi",
+    payNotifFail: "Ota-onaga xabar yetmadi — to'lovni ochib, qayta yuborishingiz mumkin",
     tplPayTab: "To'lov", tplPayManual: "Bu xabar avtomatik ketmaydi — faqat To'lovlar bo'limidan qo'lda yuboriladi.",
     vOy: 'Oy', vOylar: 'Qarz oylar',
     remBtn: 'Eslatma yuborish ({n})', remNoBot: 'Avval Sozlamalarda Telegram botni ulang',
@@ -496,7 +505,16 @@ const STR = {
     payCsvName: 'Ученик', payCsvStatus: 'Статус', payCsvOwed: 'Неоплаченные месяцы',
     delHasPayments: 'У ученика есть оплаты — удалить нельзя. Переведите его в архив.',
     setTpl: '\u{1F4AC} Сообщения родителям',
-    setTplP: 'Текст, который родитель получает в Telegram, когда ребёнок пришёл, ушёл или не пришёл. Отправляется только при отметке за сегодня. Напоминание об оплате отправляется только вручную из раздела «Оплаты».',
+    setTplP: 'Текст, который родитель получает в Telegram, когда ребёнок пришёл, ушёл или не пришёл. Отправляется только при отметке за сегодня. Напоминание об оплате отправляется только вручную из раздела «Оплаты», а сообщение «оплата принята» — при записи оплаты.',
+    tplPaidTab: 'Принята', vSumma: 'Сумма',
+    tplOnPaidP: 'Если выключить, оплата сохранится, но родитель сообщение не получит',
+    payTell: 'Сообщение родителю в Telegram «оплата принята»',
+    payNotifSoon: ' · 📨 родителю уйдёт сообщение', payNotifBtn: 'Отправить родителю «оплата принята»',
+    payNotifDone: 'Сообщение родителю отправлено', payNotifBadge: 'Родителю отправлено сообщение',
+    payNotifNoTg: 'Родитель не подключён к Telegram — сообщение не отправлено',
+    payNotifMuted: 'Это сообщение выключено в Настройках',
+    payNotifBadName: 'В имени ученика есть номер или ссылка — проверьте имя, сообщение не отправлено',
+    payNotifFail: 'Сообщение родителю не доставлено — откройте оплату, чтобы отправить снова',
     tplPayTab: 'Оплата', tplPayManual: 'Это сообщение не уходит автоматически — только вручную из раздела «Оплаты».',
     vOy: 'Месяц', vOylar: 'Долг. месяцы',
     remBtn: 'Напомнить ({n})', remNoBot: 'Сначала подключите Telegram-бота в Настройках',
@@ -659,16 +677,18 @@ function toast(msg, kind = '', action) {
   timer = setTimeout(() => el.remove(), action ? 6500 : 4200);
 }
 
-async function edge(fn, payload) {
+async function edge(fn, payload, { keepalive = false } = {}) {
   let token = SUPABASE_ANON;
-  try {
+  // keepalive — sahifa yopilayotganda: kutishga vaqt yo'q, oxirgi ma'lum sessiya bilan darhol yuboramiz
+  if (keepalive) token = state.session?.access_token ?? SUPABASE_ANON;
+  else try {
     const { data } = await sb.auth.getSession();
     if (data.session) { state.session = data.session; token = data.session.access_token; }
   } catch (_) { token = state.session?.access_token ?? SUPABASE_ANON; }
   let res;
   try {
     res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
-      method: 'POST',
+      method: 'POST', keepalive,
       headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${token}` },
       body: JSON.stringify(payload),
     });
@@ -2077,7 +2097,7 @@ async function loadPayments() {
   const cur = currentYm();
   const lo = ymShift(ym < cur ? ym : cur, -PAY_LOOKBACK), hi = ym > cur ? ym : cur;
   const [{ data, error }, rem] = await Promise.all([
-    sb.from('payments').select('id,student_id,month,amount,paid_on,note')
+    sb.from('payments').select('id,student_id,month,amount,paid_on,note,notified_at')
       .gte('month', lo + '-01').lte('month', hi + '-01'),
     sb.from('payment_reminders').select('student_id,status,code,sent_at,month')
       .gte('sent_at', new Date(Date.now() - 31 * 86400e3).toISOString()).order('sent_at', { ascending: false }),
@@ -2197,7 +2217,7 @@ function payListHtml(d, tab) {
 function payRow({ s, c, p, owed, rem }) {
   const state_ = p
     ? `<span class="pay-badge tone-green">${I.check}${t('payPaid')}</span>
-       <small>${p.amount != null ? sumText(p.amount) : t('payNoAmount')} · ${esc(shortDate(p.paid_on))}</small>`
+       <small>${p.amount != null ? sumText(p.amount) : t('payNoAmount')} · ${esc(shortDate(p.paid_on))}${p.notified_at ? `<span class="pay-sent" role="img" title="${t('payNotifBadge')}" aria-label="${t('payNotifBadge')}">${I.checks}</span>` : ''}</small>`
     : `<span class="pay-badge tone-red">${I.alert}${t('payUnpaid')}</span>
        ${owed.length >= 2 ? `<small class="pay-owed">${t('payArrears', { n: owed.length })}</small>` : ''}
        ${remBadge(rem)}`;
@@ -2231,6 +2251,10 @@ function paySheet(sid) {
   const prefill = p ? p.amount : last;
   const quick = payQuickAmounts(last);
   const pastOwed = owed.filter((m) => m !== d.ym);
+  // "Qabul qilindi" xabari — faqat yangi to'lovda. Eski oylar (tarixni kiritish) uchun
+  // belgi olib qo'yilgan: ota-onalarga o'tgan oylar bo'yicha xabarlar yog'ilmasin
+  const tgOk = !!s.telegram_chat_id && !remBadName(remName(s.full_name));
+  const canTell = !p && tgOk && !!state.botUsername && state.tpls?.paid?.on !== false;
   openSheet(`${t('navPay')} · ${esc(ymLabel(d.ym))}`, `
     <div class="pay-who"><b>${esc(s.full_name)}</b><span>${c.icon} ${esc(c.name)}</span></div>
     ${pastOwed.length ? `<p class="pay-owed-list">${I.alert}<span>${t('payArrearsList')}: ${pastOwed.map((m) => esc(ymShort(m))).join(', ')}</span></p>` : ''}
@@ -2244,8 +2268,11 @@ function paySheet(sid) {
         <input class="inp" type="date" id="payDate" value="${p ? p.paid_on : todayKey()}" max="${todayKey()}"></label>
       <label class="field"><span>${t('payNote')}</span>
         <input class="inp" id="payNote" maxlength="200" placeholder="${t('payNotePh')}" value="${esc(p?.note ?? '')}"></label>
+      ${canTell ? `<label class="check-item pay-tell">
+        <input type="checkbox" id="payTell" ${d.ym >= ymShift(currentYm(), -1) ? 'checked' : ''}><span>${t('payTell')}</span></label>` : ''}
       <p class="tpl-err" id="payErr" role="alert" hidden></p>
       <button class="btn btn-green btn-block" id="paySave" type="submit">${I.check} ${p ? t('save') : t('payMark')}</button>
+      ${p && !p.notified_at && tgOk ? `<button class="btn btn-block" style="margin-top:9px" id="payNotify" type="button">${I.bellOn} ${t('payNotifBtn')}</button>` : ''}
       ${p ? `<button class="btn btn-danger btn-block" style="margin-top:9px" id="payDel" type="button">${I.trash} ${t('payDelete')}</button>` : ''}
     </form>`, () => {
     const amt = $('payAmount');
@@ -2266,6 +2293,7 @@ function paySheet(sid) {
       const bad = Number.isNaN(amount) || (amount != null && (amount < 0 || amount > PAY_MAX)) || paidOn > todayKey();
       if (bad) { const er = $('payErr'); er.textContent = t('payBadAmount'); er.hidden = false; amt.focus(); return; }
       const row = { amount, paid_on: paidOn, note: $('payNote').value.trim() || null };
+      const tell = !!$('payTell')?.checked;
       const btn = $('paySave'); btn.disabled = true;
       const q = p
         ? await sb.from('payments').update(row).eq('id', p.id).select('id').single()
@@ -2278,12 +2306,23 @@ function paySheet(sid) {
       }
       closeSheet();
       const newId = q.data?.id;
-      toast(t('paySaved', { name: s.full_name }), 'ok', !p && newId ? { fn: async () => {
+      // Xabar "Bekor qilish" oynasi tugagach ketadi — adashib belgilangan to'lov ota-onaga yetmasin
+      const later = !p && newId && tell;
+      if (later) payNotifyLater(newId);
+      toast(t('paySaved', { name: s.full_name }) + (later ? t('payNotifSoon') : ''), 'ok', !p && newId ? { fn: async () => {
+        payNotifyCancel(newId);
         const { error } = await sb.from('payments').delete().eq('id', newId);
         if (error) toast('❌ ' + error.message, 'bad'); else toast(t('payRemoved'), 'ok');
         loadPayments();
       } } : undefined);
       loadPayments();
+    });
+    if (p) $('payNotify')?.addEventListener('click', async () => {
+      const btn = $('payNotify'); btn.disabled = true;
+      const code = await payNotify(p.id);
+      btn.disabled = false;
+      if (code === 'sent' || code === 'already') { closeSheet(); toast(t('payNotifDone'), 'ok'); loadPayments(); }
+      else toast(payNotifMsg(code), 'bad');
     });
     if (p) $('payDel').addEventListener('click', async () => {
       if (!confirm(t('payDeleteQ', { name: s.full_name, month: ymLabel(d.ym) }))) return;
@@ -2456,6 +2495,40 @@ function remindResult(ids, results, { aborted, broke }) {
   body.querySelector('[data-close]').addEventListener('click', () => closeSheet());
 }
 
+// Ota-onaga "to'lov qabul qilindi" xabari. Qaytaradi: 'sent' yoki sabab kodi.
+// Server bir to'lovga bir marta yuboradi — ikki oyna yoki qayta bosish ikkinchi xabar bermaydi.
+async function payNotify(paymentId, keepalive = false) {
+  try {
+    const r = await edge('admin-api', { action: 'notify_payment', payment_id: paymentId }, { keepalive });
+    return r.sent ? 'sent' : String(r.code || 'failed');
+  } catch (_e) {
+    return 'failed';
+  }
+}
+const payNotifyMsgs = { no_tg: 'payNotifNoTg', muted: 'payNotifMuted', no_bot: 'remNoBot', bad_name: 'payNotifBadName' };
+const payNotifMsg = (code) => t(payNotifyMsgs[code] || 'payNotifFail');
+
+// Yangi to'lov xabari toast'dagi "Bekor qilish" tugmasi yo'qolgach yuboriladi
+const PAY_NOTIFY_DELAY = 7000;   // toast (6,5 s) yopilgandan keyin — "Bekor qilish" bosilmay qolgan bo'lsa
+const payPending = new Map();   // to'lov id -> taymer
+function payNotifyLater(id) {
+  payNotifyCancel(id);
+  payPending.set(id, setTimeout(async () => {
+    payPending.delete(id);
+    const code = await payNotify(id);
+    if (code === 'sent' || code === 'already') { if (state.view === 'payments') loadPayments(); }
+    else if (code !== 'muted' && code !== 'no_bot') toast(payNotifMsg(code), 'bad');
+  }, PAY_NOTIFY_DELAY));
+}
+function payNotifyCancel(id) {
+  clearTimeout(payPending.get(id));
+  payPending.delete(id);
+}
+// Sahifa muddat tugamasdan yopilsa — kutayotgan xabarlarni darhol jo'natamiz
+addEventListener('pagehide', () => {
+  for (const id of [...payPending.keys()]) { payNotifyCancel(id); payNotify(id, true); }
+});
+
 function setPayYm(ym) {
   if (!/^\d{4}-\d{2}$/.test(ym || '')) return;
   const max = payMaxYm();
@@ -2487,7 +2560,7 @@ function exportPayCsv() {
    renderTpl u yerdagi bilan AYNAN bir xil — namuna ota-ona oladigan xabarning
    o'zi bo'lishi uchun (edge testida ikkalasi bir xil natija berishi tekshiriladi).
    ============================================================ */
-const TPL_KINDS = ['in', 'out', 'absent', 'excused', 'pay'];
+const TPL_KINDS = ['in', 'out', 'absent', 'excused', 'pay', 'paid'];
 const TPL_DEFAULT = {
   in:      "✅ *{ism}* soat *{vaqt}* da Parvoz O'quv Markaziga *keldi*.\n📚 {kurs}",
   out:     "🏠 *{ism}* soat *{vaqt}* da markazdan *ketdi*.\n📚 {kurs}",
@@ -2495,6 +2568,8 @@ const TPL_DEFAULT = {
   excused: "📝 *{ism}* bugun *sababli* qoldi.\n💬 {sabab}\n📚 {kurs}",
   // admin-api → DEFAULT_PAY bilan aynan bir xil
   pay:     "💳 Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi bizda hali qayd etilmagan.\n🗓 Qayd etilmagan oylar: {oylar}\n📚 {kurs}\n\nAgar to'lovni qilgan bo'lsangiz, iltimos, o'qituvchiga yoki markaz ma'muriyatiga ayting — tekshirib, belgilab qo'yamiz. Rahmat!",
+  // admin-api → DEFAULT_PAID bilan aynan bir xil
+  paid:    "✅ Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi qabul qilindi.\n💵 {summa} so'm\n📚 {kurs}\n📅 {sana}\n\nRahmat!",
 };
 const TPL_VARS = {
   in:      ['ism', 'vaqt', 'kurs', 'sana'],
@@ -2502,10 +2577,12 @@ const TPL_VARS = {
   absent:  ['ism', 'kurs', 'sana'],
   excused: ['ism', 'sabab', 'kurs', 'sana'],
   pay:     ['ism', 'kurs', 'oy', 'oylar'],
+  paid:    ['ism', 'kurs', 'oy', 'summa', 'sana'],
 };
-const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', sana: 'vSana', sabab: 'vSabab', oy: 'vOy', oylar: 'vOylar' };
-// Tab uchun nom va belgi: holatlar MARKS dan, to'lov eslatmasi alohida
-const tplMeta = (k) => (k === 'pay' ? { label: t('tplPayTab'), icon: 'wallet', tone: 'gold' } : MARKS[k]);
+const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', sana: 'vSana', sabab: 'vSabab', oy: 'vOy', oylar: 'vOylar', summa: 'vSumma' };
+// Tab uchun nom va belgi: holatlar MARKS dan, to'lov xabarlari alohida
+const tplMeta = (k) => k === 'pay' ? { label: t('tplPayTab'), icon: 'wallet', tone: 'gold' }
+  : k === 'paid' ? { label: t('tplPaidTab'), icon: 'checks', tone: 'green' } : MARKS[k];
 const TPL_MAX = 1000;
 
 function renderTpl(text, vars) {
@@ -2561,6 +2638,7 @@ function tplSample() {
     sabab: t('r1'),
     oy: DATE_NAMES.uz.m[Number(key.slice(5, 7)) - 1],
     oylar: [ymShift(key.slice(0, 7), -1), key.slice(0, 7)].map((m) => DATE_NAMES.uz.m[Number(m.slice(5, 7)) - 1]).join(', '),
+    summa: fmtSum(300000),
   };
 }
 
@@ -2583,7 +2661,7 @@ function tplBody() {
     <label class="switch-row">
       <input type="checkbox" role="switch" id="tplOn" ${cur.on ? 'checked' : ''}>
       <span class="switch" aria-hidden="true"></span>
-      <span class="switch-txt"><b>${t('tplOn')}</b><small>${t('tplOnP')}</small></span>
+      <span class="switch-txt"><b>${t('tplOn')}</b><small>${t(k === 'paid' ? 'tplOnPaidP' : 'tplOnP')}</small></span>
     </label>`}
     <label class="field tpl-field"><span>${t('tplText')}</span>
       <textarea class="inp tpl-text" id="tplText" rows="5" spellcheck="false">${esc(cur.text)}</textarea></label>

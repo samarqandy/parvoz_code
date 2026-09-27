@@ -80,12 +80,18 @@ const TPL_VARS: Record<string, string[]> = {
   absent:  ['ism', 'kurs', 'sana'],
   excused: ['ism', 'sabab', 'kurs', 'sana'],
   pay:     ['ism', 'kurs', 'oy', 'oylar'],     // to'lov eslatmasi — faqat qo'lda yuboriladi
+  paid:    ['ism', 'kurs', 'oy', 'summa', 'sana'], // to'lov qabul qilindi — to'lov yozilganda
 };
 const TPL_MAX = 1000;
 
 // To'lov eslatmasining standart matni. Panelda (assets/app.js → TPL_DEFAULT.pay) aynan
 // shu matn — namuna ota-ona oladigan xabar bilan bir xil bo'lishi uchun.
 const DEFAULT_PAY = "💳 Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi bizda hali qayd etilmagan.\n🗓 Qayd etilmagan oylar: {oylar}\n📚 {kurs}\n\nAgar to'lovni qilgan bo'lsangiz, iltimos, o'qituvchiga yoki markaz ma'muriyatiga ayting — tekshirib, belgilab qo'yamiz. Rahmat!";
+
+// "To'lov qabul qilindi" — to'lov yozilganda ota-onaga. Panelda TPL_DEFAULT.paid bilan bir xil.
+const DEFAULT_PAID = "✅ Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi qabul qilindi.\n💵 {summa} so'm\n📚 {kurs}\n📅 {sana}\n\nRahmat!";
+// 300000 -> "300 000" (bo'linmas probel)
+const fmtSum = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
 
 const escHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -117,6 +123,7 @@ function ymShift(ym: string, n: number): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 const oyName = (ym: string) => OYLAR[Number(ym.slice(5, 7)) - 1];
+const sanaOf = (key: string) => `${Number(key.slice(8, 10))}-${OYLAR[Number(key.slice(5, 7)) - 1]}`;
 // O'qituvchi yozgan ism — to'lov xabarida karta raqami / havola bo'lib kelmasin
 const normName = (n: unknown) => String(n ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
 const badName = (n: string) => /https?:\/\/|www\.|t\.me\/|@/i.test(n) || /\d{7,}/.test(n.replace(/[\s().-]/g, ''));
@@ -469,6 +476,56 @@ Deno.serve(async (req) => {
         ok: true, month, sent, failed, unknown, skipped, results, not_sent: notSent,
         ...(aborted ? { aborted } : {}),
       });
+    }
+
+    // ---- To'lov qabul qilindi: yangi to'lov yozilganda ota-onaga ----
+    if (action === 'notify_payment') {
+      const pid = String(body.payment_id ?? '');
+      if (!UUID_RE.test(pid)) return json({ error: 'payment_id kerak' }, 400);
+      const { data: pay } = await admin.from('payments')
+        .select('id, month, amount, paid_on, notified_at, students(full_name, telegram_chat_id, courses(name))')
+        .eq('id', pid).maybeSingle();
+      if (!pay) return json({ error: 'payment not found' }, 404);
+      const st: any = (pay as any).students;
+      if (pay.notified_at) return json({ ok: true, sent: false, code: 'already' });
+      if (!st?.telegram_chat_id) return json({ ok: true, sent: false, code: 'no_tg' });
+      // Eslatmadagidek: ismda karta raqami / havola bo'lsa, bot orqali ota-onaga yubormaymiz
+      const ism = normName(st.full_name);
+      if (badName(ism)) return json({ ok: true, sent: false, code: 'bad_name' });
+      const token = await getCfg('bot_token');
+      if (!token) return json({ ok: true, sent: false, code: 'no_bot' });
+      const tpl = { on: true, text: DEFAULT_PAID };
+      try {
+        const saved = JSON.parse((await getCfg('msg_templates')) ?? '{}')?.paid;
+        if (saved && typeof saved === 'object') {
+          if (saved.on === false) tpl.on = false;
+          if (typeof saved.text === 'string' && saved.text.trim()) tpl.text = saved.text;
+        }
+      } catch { /* standart matn */ }
+      if (!tpl.on) return json({ ok: true, sent: false, code: 'muted' });
+
+      // Avval band qilamiz — ikki oyna / qayta urinish ikki marta yubormasin
+      const { data: claimed } = await admin.from('payments')
+        .update({ notified_at: new Date().toISOString() }).eq('id', pid).is('notified_at', null).select('id');
+      if (!claimed?.length) return json({ ok: true, sent: false, code: 'already' });
+
+      const text = renderTpl(tpl.text, {
+        ism,
+        kurs: String(st.courses?.name ?? ''),
+        oy: oyName(String(pay.month).slice(0, 7)),
+        summa: pay.amount == null ? '' : fmtSum(Number(pay.amount)),
+        sana: sanaOf(String(pay.paid_on)),
+      });
+      const r = await tg(token, 'sendMessage', {
+        chat_id: Number(st.telegram_chat_id), text, parse_mode: 'HTML', link_preview_options: { is_disabled: true },
+      });
+      const c = classify(r);
+      if (c.status !== 'sent') {
+        // Yetmadi — bandni bo'shatamiz, admin qayta yuborishi mumkin
+        await admin.from('payments').update({ notified_at: null }).eq('id', pid);
+        return json({ ok: true, sent: false, code: c.code });
+      }
+      return json({ ok: true, sent: true });
     }
 
     // ---- Telegram bot ----
