@@ -1036,6 +1036,8 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .pay-debt-sum small { color: var(--muted); font-size: .78rem; font-weight: 700; }
 .pay-quick .chip small { color: var(--muted); font-weight: 700; }
 .pay-fee-nudge { margin: -6px 0 14px; }
+.pay-who .pay-own { color: var(--text); font-size: .82rem; }
+.row-sub .st-fee { font-variant-numeric: tabular-nums; }
 .pay-sent { display: inline-flex; vertical-align: -2px; margin-left: 5px; color: var(--green-ink); }
 .pay-sent svg { width: 13px; height: 13px; }
 .pay-tell { margin: 0 0 14px; font-weight: 600; font-size: .9rem; line-height: 1.35; }

@@ -103,11 +103,17 @@ Admin Jamoa → Kurslar oynasida kiritadi.
 
 - `save_course` narxni faqat so'rovda `monthly_fee` kaliti bo'lsa o'zgartiradi — eski
   panel kursni saqlaganda narx o'chib ketmaydi. Faqat son yoki raqamli satr qabul qilinadi.
-- To'lov oynasida summa: o'quvchining oxirgi to'lovi (chegirma bo'lsa ham to'g'ri),
-  u bo'lmasa — kurs narxi. Kurs narxi tez tanlash tugmasi sifatida ham chiqadi.
-- Qarzdorlar ro'yxatida taxminiy qarz: kurs narxi × to'lanmagan oylar (ko'pi bilan
-  12 oy orqaga). Chegirma hisobga olinmaydi, shuning uchun "≈" bilan ko'rsatiladi.
-  Ota-onaga boradigan xabarlarda summa **ishlatilmaydi** — noto'g'ri qarz summasi
+- **Shaxsiy narx (chegirma)** — `student_fees` jadvali (`student_id` → `monthly_fee`).
+  Admin o'quvchi oynasida kiritadi; bo'sh qoldirilsa yozuv o'chadi va kurs narxi olinadi.
+  `students` ga ustun qilib qo'shilmadi: o'quvchilarni o'qituvchi ham ko'radi, bu jadvalni
+  esa faqat admin o'qiydi va yozadi (RLS). `updated_by_email` va `updated_at` ni trigger
+  JWT dan yozadi. O'quvchi o'chirilsa, yozuvi ham o'chadi.
+- **Oylik narx** = shaxsiy narx, u bo'lmasa kurs narxi.
+- To'lov oynasida summa: oylik narx, u bo'lmasa o'quvchining oxirgi to'lovi. Tez tanlash
+  tugmalari: oylik narx, oxirgi summa, kurs narxi (belgilari bilan).
+- Qarzdorlar ro'yxatida taxminiy qarz: oylik narx × to'lanmagan oylar (ko'pi bilan
+  12 oy orqaga), "≈" bilan. Qisman to'lovlar hisobga olinmaydi.
+  Ota-onaga boradigan xabarlarda summa **ishlatilmaydi** — taxminiy summa
   ota-onaga yetib bormasligi uchun.
 - Narx o'qituvchilarga ham ko'rinadi (kurslar jadvali ular uchun ochiq), lekin
   to'lovlar va qarzlar faqat adminga.

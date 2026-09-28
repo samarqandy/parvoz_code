@@ -28,6 +28,7 @@ const state = {
   payTab: (() => { try { return localStorage.getItem('parvoz-pay-tab') || 'unpaid'; } catch (_) { return 'unpaid'; } })(),
   payQ: '',
   tpls: {},           // app_config.msg_templates — admin saqlagan shablonlar
+  fees: new Map(),    // student_fees: o'quvchi id -> shaxsiy oylik narx (faqat admin)
   tplKind: 'in',      // muharrirda ochiq tur
   tplDraft: {},       // saqlanmagan tahrirlar: { kind: { on, text } }
   timer: null,
@@ -221,6 +222,10 @@ const STR = {
     fFee: "Oylik narx, so'm", fFeePh: 'Masalan: 300 000',
     fFeeHint: "To'lov yozilganda summa o'zi qo'yiladi va qarz taxminan hisoblanadi. Bo'sh qoldirsangiz — narx belgilanmagan.",
     perMonth: "{n} so'm/oy",
+    fStFee: "Shaxsiy oylik narx, so'm", fStFeePh: "Kurs narxi: {n}", fStFeePhNone: 'Kurs narxi belgilanmagan',
+    fStFeeHint: "Chegirma yoki alohida kelishuv bo'lsa. Bo'sh qoldirsangiz — kurs narxi olinadi. Faqat admin ko'radi.",
+    stFeeFail: "O'quvchi saqlandi, lekin shaxsiy narx saqlanmadi: {e}",
+    payOwnFee: "Shaxsiy narx: {n} so'm/oy", payOwnFeeCourse: 'kurs narxi: {n}', payOwnChip: 'Shaxsiy narx',
     delCourse: '"{name}" kursi o\'chirilsinmi?',
 
     /* --- sozlamalar --- */
@@ -251,9 +256,9 @@ const STR = {
     payPrevMonth: 'Oldingi oy', payNextMonth: 'Keyingi oy', payPickMonth: 'Oyni tanlash',
     payFutureNote: "Keyingi oy — oldindan to'lovlarni yozish uchun",
     payCsvName: "O'quvchi", payCsvStatus: 'Holat', payCsvOwed: "To'lanmagan oylar",
-    payCsvDebt: "Taxminiy qarz, so'm (kurs narxi bo'yicha)", payDebt: "≈ {n} so'm",
-    payDebtTotal: "Jami qarz ≈ {n} so'm", payDebtBasis: "kurs narxi × to'lanmagan oylar",
-    payDebtNoFee: "{n} ta o'quvchining kursida narx yo'q", payFeeChip: 'Kurs narxi',
+    payCsvDebt: "Taxminiy qarz, so'm (oylik narx bo'yicha)", payCsvRate: "Oylik narx, so'm", payDebt: "≈ {n} so'm",
+    payDebtTotal: "Jami qarz ≈ {n} so'm", payDebtBasis: "oylik narx (shaxsiy yoki kurs) × to'lanmagan oylar",
+    payDebtNoFee: "{n} ta o'quvchida narx belgilanmagan", payFeeChip: 'Kurs narxi',
     payFeeNudge: "Kurs narxini Jamoa → Kurslar bo'limida belgilasangiz, summa o'zi qo'yiladi.",
     delHasPayments: "Bu o'quvchida to'lovlar yozilgan — o'chirib bo'lmaydi. O'rniga uni arxivlang.",
     setTpl: '\u{1F4AC} Ota-onaga xabarlar',
@@ -484,6 +489,10 @@ const STR = {
     fFee: 'Цена в месяц, сум', fFeePh: 'Например: 300 000',
     fFeeHint: 'Подставляется при записи оплаты, по ней примерно считается долг. Пусто — цена не задана.',
     perMonth: '{n} сум/мес.',
+    fStFee: 'Личная цена в месяц, сум', fStFeePh: 'Цена курса: {n}', fStFeePhNone: 'Цена курса не задана',
+    fStFeeHint: 'Если есть скидка или отдельная договорённость. Пусто — берётся цена курса. Видит только администратор.',
+    stFeeFail: 'Ученик сохранён, но личная цена не сохранилась: {e}',
+    payOwnFee: 'Личная цена: {n} сум/мес.', payOwnFeeCourse: 'цена курса: {n}', payOwnChip: 'Личная цена',
     delCourse: 'Удалить предмет «{name}»?',
 
     setLang: 'Язык',
@@ -513,9 +522,9 @@ const STR = {
     payPrevMonth: 'Предыдущий месяц', payNextMonth: 'Следующий месяц', payPickMonth: 'Выбрать месяц',
     payFutureNote: 'Следующий месяц — для записи предоплат',
     payCsvName: 'Ученик', payCsvStatus: 'Статус', payCsvOwed: 'Неоплаченные месяцы',
-    payCsvDebt: 'Примерный долг, сум (по цене курса)', payDebt: '≈ {n} сум',
-    payDebtTotal: 'Всего долг ≈ {n} сум', payDebtBasis: 'цена курса × неоплаченные месяцы',
-    payDebtNoFee: 'без цены курса — учеников: {n}', payFeeChip: 'Цена курса',
+    payCsvDebt: 'Примерный долг, сум (по месячной цене)', payCsvRate: 'Месячная цена, сум', payDebt: '≈ {n} сум',
+    payDebtTotal: 'Всего долг ≈ {n} сум', payDebtBasis: 'месячная цена (личная или курса) × неоплаченные месяцы',
+    payDebtNoFee: 'без цены — учеников: {n}', payFeeChip: 'Цена курса',
     payFeeNudge: 'Задайте цену курса в разделе Команда → Курсы — сумма будет подставляться сама.',
     delHasPayments: 'У ученика есть оплаты — удалить нельзя. Переведите его в архив.',
     setTpl: '\u{1F4AC} Сообщения родителям',
@@ -899,7 +908,7 @@ async function enterApp() {
 }
 
 async function refreshAll() {
-  await Promise.all([loadCourses(), loadStudents(), loadToday(), loadConfig(), loadLeadsData()]);
+  await Promise.all([loadCourses(), loadStudents(), loadToday(), loadConfig(), loadLeadsData(), loadFees()]);
   renderCounts();
 }
 
@@ -910,6 +919,12 @@ async function loadCourses() {
 async function loadStudents() {
   const { data } = await sb.from('students').select('*').order('full_name');
   state.students = data ?? [];
+}
+// Shaxsiy narxlar — faqat admin (RLS o'qituvchiga bo'sh qaytaradi)
+async function loadFees() {
+  if (!isAdmin()) { state.fees = new Map(); return; }
+  const { data, error } = await sb.from('student_fees').select('student_id,monthly_fee');
+  if (!error) state.fees = new Map((data ?? []).map((r) => [r.student_id, r.monthly_fee]));
 }
 async function loadToday() {
   const key = selDay();
@@ -1516,6 +1531,7 @@ function rowStudent(s) {
       <div class="row-sub">
         ${s.parent_name ? `<span>👤 ${esc(s.parent_name)}</span>` : ''}
         ${s.parent_phone ? `<span>📞 ${esc(s.parent_phone)}</span>` : ''}
+        ${isAdmin() && Number.isInteger(state.fees.get(s.id)) ? `<span class="st-fee">💰 ${t('perMonth', { n: fmtSum(state.fees.get(s.id)) })}</span>` : ''}
       </div>
     </div>
     <div class="row-actions">
@@ -2115,6 +2131,7 @@ async function loadPayments() {
       .gte('month', lo + '-01').lte('month', hi + '-01'),
     sb.from('payment_reminders').select('student_id,status,code,sent_at,month')
       .gte('sent_at', new Date(Date.now() - 31 * 86400e3).toISOString()).order('sent_at', { ascending: false }),
+    loadFees(),
   ]);
   // Oy tez-tez almashtirilsa eski javob yangisini bosib ketmasin
   if (seq !== paySeq || state.view !== 'payments' || !$('payOut')) return;
@@ -2169,10 +2186,14 @@ function payModel() {
       const withAmount = [...pm.values()].filter((r) => r.amount != null).sort((a, b) => b.month.localeCompare(a.month));
       const c = courseById(s.course_id);
       const fee = Number.isInteger(c.monthly_fee) ? c.monthly_fee : null;
-      // Taxminiy qarz: kurs narxi × to'lanmagan oylar (shu oy bilan). Chegirma hisobga olinmaydi
-      const debt = !p && fee != null ? owed.length * fee : null;
+      const own = state.fees.get(s.id);
+      const sfee = Number.isInteger(own) ? own : null;
+      // Oylik narx: shaxsiy (chegirma) bo'lsa o'sha, bo'lmasa kurs narxi
+      const rate = sfee ?? fee;
+      // Taxminiy qarz: oylik narx × to'lanmagan oylar (shu oy bilan)
+      const debt = !p && rate != null ? owed.length * rate : null;
       return { s, c, p, owed, owedNow, rem: state.pay.rem?.get(s.id) ?? null,
-        remOk: state.pay.remOk?.get(s.id) ?? null, last: withAmount[0]?.amount ?? null, fee, debt };
+        remOk: state.pay.remOk?.get(s.id) ?? null, last: withAmount[0]?.amount ?? null, fee, sfee, rate, debt };
     })
     .filter(Boolean);
 
@@ -2183,7 +2204,7 @@ function payModel() {
     collected: paid.reduce((n, x) => n + (x.p.amount || 0), 0),
     multi: unpaid.filter((x) => x.owed.length >= 2).length,
     debt: unpaid.reduce((n, x) => n + (x.debt || 0), 0),
-    noFee: unpaid.filter((x) => x.fee == null).length,
+    noFee: unpaid.filter((x) => x.rate == null).length,
   };
 }
 
@@ -2277,24 +2298,26 @@ function paySheet(sid) {
   const d = payModel();
   const it = d.items.find((x) => x.s.id === sid);
   if (!it) return;
-  const { s, c, p, owed, last, fee } = it;
-  // O'quvchining oxirgi summasi (chegirma bo'lsa ham to'g'ri), bo'lmasa — kurs narxi
-  const prefill = p ? p.amount : (last ?? fee);
-  const quick = payQuickAmounts([last, fee]);
+  const { s, c, p, owed, last, fee, sfee, rate } = it;
+  // Oylik narx (shaxsiy yoki kurs), u bo'lmasa — o'quvchining oxirgi summasi
+  const prefill = p ? p.amount : (rate ?? last);
+  const quick = payQuickAmounts([rate, last, fee]);
+  const chipTag = (n) => (n === sfee ? t('payOwnChip') : n === fee ? t('payFeeChip') : '');
   const pastOwed = owed.filter((m) => m !== d.ym);
   // "Qabul qilindi" xabari — faqat yangi to'lovda. Eski oylar (tarixni kiritish) uchun
   // belgi olib qo'yilgan: ota-onalarga o'tgan oylar bo'yicha xabarlar yog'ilmasin
   const tgOk = !!s.telegram_chat_id && !remBadName(remName(s.full_name));
   const canTell = !p && tgOk && !!state.botUsername && state.tpls?.paid?.on !== false;
   openSheet(`${t('navPay')} · ${esc(ymLabel(d.ym))}`, `
-    <div class="pay-who"><b>${esc(s.full_name)}</b><span>${c.icon} ${esc(c.name)}</span></div>
+    <div class="pay-who"><b>${esc(s.full_name)}</b><span>${c.icon} ${esc(c.name)}</span>
+      ${sfee != null ? `<span class="pay-own">${t('payOwnFee', { n: fmtSum(sfee) })}${fee != null ? ` · ${t('payOwnFeeCourse', { n: fmtSum(fee) })}` : ''}</span>` : ''}</div>
     ${pastOwed.length ? `<p class="pay-owed-list">${I.alert}<span>${t('payArrearsList')}: ${pastOwed.map((m) => esc(ymShort(m))).join(', ')}</span></p>` : ''}
     <form id="payForm" novalidate>
       <label class="field"><span>${t('payAmount')}</span>
         <input class="inp pay-amount" id="payAmount" inputmode="numeric" autocomplete="off" placeholder="0"
           value="${prefill != null ? fmtSum(prefill) : ''}"></label>
       ${quick.length ? `<div class="chips pay-quick" aria-label="${t('payQuick')}">${quick.map((n) =>
-        `<button class="chip" style="--acc:var(--green)" data-pay-quick="${n}" type="button"${n === fee ? ` title="${t('payFeeChip')}"` : ''}>${fmtSum(n)}${n === fee && n !== last ? ` <small>· ${t('payFeeChip').toLowerCase()}</small>` : ''}</button>`).join('')}</div>` : ''}
+        `<button class="chip" style="--acc:var(--green)" data-pay-quick="${n}" type="button"${chipTag(n) ? ` title="${chipTag(n)}"` : ''}>${fmtSum(n)}${chipTag(n) ? ` <small>· ${chipTag(n).toLowerCase()}</small>` : ''}</button>`).join('')}</div>` : ''}
       ${!p && prefill == null ? `<p class="f-hint pay-fee-nudge">${t('payFeeNudge')}</p>` : ''}
       <label class="field"><span>${t('payDate')}</span>
         <input class="inp" type="date" id="payDate" value="${p ? p.paid_on : todayKey()}" max="${todayKey()}"></label>
@@ -2572,12 +2595,12 @@ function setPayYm(ym) {
 function exportPayCsv() {
   if (!state.pay) return;
   const d = payModel();
-  const head = [t('payCsvName'), t('csvCourse'), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed'), t('payCsvDebt')];
+  const head = [t('payCsvName'), t('csvCourse'), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed'), t('payCsvRate'), t('payCsvDebt')];
   const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
   const rows = [...d.items].sort((a, b) => (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name));
-  const lines = [head.map(q).join(';')].concat(rows.map(({ s, c, p, owed, debt }) =>
+  const lines = [head.map(q).join(';')].concat(rows.map(({ s, c, p, owed, rate, debt }) =>
     [s.full_name, c.name, s.parent_phone, p ? t('payPaid') : t('payUnpaid'), p?.amount ?? '', p?.paid_on ?? '', p?.note ?? '',
-     owed.map(ymShort).join(', '), debt ?? ''].map(q).join(';')));
+     owed.map(ymShort).join(', '), rate ?? '', debt ?? ''].map(q).join(';')));
   const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -2877,13 +2900,39 @@ function studentSheet(id) {
       <label class="field"><span>${t('fPhone')}</span>
         <input class="inp" id="stPhone" inputmode="tel" placeholder="+998 90 123 45 67" value="${esc(s?.parent_phone ?? '')}">
         <small class="f-hint">${t('fPhoneHint')}</small></label>
+      ${isAdmin() ? `<label class="field"><span>${t('fStFee')}</span>
+        <input class="inp" id="stFee" inputmode="numeric" autocomplete="off"
+          value="${s && Number.isInteger(state.fees.get(s.id)) ? fmtSum(state.fees.get(s.id)) : ''}">
+        <small class="f-hint">${t('fStFeeHint')}</small></label>
+      <p class="tpl-err" id="stFeeErr" role="alert" hidden></p>` : ''}
       ${s ? `<label class="check-item" style="margin-bottom:14px">
         <input type="checkbox" id="stActive" ${s.active ? 'checked' : ''}><span>${t('fActive')}</span></label>` : ''}
       <button class="btn btn-primary btn-block" type="submit">${s ? t('save') : t('add')}</button>
       ${s ? `<button class="btn btn-danger btn-block" style="margin-top:9px" id="stDelete" type="button">${I.trash} ${t('del')}</button>` : ''}
     </form>`, () => {
+    const feeIn = $('stFee');
+    // Bo'sh maydonda tanlangan kursning narxi ko'rinadi — nima olinishini admin bilsin
+    const feePh = () => {
+      const cf = courseById($('stCourse').value).monthly_fee;
+      feeIn.placeholder = Number.isInteger(cf) ? t('fStFeePh', { n: fmtSum(cf) }) : t('fStFeePhNone');
+    };
+    if (feeIn) {
+      feePh();
+      $('stCourse').addEventListener('change', feePh);
+      feeIn.addEventListener('input', () => {
+        const n = parseSum(feeIn.value);
+        feeIn.value = n == null || Number.isNaN(n) ? feeIn.value.replace(/[^\d\s]/g, '') : fmtSum(n);
+        $('stFeeErr').hidden = true;
+      });
+    }
     $('stForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const fee = feeIn ? parseSum(feeIn.value) : undefined;
+      if (feeIn && (Number.isNaN(fee) || (fee != null && fee > PAY_MAX))) {
+        const er = $('stFeeErr'); er.textContent = t('payBadAmount'); er.hidden = false; feeIn.focus(); return;
+      }
+      const oldFee = s && Number.isInteger(state.fees.get(s.id)) ? state.fees.get(s.id) : null;
+      const feeChanged = feeIn && fee !== oldFee;
       const row = {
         full_name: $('stName').value.trim(),
         course_id: $('stCourse').value,
@@ -2892,11 +2941,22 @@ function studentSheet(id) {
       };
       if (s) row.active = $('stActive').checked;
       if (!row.full_name || !row.course_id) return;
-      const q = s ? await sb.from('students').update(row).eq('id', s.id) : await sb.from('students').insert(row);
+      const q = s ? await sb.from('students').update(row).eq('id', s.id)
+        : feeChanged ? await sb.from('students').insert(row).select('id').single()
+        : await sb.from('students').insert(row);
       if (q.error) { toast('❌ ' + q.error.message, 'bad'); return; }
       closeSheet();
-      toast(s ? t('saved') : t('studentAdded'), 'ok');
-      await loadStudents(); render();
+      let feeErr = null;
+      const sid = s ? s.id : q.data?.id;
+      if (feeChanged && sid) {
+        const fq = fee == null
+          ? await sb.from('student_fees').delete().eq('student_id', sid)
+          : await sb.from('student_fees').upsert({ student_id: sid, monthly_fee: fee });
+        feeErr = fq.error;
+      }
+      if (feeErr) toast(t('stFeeFail', { e: feeErr.message }), 'bad');
+      else toast(s ? t('saved') : t('studentAdded'), 'ok');
+      await Promise.all([loadStudents(), loadFees()]); render();
     });
     if (s) $('stDelete').addEventListener('click', async () => {
       if (!confirm(t('delStudent', { name: s.full_name }))) return;
