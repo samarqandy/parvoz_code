@@ -83,7 +83,7 @@ UI = {
         'cta_p': "Birinchi dars to'liq bepul, oldindan to'lov yo'q. Bola darsdan keyin qaytishni xohlamasa — hech qanday majburiyat yo'q.",
         'cta_btn': '🎁 Bepul darsga yozilish',
         'back': '← Barcha maqolalar',
-        'other': '🇷🇺 Читать по-русски',
+        'other': 'Читать по-русски', 'other_lang': 'ru',
         'index_h': 'Ota-onalar uchun maqolalar',
         'index_lede': "Bolani kursga berishdan oldin eng ko'p beriladigan savollar — va ularga aniq javoblar. Reklama emas, amaliy maslahat.",
         'index_desc': ("Bolani kursga berishdan oldin ota-onalar eng ko'p beradigan savollarga aniq javoblar: "
@@ -102,7 +102,7 @@ UI = {
         'cta_p': 'Первый урок полностью бесплатный, без предоплаты. Если ребёнок не захочет возвращаться — никаких обязательств.',
         'cta_btn': '🎁 Записаться на бесплатный урок',
         'back': '← Все статьи',
-        'other': "🇺🇿 O'zbekcha o'qish",
+        'other': "O'zbekcha o'qish", 'other_lang': 'uz',
         'index_h': 'Статьи для родителей',
         'index_lede': 'Вопросы, которые чаще всего задают перед выбором курса — и конкретные ответы на них. Не реклама, а практический совет.',
         'index_desc': ('Конкретные ответы на вопросы, которые родители задают перед записью ребёнка на курсы: '
@@ -125,6 +125,22 @@ WEBSITE = {"@type": "WebSite", "@id": BASE + "#website", "name": "Parvoz O'quv M
 
 def esc(t):
     return html.escape(t, quote=True)
+
+
+# Til havolalaridagi bayroqlar. Emoji bayroq (🇷🇺, 🇺🇿) Windows'da bayroq emas, "RU"/"UZ"
+# harflari bo'lib chiqadi — shuning uchun SVG. id/clipPath yo'q: sahifada bir necha nusxa bo'lsa
+# ham to'qnashmaydi. gen_courses_ru.py ham ishlatadi; maxfiylik.html da qo'lda qo'yilgan.
+FLAG = {
+    'ru': ('<svg class="flag flag-ru" viewBox="0 0 9 6" aria-hidden="true" focusable="false">'
+           '<path fill="#fff" d="M0 0h9v2H0z"/><path fill="#0039a6" d="M0 2h9v2H0z"/>'
+           '<path fill="#d52b1e" d="M0 4h9v2H0z"/></svg>'),
+    # 1:2; ko'k, oq, yashil yo'llar orasida qizil hoshiya; yarim oy va 12 yulduz (3/4/5 qator)
+    'uz': ('<svg class="flag flag-uz" viewBox="0 0 500 250" aria-hidden="true" focusable="false">'
+           '<path fill="#1eb53a" d="M0 0h500v250H0z"/><path fill="#0099b5" d="M0 0h500v125H0z"/>'
+           '<path fill="#ce1126" d="M0 80h500v90H0z"/><path fill="#fff" d="M0 85h500v80H0z"/>'
+           '<circle cx="70" cy="40" r="30" fill="#fff"/><circle cx="80" cy="40" r="30" fill="#0099b5"/>'
+           '<path fill="#fff" d="M136.00 10.00L137.35 14.15L141.71 14.15L138.18 16.71L139.53 20.85L136.00 18.29L132.47 20.85L133.82 16.71L130.29 14.15L134.65 14.15ZM160.00 10.00L161.35 14.15L165.71 14.15L162.18 16.71L163.53 20.85L160.00 18.29L156.47 20.85L157.82 16.71L154.29 14.15L158.65 14.15ZM184.00 10.00L185.35 14.15L189.71 14.15L186.18 16.71L187.53 20.85L184.00 18.29L180.47 20.85L181.82 16.71L178.29 14.15L182.65 14.15ZM112.00 34.00L113.35 38.15L117.71 38.15L114.18 40.71L115.53 44.85L112.00 42.29L108.47 44.85L109.82 40.71L106.29 38.15L110.65 38.15ZM136.00 34.00L137.35 38.15L141.71 38.15L138.18 40.71L139.53 44.85L136.00 42.29L132.47 44.85L133.82 40.71L130.29 38.15L134.65 38.15ZM160.00 34.00L161.35 38.15L165.71 38.15L162.18 40.71L163.53 44.85L160.00 42.29L156.47 44.85L157.82 40.71L154.29 38.15L158.65 38.15ZM184.00 34.00L185.35 38.15L189.71 38.15L186.18 40.71L187.53 44.85L184.00 42.29L180.47 44.85L181.82 40.71L178.29 38.15L182.65 38.15ZM88.00 58.00L89.35 62.15L93.71 62.15L90.18 64.71L91.53 68.85L88.00 66.29L84.47 68.85L85.82 64.71L82.29 62.15L86.65 62.15ZM112.00 58.00L113.35 62.15L117.71 62.15L114.18 64.71L115.53 68.85L112.00 66.29L108.47 68.85L109.82 64.71L106.29 62.15L110.65 62.15ZM136.00 58.00L137.35 62.15L141.71 62.15L138.18 64.71L139.53 68.85L136.00 66.29L132.47 68.85L133.82 64.71L130.29 62.15L134.65 62.15ZM160.00 58.00L161.35 62.15L165.71 62.15L162.18 64.71L163.53 68.85L160.00 66.29L156.47 68.85L157.82 64.71L154.29 62.15L158.65 62.15ZM184.00 58.00L185.35 62.15L189.71 62.15L186.18 64.71L187.53 68.85L184.00 66.29L180.47 68.85L181.82 64.71L178.29 62.15L182.65 62.15Z"/></svg>'),
+}
 
 
 # <head> dagi til skripti (gen_courses_ru.py ham ishlatadi)
@@ -151,6 +167,12 @@ def to_ru(text):
             raise SystemExit("Footer'dagi maqolalar qatorlari kutilgan ko'rinishda emas")
         text = text[:dup.start()] + RU_HUB + dup.group(1) + UZ_HUB + text[dup.end():]
     return text
+
+
+def lang_link(u, href):
+    """Boshqa tildagi nusxaga havola — bayroq bilan."""
+    o = u['other_lang']
+    return f'<a class="art-lang" href="{href}" hreflang="{o}" lang="{o}">{FLAG[o]}{esc(u["other"])}</a>'
 
 
 def chrome(lang):
@@ -297,7 +319,7 @@ def build(a, lang, alt_slug, date):
     </nav>
 
     <h1>{esc(a['h1'])}</h1>
-    <p class="doc-date">{esc(u['updated'])}: {date} · <a class="art-lang" href="{alt_slug}.html">{esc(u['other'])}</a></p>
+    <p class="doc-date">{esc(u['updated'])}: {date} · {lang_link(u, alt_slug + '.html')}</p>
 
     <p class="art-lede">{a['lede']}</p>
 {body_html}
@@ -364,7 +386,7 @@ def build_index(items, lang, alt_slug):
     </nav>
 
     <h1>{esc(u['index_h'])}</h1>
-    <p class="doc-date"><a class="art-lang" href="{alt_slug}">{esc(u['other'])}</a></p>
+    <p class="doc-date">{lang_link(u, alt_slug)}</p>
     <p class="art-lede">{esc(u['index_lede'])}</p>
 
     <div class="art-grid">{cards}

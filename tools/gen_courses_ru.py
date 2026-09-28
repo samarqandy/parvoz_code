@@ -94,7 +94,8 @@ def with_hreflang(page, url, uz_url, ru_url):
 def lang_link(page, href, code, label):
     """Nav zanjiridan keyin til almashtirish havolasi (bir marta)."""
     page = re.sub(r'\n  <p class="cp-lang">.*?</p>', '', page)
-    link = f'\n  <p class="cp-lang"><a href="{href}" hreflang="{code}" lang="{code}">{label}</a></p>'
+    link = (f'\n  <p class="cp-lang"><a href="{href}" hreflang="{code}" lang="{code}">'
+            f'{gen_articles.FLAG[code]}{label}</a></p>')
     m = re.search(r'<nav class="crumbs".*?</nav>', page, re.S)
     return page[:m.end()] + link + page[m.end():]
 
@@ -179,7 +180,7 @@ def build(c):
     # --- O'zbekcha sahifa: ruscha orolni olib tashlash, hreflang, til havolasi
     uz = RU_BLOCK.sub('\n', page)
     uz = with_hreflang(uz, uz_url, uz_url, ru_url)
-    uz = lang_link(uz, c['ru'], 'ru', '🇷🇺 По-русски')
+    uz = lang_link(uz, c['ru'], 'ru', 'По-русски')
     uz = with_boot(uz, 'uz')
     uz_path.write_text(uz)
 
@@ -200,7 +201,7 @@ def build(c):
         body = body.replace(a, b)
     body = gen_articles.to_ru(body)
     page_ru = head + body
-    page_ru = lang_link(page_ru, c['uz'], 'uz', "🇺🇿 O'zbekcha")
+    page_ru = lang_link(page_ru, c['uz'], 'uz', "O'zbekcha")
 
     left = leftover_uz(page_ru)
     if left:
