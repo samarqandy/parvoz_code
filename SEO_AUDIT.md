@@ -27,6 +27,10 @@
 > the homepage says "announced in advance"); the Russian chess page repeats the Uzbek
 > wording unchanged rather than picking one.
 >
+> **Status update — 2026-09-28 (P0-2 closed).** `www.parvozcode.uz` added to the Vercel project with a
+> 308 redirect to the apex; the certificate is issued and path and query are kept. All five P0
+> findings are now fixed.
+>
 > **Status update — 2026-09-28 (Phase 4 — Russian homepage).** `ru.html` published: a
 > Russian-only homepage generated from `index.html` by `tools/gen_home_ru.py` (the text is the
 > existing `data-lang="ru"` copy; nothing new was written except `<head>`, JSON-LD and
@@ -246,7 +250,7 @@ All six missing headers are a single `vercel.json` away. There is no platform li
 | Check | Result |
 |---|---|
 | `http://` → `https://` | ✅ single-hop 308 |
-| `www` → apex | ❌ **broken (P0-2)** |
+| `www` → apex | ✅ **fixed 2026-09-28** — 308 to the apex, path and query kept |
 | `/dasturlash-kurslari` (extensionless) | 404 — no extensionless routing |
 | `/dasturlash-kurslari.html` | 200 |
 | `/dasturlash-kurslari.html/` | ⚠️ **200, byte-identical** (md5 match), and `…/assets/site.css` → 404 |
@@ -1014,7 +1018,7 @@ Organisation attribution exists on every article via `author` and `publisher`.
 | # | Issue | Evidence |
 |---|---|---|
 | 1 | ~~Edge-function and build-tool source served publicly~~ **FIXED** | `.vercelignore` excludes `supabase/`, `tools/`, `*.md` |
-| 2 | `www.parvozcode.uz` TLS dead end, no redirect to apex — **STILL OPEN, dashboard** | cert `CN=parvozcode.uz`, no `www` SAN |
+| 2 | ~~`www.parvozcode.uz` TLS dead end, no redirect to apex~~ **FIXED 2026-09-28** | domain added to the Vercel project with a 308 redirect to `parvozcode.uz`; certificate issued; `https://www.parvozcode.uz/ru.html?x=1` → `https://parvozcode.uz/ru.html?x=1` |
 | 3 | ~~Russian conversion path ends in an Uzbek form~~ **FIXED** | re-verified in a clean profile: lands on `lang="ru"` |
 | 4 | ~~Webvisor records name + phone + child's age~~ **FIXED** | `ym-disable-keys` on 4 fields; privacy policy updated |
 | 5 | ~~FAQPage answer ≠ visible answer~~ **FIXED** | 71 pairs / 18 pages, 0 mismatches |
@@ -1143,7 +1147,7 @@ The `www` certificate is fixed in the Vercel dashboard, not in the repository: a
 
 ### Phase 1 — Critical (P0) — 4 of 5 done
 1. ~~Block `/supabase/` and `/tools/`~~ — **done** via `.vercelignore` (better than a `vercel.json` rewrite: the files are never uploaded). *Verify with `curl` after the next deploy.*
-2. **Add `www.parvozcode.uz` in the Vercel dashboard, redirecting to the apex — STILL OPEN.** The only P0 that cannot be fixed from the repository.
+2. ~~Add `www.parvozcode.uz` in the Vercel dashboard, redirecting to the apex~~ — **done 2026-09-28** (308).
 3. ~~Stop the Russian path landing on an Uzbek form~~ — **done**: the Russian pages persist the language choice, and since 2026-09-28 they lead to the Russian homepage `ru.html`.
 4. ~~Metrika masking + privacy disclosure~~ — **done**.
 5. ~~Align the homepage FAQ JSON-LD with the visible text~~ — **done**.
@@ -1284,7 +1288,7 @@ The second kind is harder, and no amount of markup will fix it. The site asks pa
 In implementation order.
 
 1. ~~Block `/supabase/` and `/tools/` from the deployment.~~ **Done** — `.vercelignore`. Confirm with `curl` after the next deploy.
-2. **Fix `www.parvozcode.uz`.** ← **now the first thing to do.** Add the domain in Vercel and redirect it to the apex. Anyone typing the address with `www` still gets a TLS warning. This is the only P0 left, and it is a dashboard change, not a code change.
+2. ~~Fix `www.parvozcode.uz`.~~ **Done 2026-09-28** — `www` redirects (308) to the apex. All five P0 findings are now closed.
 3. ~~Stop the Russian path landing on an Uzbek form.~~ **Done**, and the separate Russian homepage (`ru.html`) now exists (2026-09-28).
 4. ~~Mask the lead-form fields from Webvisor and disclose session recording.~~ **Done.**
 5. ~~Align the homepage FAQ JSON-LD with the visible answer.~~ **Done.**
