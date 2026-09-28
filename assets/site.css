@@ -1044,6 +1044,14 @@ span[data-lang].show { display:inline; }
 }
 .crumbs a { color:var(--muted); text-decoration:none; }
 .crumbs a:hover { color:var(--gold-ink); }
+/* Kurs sahifasining boshqa tildagi nusxasi */
+.cp-lang { margin:10px 0 0; }
+.cp-lang a {
+  display:inline-flex; align-items:center; min-height:44px; padding:0 16px; border-radius:99px;
+  background:var(--card); border:1px solid var(--border); color:var(--text);
+  font-size:.9rem; font-weight:800; text-decoration:none;
+}
+.cp-lang a:hover { border-color:var(--border-2); color:var(--gold-ink); }
 .cp-hero { padding:24px 0 8px; display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; }
 .cp-badge {
   width:72px; height:72px; border-radius:22px; flex-shrink:0;
@@ -1051,7 +1059,10 @@ span[data-lang].show { display:inline; }
   background:color-mix(in srgb, var(--acc) 14%, transparent);
   border:1px solid color-mix(in srgb, var(--acc) 34%, transparent);
 }
+.cp-hero > div { min-width:0; }   /* ruscha uzun so'z ("программирования") blokni kengaytirmasin */
 .cp-hero h1 { font-size:var(--fz-h2); font-weight:900; line-height:1.15; margin-bottom:14px; }
+/* Ruscha uzun so'zlar 320px da qatorga sig'masa bo'linadi (sig'sa — hech narsa o'zgarmaydi) */
+main :is(h1, h2, h3, strong) { overflow-wrap:break-word; hyphens:auto; }
 .cp-lead { color:var(--muted); font-size:var(--fz-lead); max-width:660px; }
 .cp-lead strong { color:var(--text); }
 .learn-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
@@ -1067,7 +1078,11 @@ span[data-lang].show { display:inline; }
 .info-row { display:flex; justify-content:space-between; gap:14px; padding:11px 0; border-bottom:1px dashed var(--dash); }
 .info-row:last-child { border-bottom:0; }
 .info-row .k { color:var(--muted); font-weight:700; }
-.info-row .v { font-weight:900; text-align:right; }
+.info-row .v { font-weight:900; text-align:right; min-width:0; overflow-wrap:anywhere; }  /* 320px da ham siljimasin */
+@media (max-width:400px) {
+  /* "Направление · Программирование" 360px da sig'sin */
+  .info-card { padding:20px 18px; }
+}
 .ru-block { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:24px 26px; }
 .ru-block h2 { font-size:1.12rem; font-weight:900; margin-bottom:10px; }
 .ru-block p { color:var(--muted); font-size:.97rem; }

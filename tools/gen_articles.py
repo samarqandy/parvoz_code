@@ -64,6 +64,12 @@ CHROME_RU = [
     ('"\\u2600\\ufe0f Yorug\' rejim"', '"\\u2600\\ufe0f \\u0421\\u0432\\u0435\\u0442\\u043b\\u0430\\u044f \\u0442\\u0435\\u043c\\u0430"'),
     ('"\\ud83c\\udf19 Qorong\'i rejim"', '"\\ud83c\\udf19 \\u0422\\u0451\\u043c\\u043d\\u0430\\u044f \\u0442\\u0435\\u043c\\u0430"'),
     ('maqolalar.html', 'stati.html'),
+    # Kurs sahifalariga havolalar — ruscha sahifalardan ruscha kurs sahifalariga
+    ('href="dasturlash-kurslari.html"', 'href="kursy-programmirovaniya.html"'),
+    ('href="robototexnika-kurslari.html"', 'href="robototehnika.html"'),
+    ('href="matematika-kurslari.html"', 'href="matematika.html"'),
+    ('href="shaxmat-kurslari.html"', 'href="shahmaty.html"'),
+    ('href="ingliz-tili-kurslari.html"', 'href="angliyskiy.html"'),
 ]
 
 # Sahifa ichidagi matnlar
@@ -123,16 +129,22 @@ RU_HUB = '<li><a href="stati.html">Статьи для родителей</a></l
 UZ_HUB = '<li><a href="maqolalar.html" lang="uz">Ota-onalar uchun maqolalar</a></li>'
 
 
+def to_ru(text):
+    """Sayt qobig'idagi matnlarni ruschaga o'giradi (gen_courses_ru.py ham ishlatadi)."""
+    for a, b in CHROME_RU:
+        text = text.replace(a, b)
+    if '<footer>' in text:
+        dup = re.search(re.escape(RU_HUB) + r'(\s*)' + re.escape(RU_HUB), text)
+        if not dup:
+            raise SystemExit("Footer'dagi maqolalar qatorlari kutilgan ko'rinishda emas")
+        text = text[:dup.start()] + RU_HUB + dup.group(1) + UZ_HUB + text[dup.end():]
+    return text
+
+
 def chrome(lang):
     top, bottom = TOP, BOTTOM
     if lang == 'ru':
-        for a, b in CHROME_RU:
-            top = top.replace(a, b)
-            bottom = bottom.replace(a, b)
-        dup = re.search(re.escape(RU_HUB) + r'(\s*)' + re.escape(RU_HUB), bottom)
-        if not dup:
-            raise SystemExit("Footer'dagi maqolalar qatorlari kutilgan ko'rinishda emas")
-        bottom = bottom[:dup.start()] + RU_HUB + dup.group(1) + UZ_HUB + bottom[dup.end():]
+        top, bottom = to_ru(top), to_ru(bottom)
     return top, bottom
 
 

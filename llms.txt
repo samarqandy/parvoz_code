@@ -32,6 +32,8 @@
 - [Shaxmat kursi](https://parvozcode.uz/shaxmat-kurslari.html): noldan boshlab qoidalar, debyut, taktika, endshpil, haftalik turnirlar.
 - [Ingliz tili kursi](https://parvozcode.uz/ingliz-tili-kurslari.html): jonli muloqot, tinglab tushunish, talaffuz, o'yin orqali grammatika.
 
+Ruscha sahifalar (Русская версия): [Программирование](https://parvozcode.uz/kursy-programmirovaniya.html) · [Робототехника](https://parvozcode.uz/robototehnika.html) · [Математика](https://parvozcode.uz/matematika.html) · [Шахматы](https://parvozcode.uz/shahmaty.html) · [Английский язык](https://parvozcode.uz/angliyskiy.html)
+
 ## Tez-tez so'raladigan savollar
 
 **Necha yoshdan qabul qilinadi?**
@@ -53,7 +55,7 @@ Ha. Jadval to'qnashmasa, bir vaqtda bir necha yo'nalishda o'qish mumkin.
 Naqd, Click yoki Payme orqali. Har oyning boshida.
 
 **Dars qaysi tilda olib boriladi?**
-O'zbek va rus tillarida. Ingliz tili kursida darsning katta qismi ingliz tilida.
+O'zbek va rus tillarida. Ingliz tili kursida boshlang'ich darajada tushuntirishlar o'zbek yoki rus tilida, daraja o'sgani sayin dars tobora ko'proq ingliz tilida o'tadi.
 
 **Markaz qayerda joylashgan?**
 Samarqand shahri, Dagbit ko'chasi 11 — Gelion chorrahasi, Mone Café ro'parasida.
