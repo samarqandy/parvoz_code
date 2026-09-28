@@ -6,7 +6,14 @@
 > **Status update — 2026-09-27.** Four of the five P0 findings have been fixed and verified
 > (commit follows this report). **P0-2 (`www`) remains open** and cannot be fixed from the
 > repository — it needs a change in the Vercel dashboard. Each P0 section below carries its
-> own status line. Everything from P1 downward is unchanged and still open.
+> own status line.
+>
+> **Status update — 2026-09-28 (Phase 2, "SEO foundation").** Fixed: P1-6, P1-8, P1-11,
+> P1-12, P1-13, P1-14, P1-15, P1-17, P1-18; P1-7 partly (four headers added, CSP and
+> HSTS `includeSubDomains` deliberately deferred — see the table). From P2: 19 (one
+> organisation `@id` everywhere), 23 (`Article.image`, `publisher.logo`) and the six long
+> article descriptions. Still open from P1: P0-2 (`www`, dashboard), P1-9 / P1-10 (Russian
+> course pages and hreflang — Phase 4) and P1-16 (analytics events).
 
 **Rules observed:** no production code was modified when this report was written. No review, rating, teacher, student, statistic, certification or achievement was invented. Anything that could not be established from the repository or an unauthenticated request is marked **NOT VERIFIED**.
 
@@ -991,29 +998,29 @@ Organisation attribution exists on every article via `author` and `publisher`.
 
 | # | Issue | Evidence |
 |---|---|---|
-| 6 | `/page.html/` returns 200 with identical bytes and 404 assets | md5 match; `…/assets/site.css` → 404 |
-| 7 | Four security headers absent; HSTS incomplete; no `vercel.json` | `curl -sSI` |
-| 8 | `davomat.html` — `Disallow` + `noindex` cancel out; page is linked | `robots.txt:5`, `davomat.html:6`, `index.html:1242` |
+| 6 | ~~`/page.html/` returns 200 with identical bytes and 404 assets~~ **FIXED** | `vercel.json` → `"trailingSlash": false` (308 to the slash-less URL) |
+| 7 | Four security headers absent; HSTS incomplete; no `vercel.json` — **PARTLY FIXED** | `nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy`, `Permissions-Policy` added. **Deferred:** CSP (needs an inventory of inline scripts, Metrika, Supabase and Google Fonts first) and HSTS `includeSubDomains` — **NOT VERIFIED** that no subdomain serves plain HTTP |
+| 8 | ~~`davomat.html` — `Disallow` + `noindex` cancel out~~ **FIXED** | `Disallow` removed from all 17 blocks; `noindex` meta kept and an `X-Robots-Tag: noindex, nofollow` header added |
 | 9 | Homepage + 5 course pages outside the hreflang graph | §6 |
 | 10 | Course pages carry an undeclared Russian block in a `lang="uz"` document | `dasturlash-kurslari.html:342` |
-| 11 | Russian pages duplicate a footer link and lose the Uzbek hub | `tools/gen_articles.py`; `chto-daet-robototehnika.html:292-293` |
-| 12 | Homepage links to `stati.html` zero times | `grep -c` → 0 |
-| 13 | Six commercial titles 77–83 chars; six descriptions 163–183 | §8 |
-| 14 | 11 of 21 sitemap `lastmod` stale, five by six days | git vs sitemap |
-| 15 | Light-theme focus ring 1.67:1, and `outline:none` on all form inputs | `assets/site.css:171`, `:1143` |
+| 11 | ~~Russian pages duplicate a footer link and lose the Uzbek hub~~ **FIXED** | generator restores the `maqolalar.html` row on Russian pages; all 14 pages regenerated |
+| 12 | ~~Homepage links to `stati.html` zero times~~ **FIXED** | homepage footer links both hubs; the FAQ button points Russian readers to `stati.html` |
+| 13 | ~~Six commercial titles 77–83 chars; six descriptions 163–183~~ **FIXED** | every title ≤ 60, every description ≤ 155 (trimmed, no new claims) |
+| 14 | ~~11 of 21 sitemap `lastmod` stale~~ **FIXED** | `tools/sitemap_lastmod.py` sets each date from git (or today if uncommitted); `gen_articles.py` runs it |
+| 15 | ~~Light-theme focus ring 1.67:1, and `outline:none` on all form inputs~~ **FIXED** | ring uses `--gold-ink` (4.41:1 light, 10.78:1 dark); `outline:none` removed from `.f-inp:focus` |
 | 16 | 1 of 10 user actions tracked; GA4 and Meta dormant | `assets/form.js:93`; `config.js:11-12` |
-| 17 | `courseSchedule` contradicts reality and its own `courseWorkload` | all 5 course pages |
-| 18 | No custom 404 — plain-text English Vercel default | `curl` |
+| 17 | ~~`courseSchedule` contradicts reality and its own `courseWorkload`~~ **FIXED** | six `Schedule` nodes (Mon·Wed·Fri and Tue·Thu·Sat × 10–12, 13–15, 16–18), exactly as the visible schedule; `repeatCount` removed; `addressRegion` added |
+| 18 | ~~No custom 404 — plain-text English Vercel default~~ **FIXED** | branded bilingual `404.html` with root-absolute paths (works at any depth), `noindex` |
 
 ### P2 — Medium
 
 | # | Issue |
 |---|---|
-| 19 | 29 anonymous organisation nodes, no cross-page `@id` reuse |
-| 20 | `geo` and `hasMap` disagree by ≈418 m in one node |
+| 19 | ~~29 anonymous organisation nodes, no cross-page `@id` reuse~~ **FIXED** — every node carries `https://parvozcode.uz/#organization`; hubs point to `#website` |
+| 20 | `geo` and `hasMap` disagree by ≈418 m in one node — **still open: NOT VERIFIED which coordinate is correct**; needs the owner to confirm the pin |
 | 21 | `--faint` 3.87:1 in light theme, used for 11 normal-size text roles incl. the form placeholder |
 | 22 | Six interactive element classes under 44px on mobile |
-| 23 | `Article.image` and `publisher.logo` missing on all 12 articles |
+| 23 | ~~`Article.image` and `publisher.logo` missing on all 12 articles~~ **FIXED** (site preview image and logo — both already published on the homepage) |
 | 24 | All 12 articles share identical `datePublished` and `dateModified` |
 | 25 | No `srcset` / `<picture>` / `decoding` / `preload` anywhere |
 | 26 | Every article receives only 2 inbound links; no course page links to any article |
@@ -1116,13 +1123,13 @@ The `www` certificate is fixed in the Vercel dashboard, not in the repository: a
 4. ~~Metrika masking + privacy disclosure~~ — **done**.
 5. ~~Align the homepage FAQ JSON-LD with the visible text~~ — **done**.
 
-### Phase 2 — SEO foundation
-6. Security headers, `/page.html/` redirect, branded `404.html`.
-7. Resolve `davomat.html`: remove the `Disallow`, keep the `noindex`.
-8. Trim the six long titles and six long descriptions.
-9. Regenerate `sitemap.xml`; add the sitemap and `llms.txt` refresh to `tools/gen_articles.py` so it can never drift again.
-10. Consolidate the organisation entity behind one `@id`.
-11. Fix `courseSchedule`; reconcile `geo` with `hasMap`.
+### Phase 2 — SEO foundation — done 2026-09-28, except where noted
+6. ~~Security headers, `/page.html/` redirect, branded `404.html`~~ — done (CSP and HSTS `includeSubDomains` deferred).
+7. ~~Resolve `davomat.html`: remove the `Disallow`, keep the `noindex`~~ — done.
+8. ~~Trim the six long titles and six long descriptions~~ — done.
+9. ~~Regenerate `sitemap.xml`~~; sitemap refresh added to `tools/gen_articles.py`. **`llms.txt` is still manual.**
+10. ~~Consolidate the organisation entity behind one `@id`~~ — done.
+11. ~~Fix `courseSchedule`~~ — done. **`geo` vs `hasMap` still open — NOT VERIFIED which is right.**
 
 ### Phase 3 — Local SEO
 12. Claim the Google Business Profile and the Yandex listing; make hours match the site exactly.

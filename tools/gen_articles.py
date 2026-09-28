@@ -106,11 +106,21 @@ UI = {
     },
 }
 
-ORG = {"@type": "EducationalOrganization", "name": "Parvoz O'quv Markazi", "url": BASE}
+# Bosh sahifadagi tashkilot tuguni bilan bir xil @id — qidiruv tizimlari 30 ta nomsiz
+# "tashkilot" emas, bitta markazni ko'rsin (SEO_AUDIT §14)
+ORG = {"@type": "EducationalOrganization", "@id": BASE + "#organization",
+       "name": "Parvoz O'quv Markazi", "url": BASE, "logo": BASE + "assets/icon-512.png"}
+WEBSITE = {"@type": "WebSite", "@id": BASE + "#website", "name": "Parvoz O'quv Markazi", "url": BASE}
 
 
 def esc(t):
     return html.escape(t, quote=True)
+
+
+# Footer'da ikki qator bor: o'zbekcha va ruscha maqolalar. Ruscha almashtirishdan keyin
+# ikkalasi ham "Статьи для родителей → stati.html" bo'lib qoladi — o'zbekcha qatorni tiklaymiz
+RU_HUB = '<li><a href="stati.html">Статьи для родителей</a></li>'
+UZ_HUB = '<li><a href="maqolalar.html" lang="uz">Ota-onalar uchun maqolalar</a></li>'
 
 
 def chrome(lang):
@@ -119,6 +129,10 @@ def chrome(lang):
         for a, b in CHROME_RU:
             top = top.replace(a, b)
             bottom = bottom.replace(a, b)
+        dup = re.search(re.escape(RU_HUB) + r'(\s*)' + re.escape(RU_HUB), bottom)
+        if not dup:
+            raise SystemExit("Footer'dagi maqolalar qatorlari kutilgan ko'rinishda emas")
+        bottom = bottom[:dup.start()] + RU_HUB + dup.group(1) + UZ_HUB + bottom[dup.end():]
     return top, bottom
 
 
@@ -224,6 +238,7 @@ def build(a, lang, alt_slug, date):
             "inLanguage": u['lang'],
             "datePublished": date,
             "dateModified": date,
+            "image": BASE + "assets/preview.jpg",
             "author": ORG,
             "publisher": ORG,
             "mainEntityOfPage": {"@type": "WebPage", "@id": url},
@@ -305,7 +320,7 @@ def build_index(items, lang, alt_slug):
         "@graph": [
             {"@type": "CollectionPage", "name": u['index_h'],
              "description": u['index_desc'], "url": url, "inLanguage": u['lang'],
-             "isPartOf": {"@type": "WebSite", "name": "Parvoz O'quv Markazi", "url": BASE}},
+             "isPartOf": WEBSITE},
             {"@type": "ItemList",
              "itemListElement": [
                  {"@type": "ListItem", "position": i + 1,
@@ -366,6 +381,10 @@ def main():
     (ROOT / 'stati.html').write_text(build_index(
         [ru_by_uz[a['slug']] for a in ARTICLES], 'ru', 'maqolalar.html'))
     print(f'{n} ta maqola + 2 ta ro\'yxat sahifasi yaratildi')
+
+    # Sitemap sanalari ham shu yerda yangilanadi — qo'lda esdan chiqib qolmasin
+    import sitemap_lastmod  # noqa: E402
+    sitemap_lastmod.main()
 
 
 if __name__ == '__main__':

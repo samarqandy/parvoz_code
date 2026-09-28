@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<title>Sahifa topilmadi | Parvoz O'quv Markazi</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#071029" id="themeColorMeta">
+<!-- Bu sahifa har qanday chuqurlikdagi manzilda ochiladi (/a/b/c) — shuning uchun
+     barcha yo'llar ildizdan: "/assets/..." bo'lmasa, uslub va havolalar yo'qoladi -->
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+
+<script>
+(function () {
+  var t;
+  try { t = localStorage.getItem('parvoz-theme'); } catch (e) {}
+  if (t !== 'light' && t !== 'dark') {
+    t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body class="js">
+
+<div class="bg-glow" aria-hidden="true"></div>
+
+<header class="nav scrolled" id="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/" aria-label="Parvoz — bosh sahifa">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span>PARV<em>O</em>Z</span>
+    </a>
+    <div style="margin-left:auto"></div>
+    <a class="nav-cta" href="/#yozilish">🎁 Bepul dars</a>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+  <article class="doc nf">
+    <p class="nf-code" aria-hidden="true">404</p>
+    <h1>Sahifa topilmadi</h1>
+    <p>Siz qidirgan sahifa ko'chirilgan yoki manzil xato yozilgan bo'lishi mumkin.</p>
+    <p lang="ru" class="nf-ru">Страница не найдена. Возможно, она перемещена или адрес введён с ошибкой.</p>
+
+    <p class="nf-actions">
+      <a class="btn btn-primary" href="/">Bosh sahifa</a>
+      <a class="btn btn-ghost" href="/#yozilish">Bepul darsga yozilish</a>
+    </p>
+
+    <h2>Kurslar</h2>
+    <ul class="nf-links">
+      <li><a href="/dasturlash-kurslari.html">Dasturlash</a></li>
+      <li><a href="/robototexnika-kurslari.html">Robototexnika</a></li>
+      <li><a href="/matematika-kurslari.html">Matematika</a></li>
+      <li><a href="/shaxmat-kurslari.html">Shaxmat</a></li>
+      <li><a href="/ingliz-tili-kurslari.html">Ingliz tili</a></li>
+    </ul>
+    <h2>Maqolalar</h2>
+    <ul class="nf-links">
+      <li><a href="/maqolalar.html">Ota-onalar uchun maqolalar</a></li>
+      <li><a href="/stati.html" lang="ru">Статьи для родителей</a></li>
+    </ul>
+  </article>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="f-bottom" style="border-top:0;padding-top:0">
+      <span>© 2026 Parvoz O'quv Markazi · Samarqand</span>
+      <span class="f-tag">Learn. Build. Fly. ✈️</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
