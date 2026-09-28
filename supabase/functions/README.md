@@ -117,3 +117,8 @@ Admin Jamoa → Kurslar oynasida kiritadi.
   ota-onaga yetib bormasligi uchun.
 - Narx o'qituvchilarga ham ko'rinadi (kurslar jadvali ular uchun ochiq), lekin
   to'lovlar va qarzlar faqat adminga.
+- **Moliya hisoboti** (To'lovlar → "Moliya hisoboti") shu qoidalar bilan tanlangan oy va
+  undan oldingi 11 oyni ko'rsatadi: oylar bo'yicha yig'ilgan pul, to'lagan/to'lamaganlar
+  soni, kurslar bo'yicha pul va taxminiy qarz. Yangi so'rov yo'q — `loadPayments`
+  yuklagan to'lovlardan panelda hisoblanadi. To'lov qaysi oy **uchun** yozilgan bo'lsa,
+  o'sha oyda sanaladi (to'langan sana emas).

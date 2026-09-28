@@ -27,6 +27,7 @@ const state = {
   payYm: null,        // YYYY-MM — null bo'lsa joriy oy
   payTab: (() => { try { return localStorage.getItem('parvoz-pay-tab') || 'unpaid'; } catch (_) { return 'unpaid'; } })(),
   payQ: '',
+  payMode: (() => { try { return localStorage.getItem('parvoz-pay-mode') === 'fin' ? 'fin' : 'list'; } catch (_) { return 'list'; } })(),
   tpls: {},           // app_config.msg_templates — admin saqlagan shablonlar
   fees: new Map(),    // student_fees: o'quvchi id -> shaxsiy oylik narx (faqat admin)
   tplKind: 'in',      // muharrirda ochiq tur
@@ -255,6 +256,16 @@ const STR = {
     payNoStudents: "O'quvchi yo'q", payNoStudentsP: "Bu oyda (yoki tanlangan kursda) o'quvchi topilmadi.",
     payPrevMonth: 'Oldingi oy', payNextMonth: 'Keyingi oy', payPickMonth: 'Oyni tanlash',
     payFutureNote: "Keyingi oy — oldindan to'lovlarni yozish uchun",
+    payFinBtn: 'Moliya hisoboti', payListBtn: "Ro'yxat",
+    finCur: "{m}: yig'ildi, so'm", finTotal: "{n} oyda jami, so'm", finDebt: "Qarz ≈, so'm",
+    finSumT: "Oylar bo'yicha yig'ilgan pul", finSumP: "So'm. To'lov qaysi oy uchun yozilgan bo'lsa, o'sha oyda hisoblanadi.",
+    finCountT: "To'lagan va to'lamagan o'quvchilar", finCountP: "Arxivdagi o'quvchilar to'lamaganlarga qo'shilmaydi.",
+    finCourseT: "Kurslar bo'yicha yig'ilgan pul", finCourseP: "So'nggi {n} oy ichida",
+    finColMonth: 'Oy', finColSum: "Yig'ildi, so'm", finColDebt: "Qarz ≈, so'm",
+    finDebtNote: "Qarz ≈ — hozirgi oylik narx (shaxsiy yoki kurs) bo'yicha taxmin; narxi yo'q o'quvchilar kirmaydi.",
+    finTipSum: "Yig'ildi: {n} so'm", finTipPays: "To'lovlar: {n}", finTipNoAmt: 'Summasiz: {n}', finTipShare: 'Ulushi: {n}%',
+    finEmpty: "Hali to'lov yozilmagan", finEmptyP: "To'lovlar yozilgach, bu yerda oylar bo'yicha hisobot chiqadi.",
+    finCsvFile: 'parvoz-moliya', mln: 'mln', thousand: 'ming',
     payCsvName: "O'quvchi", payCsvStatus: 'Holat', payCsvOwed: "To'lanmagan oylar",
     payCsvDebt: "Taxminiy qarz, so'm (oylik narx bo'yicha)", payCsvRate: "Oylik narx, so'm", payDebt: "≈ {n} so'm",
     payDebtTotal: "Jami qarz ≈ {n} so'm", payDebtBasis: "oylik narx (shaxsiy yoki kurs) × to'lanmagan oylar",
@@ -521,6 +532,16 @@ const STR = {
     payNoStudents: 'Нет учеников', payNoStudentsP: 'В этом месяце (или курсе) учеников не найдено.',
     payPrevMonth: 'Предыдущий месяц', payNextMonth: 'Следующий месяц', payPickMonth: 'Выбрать месяц',
     payFutureNote: 'Следующий месяц — для записи предоплат',
+    payFinBtn: 'Финансовый отчёт', payListBtn: 'Список',
+    finCur: '{m}: собрано, сум', finTotal: 'За {n} мес., сум', finDebt: 'Долг ≈, сум',
+    finSumT: 'Собрано по месяцам', finSumP: 'Сум. Оплата считается в том месяце, за который она записана.',
+    finCountT: 'Оплатили и не оплатили', finCountP: 'Архивные ученики не считаются должниками.',
+    finCourseT: 'Собрано по курсам', finCourseP: 'За последние {n} мес.',
+    finColMonth: 'Месяц', finColSum: 'Собрано, сум', finColDebt: 'Долг ≈, сум',
+    finDebtNote: 'Долг ≈ — оценка по текущей месячной цене (личной или курса); ученики без цены не учитываются.',
+    finTipSum: 'Собрано: {n} сум', finTipPays: 'Оплат: {n}', finTipNoAmt: 'Без суммы: {n}', finTipShare: 'Доля: {n}%',
+    finEmpty: 'Оплат пока нет', finEmptyP: 'Когда появятся оплаты, здесь будет отчёт по месяцам.',
+    finCsvFile: 'parvoz-finansy', mln: 'млн', thousand: 'тыс.',
     payCsvName: 'Ученик', payCsvStatus: 'Статус', payCsvOwed: 'Неоплаченные месяцы',
     payCsvDebt: 'Примерный долг, сум (по месячной цене)', payCsvRate: 'Месячная цена, сум', payDebt: '≈ {n} сум',
     payDebtTotal: 'Всего долг ≈ {n} сум', payDebtBasis: 'месячная цена (личная или курса) × неоплаченные месяцы',
@@ -1905,12 +1926,22 @@ function drawCharts() {
   if (!vizRO && 'ResizeObserver' in window) vizRO = new ResizeObserver((es) => es.forEach((e) => drawPlot(e.target)));
   plots.forEach((el) => { drawPlot(el); vizRO?.observe(el); });
 }
+const CHARTS = {
+  daily: (w) => repData && chartDaily(repData, w),
+  courses: (w) => repData && chartCourses(repData, w),
+  finSum: (w) => finData && chartFinSum(finData, w),
+  finCount: (w) => finData && chartFinCount(finData, w),
+  finCourses: (w) => finData && chartFinCourses(finData, w),
+};
 function drawPlot(el) {
   const w = Math.floor(el.clientWidth);
-  if (!w || !repData || String(w) === el.dataset.w || !el.isConnected) return;
+  const draw = CHARTS[el.dataset.chart];
+  if (!w || !draw || String(w) === el.dataset.w || !el.isConnected) return;
+  const html = draw(w);
+  if (!html) return;
   el.dataset.w = w;
   const focused = el.contains(document.activeElement);
-  el.innerHTML = el.dataset.chart === 'daily' ? chartDaily(repData, w) : chartCourses(repData, w);
+  el.innerHTML = html;
   if (focused) el.querySelector('svg[tabindex], [tabindex]')?.focus();
 }
 
@@ -2103,6 +2134,8 @@ function viewPayShell() {
     <div class="page-head">
       <div><h2>${t('tPay')}</h2><p>${t('tPaySub')}</p></div>
       <div class="spacer"></div>
+      <button class="btn" id="payMode" type="button" aria-pressed="${state.payMode === 'fin'}">${state.payMode === 'fin'
+        ? `${I.users} ${t('payListBtn')}` : `${I.chart} ${t('payFinBtn')}`}</button>
       <button class="btn" id="payCsv" type="button">${I.download} CSV</button>
     </div>
     <div class="monthbar">
@@ -2220,6 +2253,7 @@ function payFilter(list) {
 function renderPayments() {
   const out = $('payOut');
   if (!out || !state.pay) return;
+  if (state.payMode === 'fin') return renderFinance(out);
   const d = payModel();
   const tab = ['unpaid', 'paid', 'all'].includes(state.payTab) ? state.payTab : 'unpaid';
   out.classList.remove('is-loading');
@@ -2592,8 +2626,239 @@ function setPayYm(ym) {
   render();
 }
 
+/* ============================================================
+   MOLIYA HISOBOTI — To'lovlar bo'limining ikkinchi ko'rinishi.
+   Yangi so'rov yo'q: tanlangan oy va undan oldingi 11 oy to'lovlari
+   loadPayments da allaqachon yuklangan (state.pay.rows).
+   ============================================================ */
+let finData = null;
+const MONTHS_ABBR = {
+  uz: ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avg', 'sen', 'okt', 'noy', 'dek'],
+  ru: ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
+};
+const ymAbbr = (ym) => (MONTHS_ABBR[currentLang()] || MONTHS_ABBR.uz)[Number(ym.slice(5, 7)) - 1];
+// O'q yozuvlari uchun qisqa summa: 1 250 000 -> "1,25 mln", 300 000 -> "300 ming"
+function sumCompact(n) {
+  if (n >= 1e6) return `${String(Number((n / 1e6).toFixed(n >= 1e7 ? 0 : 2))).replace('.', ',')} ${t('mln')}`;
+  if (n >= 1e3) return `${Math.round(n / 1e3)} ${t('thousand')}`;
+  return String(n);
+}
+// Pul o'qining yuqori chegarasi — yarmi ham "yumaloq" son bo'lsin (0 · max/2 · max)
+function niceSum(v) {
+  if (v <= 0) return 100000;
+  const p = 10 ** Math.floor(Math.log10(v));
+  return [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].map((m) => m * p).find((x) => x >= v);
+}
+
+function finModel() {
+  const { ym, rows } = state.pay;
+  const allowed = new Set(myCourses().map((c) => c.id));
+  const inFilter = (s) => !!s && allowed.has(s.course_id) && (state.courseFilter === 'all' || s.course_id === state.courseFilter);
+  const byId = new Map(state.students.map((s) => [s.id, s]));
+  const paidKey = new Set(rows.map((r) => `${r.student_id}|${r.month.slice(0, 7)}`));
+  const rateOf = (s) => {
+    const own = state.fees.get(s.id);
+    if (Number.isInteger(own)) return own;
+    const f = courseById(s.course_id).monthly_fee;
+    return Number.isInteger(f) ? f : null;
+  };
+  const startOf = (s) => dayKey(s.created_at || new Date().toISOString()).slice(0, 7);
+  const all = [];
+  for (let i = PAY_LOOKBACK; i >= 0; i--) {
+    const m = ymShift(ym, -i);
+    const pays = rows.filter((r) => r.month.slice(0, 7) === m && inFilter(byId.get(r.student_id)));
+    // To'lamagan: faol, shu oyga qadar qo'shilgan, shu oy uchun yozuvi yo'q (to'lovlar ro'yxatidagi qoida)
+    const unpaid = state.students.filter((s) => s.active && inFilter(s) && startOf(s) <= m && !paidKey.has(`${s.id}|${m}`));
+    all.push({
+      m,
+      sum: pays.reduce((n, r) => n + (r.amount || 0), 0),
+      paid: pays.length,
+      noAmount: pays.filter((r) => r.amount == null).length,
+      unpaid: unpaid.length,
+      debt: unpaid.reduce((n, s) => n + (rateOf(s) ?? 0), 0),
+      priced: unpaid.some((s) => rateOf(s) != null),
+    });
+  }
+  // Tizimda hech narsa bo'lmagan boshidagi oylar ko'rsatilmaydi; tanlangan oy doim qoladi
+  const first = all.findIndex((x) => x.paid || x.unpaid);
+  const months = first < 0 ? all.slice(-1) : all.slice(first);
+  const courses = new Map();
+  rows.forEach((r) => {
+    const st = byId.get(r.student_id);
+    if (!inFilter(st) || !months.some((x) => x.m === r.month.slice(0, 7))) return;
+    courses.set(st.course_id, (courses.get(st.course_id) || 0) + (r.amount || 0));
+  });
+  const total = months.reduce((n, x) => n + x.sum, 0);
+  return {
+    ym, months, total, cur: months[months.length - 1],
+    any: months.some((x) => x.paid),
+    courses: [...courses.entries()].map(([id, sum]) => ({ course: courseById(id), sum }))
+      .sort((a, b) => b.sum - a.sum || a.course.name.localeCompare(b.course.name)),
+  };
+}
+
+function renderFinance(out) {
+  hideTip();
+  out.classList.remove('is-loading');
+  const d = finData = finModel();
+  if (!d.any) {
+    out.innerHTML = `<div class="card"><div class="empty"><div class="e-ico">📊</div><b>${t('finEmpty')}</b><p>${t('finEmptyP')}</p></div></div>`;
+    return;
+  }
+  const n = d.months.length;
+  out.innerHTML = `
+    <div class="stats stats-compact fin-stats">
+      <div class="stat stat-sum"><b>${fmtSum(d.cur.sum)}</b><span>${I.wallet}${t('finCur', { m: esc(ymLabel(d.ym)) })}</span></div>
+      <div class="stat stat-sum"><b>${fmtSum(d.total)}</b><span>${I.chart}${t('finTotal', { n })}</span></div>
+      <div class="stat stat-sum"><b>${d.cur.priced ? fmtSum(d.cur.debt) : '—'}</b><span>${I.alert}${t('finDebt')}</span></div>
+    </div>
+    <div class="card viz-card">
+      <div class="viz-head"><h3>${t('finSumT')}</h3><p>${t('finSumP')}</p></div>
+      <div class="viz-plot" data-chart="finSum"></div>
+      <details class="viz-table"><summary>${t('asTable')}</summary>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>${t('finColMonth')}</th>
+          <th class="num">${t('finColSum')}</th><th class="num">${t('payPaid')}</th><th class="num">${t('payUnpaid')}</th><th class="num">${t('finColDebt')}</th></tr></thead>
+          <tbody>${[...d.months].reverse().map((x) => `<tr><td>${esc(ymLabel(x.m))}</td>
+            <td class="num">${fmtSum(x.sum)}</td><td class="num">${x.paid}</td><td class="num">${x.unpaid}</td>
+            <td class="num">${x.priced ? fmtSum(x.debt) : '—'}</td></tr>`).join('')}</tbody></table></div>
+        <p class="viz-note">${t('finDebtNote')}</p>
+      </details>
+    </div>
+    <div class="card viz-card">
+      <div class="viz-head"><h3>${t('finCountT')}</h3><p>${t('finCountP')}</p></div>
+      <div class="viz-legend">
+        <span class="lg-item"><span class="lg-swatch tone-green"></span><span class="tone-green">${I.check}</span>${t('payPaid')}</span>
+        <span class="lg-item"><span class="lg-swatch tone-red"></span><span class="tone-red">${I.alert}</span>${t('payUnpaid')}</span>
+      </div>
+      <div class="viz-plot" data-chart="finCount"></div>
+    </div>
+    ${d.courses.length > 1 ? `
+    <div class="card viz-card">
+      <div class="viz-head"><h3>${t('finCourseT')}</h3><p>${t('finCourseP', { n })}</p></div>
+      <div class="viz-plot" data-chart="finCourses"></div>
+    </div>` : ''}`;
+  drawCharts();
+}
+
+// Oylar o'qi: tor ekranda har ikkinchi oy yoziladi (oxirgisi — tanlangan oy — doim)
+function finAxis(d, L, slot, H) {
+  const n = d.months.length;
+  const step = slot < 26 ? 2 : 1;
+  return d.months.map((x, i) => ((n - 1 - i) % step ? '' : `<text class="viz-axis" x="${L + (i + 0.5) * slot}" y="${H - 8}" text-anchor="middle">${ymAbbr(x.m)}</text>`)).join('');
+}
+
+// Yig'ilgan pul: bitta qator — bitta rang, afsona kerak emas (sarlavha nomlaydi)
+function chartFinSum(d, W) {
+  const H = W < 480 ? 200 : 240, L = 58, R = 8, T = 22, B = 26;
+  const pw = W - L - R, ph = H - T - B, n = d.months.length;
+  const max = niceSum(Math.max(...d.months.map((x) => x.sum)));
+  const slot = pw / n;
+  const bw = Math.min(28, Math.max(6, slot - 6));
+  const yOf = (v) => T + ph - (v / max) * ph;
+  const grid = [0, max / 2, max].map((v) => `<line class="viz-grid" x1="${L}" x2="${W - R}" y1="${yOf(v)}" y2="${yOf(v)}"/>
+    <text class="viz-axis" x="${L - 6}" y="${yOf(v) + 4}" text-anchor="end">${sumCompact(v)}</text>`).join('');
+  const bars = d.months.map((x, i) => {
+    const x0 = L + i * slot + (slot - bw) / 2;
+    return x.sum > 0 ? `<path class="viz-in" d="${colPath(x0, yOf(x.sum), bw, yOf(0) - yOf(x.sum), 4)}"/>` : '';
+  }).join('');
+  // Faqat tanlangan oyning qiymati yoziladi — har bir ustunga raqam qo'yilmaydi. Yozuv chapga
+  // cho'ziladi, shuning uchun qo'shni ustun balandroq bo'lsa, o'shaning ustidan o'tadi
+  const last = d.months[n - 1];
+  const lbl = sumCompact(last.sum);
+  const xEnd = n > 1 ? L + (n - 0.5) * slot + bw / 2 : L + (n - 0.5) * slot;
+  const lblW = lbl.length * 7.5 + 4;                                  // 12px qalin shrift, taxminan
+  const under = d.months.filter((x, i) => L + (i + 1) * slot > xEnd - (n > 1 ? lblW : lblW / 2));
+  const top = Math.max(...under.map((x) => x.sum));
+  const lastLbl = last.sum > 0 ? `<text class="viz-value" x="${xEnd}" y="${Math.max(12, yOf(top) - 7)}" text-anchor="${n > 1 ? 'end' : 'middle'}">${lbl}</text>` : '';
+  const tip = d.months.map((x) => ({
+    t: ymLabel(x.m),
+    v: [t('finTipSum', { n: fmtSum(x.sum) }), t('finTipPays', { n: x.paid }), x.noAmount ? t('finTipNoAmt', { n: x.noAmount }) : ''].filter(Boolean).join('\n'),
+  }));
+  return `
+    <svg class="viz" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" tabindex="0"
+      aria-label="${esc(t('finSumT'))}" data-cross='${esc(JSON.stringify({ L, slot, T, ph, n, tip }))}'>
+      ${grid}${bars}${lastLbl}${finAxis(d, L, slot, H)}
+      <line class="viz-cross" x1="0" x2="0" y1="${T}" y2="${T + ph}" hidden/>
+    </svg>`;
+}
+
+// To'ladi (pastda) · to'lamadi (ustida): tartib doim bir xil, bo'laklar orasida 2px sirt oralig'i
+function chartFinCount(d, W) {
+  const H = W < 480 ? 190 : 220, L = 30, R = 8, T = 10, B = 26;
+  const pw = W - L - R, ph = H - T - B, n = d.months.length;
+  const max = niceMax(Math.max(1, ...d.months.map((x) => x.paid + x.unpaid)));
+  const slot = pw / n;
+  const bw = Math.min(28, Math.max(6, slot - 6));
+  const yOf = (v) => T + ph - (v / max) * ph;
+  const grid = [0, max / 2, max].map((v) => Math.round(v)).map((v) => `<line class="viz-grid" x1="${L}" x2="${W - R}" y1="${yOf(v)}" y2="${yOf(v)}"/>
+    <text class="viz-axis" x="${L - 6}" y="${yOf(v) + 4}" text-anchor="end">${v}</text>`).join('');
+  const cols = d.months.map((x, i) => {
+    const x0 = L + i * slot + (slot - bw) / 2;
+    const segs = [['in', x.paid], ['absent', x.unpaid]].filter(([, v]) => v > 0);
+    let acc = 0;
+    return segs.map(([k, v], j) => {
+      const top = j === segs.length - 1;
+      const yTop = yOf(acc + v), yBot = yOf(acc);
+      acc += v;
+      const h = Math.max(0, yBot - yTop - (j > 0 ? 2 : 0));
+      return `<path class="viz-${k}" d="${colPath(x0, yTop, bw, h, top ? 4 : 0)}"/>`;
+    }).join('');
+  }).join('');
+  const tip = d.months.map((x) => ({ t: ymLabel(x.m), v: `${t('payPaid')}: ${x.paid}\n${t('payUnpaid')}: ${x.unpaid}` }));
+  return `
+    <svg class="viz" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" tabindex="0"
+      aria-label="${esc(t('finCountT'))}" data-cross='${esc(JSON.stringify({ L, slot, T, ph, n, tip }))}'>
+      ${grid}${cols}${finAxis(d, L, slot, H)}
+      <line class="viz-cross" x1="0" x2="0" y1="${T}" y2="${T + ph}" hidden/>
+    </svg>`;
+}
+
+// Kurslar: bitta rang (nominal toifa), qiymat uchida qisqa summa
+function chartFinCourses(d, W) {
+  const narrow = W < 480;
+  const rowH = narrow ? 50 : 34, bh = 18, T = 4, R = 70;
+  const L = narrow ? 0 : 150;
+  const H = T + d.courses.length * rowH + 4;
+  const pw = Math.max(40, W - L - R);
+  const max = Math.max(1, ...d.courses.map((c) => c.sum));
+  const lim = narrow ? 34 : 20;
+  const bars = d.courses.map((c, i) => {
+    const y = T + i * rowH + (narrow ? 24 : (rowH - bh) / 2);
+    const w = Math.max(0, (c.sum / max) * pw);
+    const label = `${c.course.icon} ${c.course.name}`;
+    const short = label.length > lim ? label.slice(0, lim - 1) + '…' : label;
+    const lx = narrow ? 0 : L - 10, ly = narrow ? T + i * rowH + 16 : y + bh / 2 + 5;
+    const share = d.total ? Math.round((c.sum / d.total) * 100) : 0;
+    return `<g class="viz-hit" tabindex="0" data-tip-t="${esc(label)}"
+        data-tip-v="${esc(`${t('finTipSum', { n: fmtSum(c.sum) })}\n${t('finTipShare', { n: share })}`)}">
+      <rect x="0" y="${T + i * rowH}" width="${W}" height="${rowH}" fill="transparent"/>
+      <rect class="viz-track" x="${L}" y="${y}" width="${pw}" height="${bh}" rx="4"/>
+      <path class="viz-bar" d="${barPath(L, y, w, bh, 4)}"/>
+      <text class="viz-label" x="${lx}" y="${ly}" text-anchor="${narrow ? 'start' : 'end'}">${esc(short)}</text>
+      <text class="viz-value" x="${L + w + 8}" y="${y + bh / 2 + 5}">${sumCompact(c.sum)}</text>
+    </g>`;
+  }).join('');
+  return `<svg class="viz viz-h" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
+    aria-label="${esc(t('finCourseT'))}">${bars}</svg>`;
+}
+
+function exportFinCsv() {
+  const d = finModel();
+  const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const head = [t('finColMonth'), t('finColSum'), t('payPaid'), t('payUnpaid'), t('finColDebt')];
+  const lines = [head.map(q).join(';')].concat(d.months.map((x) =>
+    [ymLabel(x.m), x.sum, x.paid, x.unpaid, x.priced ? x.debt : ''].map(q).join(';')));
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${t('finCsvFile')}-${d.ym}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 function exportPayCsv() {
   if (!state.pay) return;
+  if (state.payMode === 'fin') return exportFinCsv();
   const d = payModel();
   const head = [t('payCsvName'), t('csvCourse'), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed'), t('payCsvRate'), t('payCsvDebt')];
   const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
@@ -3352,6 +3617,14 @@ document.addEventListener('click', async (e) => {
   const payOpen = el.closest('[data-pay-open]');
   if (payOpen) return paySheet(payOpen.dataset.payOpen);
   if (el.closest('#payCsv')) return exportPayCsv();
+  if (el.closest('#payMode')) {
+    state.payMode = state.payMode === 'fin' ? 'list' : 'fin';
+    try { localStorage.setItem('parvoz-pay-mode', state.payMode); } catch (_) {}
+    const btn = $('payMode');
+    btn.setAttribute('aria-pressed', String(state.payMode === 'fin'));
+    btn.innerHTML = state.payMode === 'fin' ? `${I.users} ${t('payListBtn')}` : `${I.chart} ${t('payFinBtn')}`;
+    return renderPayments();
+  }
 
   const tplTab = el.closest('[data-tpl-kind]');
   if (tplTab) {
