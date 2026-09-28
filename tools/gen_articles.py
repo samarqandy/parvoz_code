@@ -70,6 +70,8 @@ CHROME_RU = [
     ('href="matematika-kurslari.html"', 'href="matematika.html"'),
     ('href="shaxmat-kurslari.html"', 'href="shahmaty.html"'),
     ('href="ingliz-tili-kurslari.html"', 'href="angliyskiy.html"'),
+    # Bosh sahifa — ruscha sahifalardan ruscha bosh sahifaga (index.html#kurslar -> ru.html#kurslar)
+    ('href="index.html', 'href="ru.html'),
 ]
 
 # Sahifa ichidagi matnlar
@@ -91,6 +93,7 @@ UI = {
         'ask_h': 'Savolingizga javob topmadingizmi?',
         'ask_p': "Qo'ng'iroq qiling yoki Telegramda yozing — javob beramiz.",
         'lang': 'uz', 'locale': 'uz_UZ',
+        'home_href': 'index.html', 'home_url': BASE,
     },
     'ru': {
         'home': 'Главная', 'articles': 'Статьи', 'crumbs': 'Навигационная цепочка',
@@ -109,6 +112,7 @@ UI = {
         'ask_h': 'Не нашли ответ на свой вопрос?',
         'ask_p': 'Позвоните или напишите в Telegram — ответим.',
         'lang': 'ru', 'locale': 'ru_RU',
+        'home_href': 'ru.html', 'home_url': BASE + 'ru.html',
     },
 }
 
@@ -121,6 +125,14 @@ WEBSITE = {"@type": "WebSite", "@id": BASE + "#website", "name": "Parvoz O'quv M
 
 def esc(t):
     return html.escape(t, quote=True)
+
+
+# <head> dagi til skripti (gen_courses_ru.py ham ishlatadi)
+LANG_BOOT = {
+    'ru': "\n<script>\ntry { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}\n</script>",
+    'uz': ("\n<script>\ntry { if (localStorage.getItem('parvoz-lang') === 'ru') "
+           "localStorage.setItem('parvoz-lang', 'uz'); } catch (e) {}\n</script>"),
+}
 
 
 # Footer'da ikki qator bor: o'zbekcha va ruscha maqolalar. Ruscha almashtirishdan keyin
@@ -157,13 +169,10 @@ def head(*, lang, title, desc, url, alt_url, page_type='article', ld=''):
     u = UI[lang]
     uz_url, ru_url = (url, alt_url) if lang == 'uz' else (alt_url, url)
 
-    # Ruscha sahifaga kelgan odam uchun til tanlovini saqlab qo'yamiz. Busiz
-    # bosh sahifadagi CTA ("Записаться") o'zbekcha formaga olib borardi:
-    # index.html localStorage'dan o'qiydi va hech narsa yo'q bo'lsa 'uz' qo'yadi.
-    lang_boot = '''
-<script>
-try { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}
-</script>''' if lang == 'ru' else ''
+    # Til tanlovi: oxirgi ko'rilgan sahifa tili. index.html ruscha tanlovni ko'rsa, odamni
+    # ru.html ga o'tkazadi — shuning uchun o'zbekcha sahifa ruscha tanlovni o'zbekchaga
+    # almashtiradi (inglizchaga tegmaydi: inglizcha faqat index.html da bor).
+    lang_boot = LANG_BOOT[lang]
 
     return f'''<!DOCTYPE html>
 <html lang="{u['lang']}">
@@ -267,7 +276,7 @@ def build(a, lang, alt_slug, date):
         {
             "@type": "BreadcrumbList",
             "itemListElement": [
-                {"@type": "ListItem", "position": 1, "name": u['home'], "item": BASE},
+                {"@type": "ListItem", "position": 1, "name": u['home'], "item": u['home_url']},
                 {"@type": "ListItem", "position": 2, "name": u['articles'],
                  "item": BASE + index_slug(lang)},
                 {"@type": "ListItem", "position": 3, "name": a['h1']},
@@ -282,7 +291,7 @@ def build(a, lang, alt_slug, date):
 <div class="wrap">
   <article class="doc art">
     <nav class="crumbs" aria-label="{esc(u['crumbs'])}">
-      <a href="index.html">{esc(u['home'])}</a> <span>&rsaquo;</span>
+      <a href="{u['home_href']}">{esc(u['home'])}</a> <span>&rsaquo;</span>
       <a href="{index_slug(lang)}">{esc(u['articles'])}</a> <span>&rsaquo;</span>
       <span>{esc(a['h1'][:38])}…</span>
     </nav>
@@ -301,7 +310,7 @@ def build(a, lang, alt_slug, date):
       <h3>{esc(u['cta_h'])}</h3>
       <p>{esc(u['cta_p'])}</p>
       <div class="cta-row">
-        <a class="btn btn-primary" href="index.html#yozilish">{esc(u['cta_btn'])}</a>
+        <a class="btn btn-primary" href="{u['home_href']}#yozilish">{esc(u['cta_btn'])}</a>
         <a class="btn btn-ghost" href="{crumb_url}">{esc(crumb_name)}</a>
       </div>
     </div>
@@ -340,7 +349,7 @@ def build_index(items, lang, alt_slug):
                  for i, a in enumerate(items)]},
             {"@type": "BreadcrumbList",
              "itemListElement": [
-                 {"@type": "ListItem", "position": 1, "name": u['home'], "item": BASE},
+                 {"@type": "ListItem", "position": 1, "name": u['home'], "item": u['home_url']},
                  {"@type": "ListItem", "position": 2, "name": u['articles']}]},
         ],
     }, ensure_ascii=False, indent=2)
@@ -350,7 +359,7 @@ def build_index(items, lang, alt_slug):
 <div class="wrap">
   <div class="doc art">
     <nav class="crumbs" aria-label="{esc(u['crumbs'])}">
-      <a href="index.html">{esc(u['home'])}</a> <span>&rsaquo;</span>
+      <a href="{u['home_href']}">{esc(u['home'])}</a> <span>&rsaquo;</span>
       <span>{esc(u['articles'])}</span>
     </nav>
 

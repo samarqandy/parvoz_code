@@ -111,7 +111,8 @@ def ru_ld(uz_ld, c, url):
         inst['location']['address'].update(streetAddress='ул. Дагбитская, 11', addressLocality='Самарканд',
                                            addressRegion='Самаркандская область')
     crumbs = next(x for x in g if x['@type'] == 'BreadcrumbList')['itemListElement']
-    crumbs[0]['name'], crumbs[1]['name'] = 'Главная', 'Курсы'
+    crumbs[0].update(name='Главная', item=BASE + 'ru.html')
+    crumbs[1].update(name='Курсы', item=BASE + 'ru.html#kurslar')
     crumbs[2].update(name=c['name'], item=url)
     faq = next(x for x in g if x['@type'] == 'FAQPage')
     if len(faq['mainEntity']) != len(c['faq']):
@@ -139,18 +140,25 @@ def ru_head(head, c, uz_url, url):
             raise SystemExit(f"{c['ru']}: <head> da topilmadi: {a[:60]}")
         head = head.replace(a, b)
     # Ruscha sahifaga kelgan odam bosh sahifaga o'tsa ham ruscha ko'rsin (P0-3)
-    boot = "\n<script>\ntry { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}\n</script>"
-    i = head.index('</script>') + len('</script>')
-    return head[:i] + boot + head[i:]
+    return with_boot(head.replace(gen_articles.LANG_BOOT['uz'], ''), 'ru')
 
 
-def leftover_uz(page):
+def with_boot(page, lang):
+    """Til skriptini mavzu skriptidan keyin qo'yadi (bir marta)."""
+    boot = gen_articles.LANG_BOOT[lang]
+    if boot in page:
+        return page
+    i = page.index('</script>') + len('</script>')
+    return page[:i] + boot + page[i:]
+
+
+def leftover_uz(page, extra=()):
     body = page[page.index('<body'):]
     body = re.sub(r'<script.*?</script>|<svg.*?</svg>|<[^>]+\blang="uz"[^>]*>.*?</a>', ' ', body, flags=re.S)
     attrs = ' '.join(re.findall(r'(?:aria-label|title|alt)="([^"]*)"', body))
     text = re.sub(r'<[^>]+>', ' ', body) + ' ' + attrs
     words = set(re.findall(r"[A-Za-z][A-Za-z'ʻ’]*", text))
-    return sorted(w for w in words if w not in LATIN_OK)
+    return sorted(w for w in words if w not in LATIN_OK and w not in extra)
 
 
 def build(c):
@@ -172,6 +180,7 @@ def build(c):
     uz = RU_BLOCK.sub('\n', page)
     uz = with_hreflang(uz, uz_url, uz_url, ru_url)
     uz = lang_link(uz, c['ru'], 'ru', '🇷🇺 По-русски')
+    uz = with_boot(uz, 'uz')
     uz_path.write_text(uz)
 
     # --- Ruscha sahifa

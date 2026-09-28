@@ -26,6 +26,19 @@
 > now say so. Tournament frequency is still **NOT VERIFIED** (the chess page says weekly,
 > the homepage says "announced in advance"); the Russian chess page repeats the Uzbek
 > wording unchanged rather than picking one.
+>
+> **Status update — 2026-09-28 (Phase 4 — Russian homepage).** `ru.html` published: a
+> Russian-only homepage generated from `index.html` by `tools/gen_home_ru.py` (the text is the
+> existing `data-lang="ru"` copy; nothing new was written except `<head>`, JSON-LD and
+> attribute translations). `index.html` ↔ `ru.html` are paired with hreflang in `<head>` and
+> `sitemap.xml` (27 URLs). The RU switch on `index.html` is now a link to `ru.html`; a visitor
+> whose last page was Russian is sent from `/` to `ru.html` (never on "Back", never for
+> crawlers — they have no stored choice). All Russian pages link home to `ru.html`; the
+> Russian form now answers in Russian. Fixed: **P1-9**, and P0-3 fully. P2-34 partly
+> (`ru.html` carries the organisation node with address and country; the Russian articles
+> still do not). **Still open from §20 change 1:** `index.html` still ships the hidden Russian
+> and English markup — the Russian spans are the translation source, and English is still
+> on the page (item 17).
 
 **Rules observed:** no production code was modified when this report was written. No review, rating, teacher, student, statistic, certification or achievement was invented. Anything that could not be established from the repository or an unauthenticated request is marked **NOT VERIFIED**.
 
@@ -701,7 +714,7 @@ Production serves Brotli (`content-encoding: br`), so real transfer is below the
 1. **Google Fonts — `Nunito` at five weights (400/600/700/800/900) plus `Fredoka One`.** Six font files on the render-blocking critical path, from a third-party origin, on a mobile connection in Samarkand. `preconnect` and `display=swap` are both correctly present — the problem is the weight count. Dropping to 400/700/900 removes two files; self-hosting removes the third-party round trip entirely.
 2. **No asset caching.** Every file, including `site.css` and the logo, is served `cache-control: public, max-age=0, must-revalidate`. Every repeat visit revalidates every asset. This is Vercel's default for static files and is fixed by a `headers` block in `vercel.json` — hashed or versioned filenames would allow a year-long `immutable` policy.
 3. **`assets/config.js` is a synchronous, render-blocking `<script>` in `<head>`** (`index.html:239`) with no `defer`. Only 717 bytes, but it blocks the parser. `analytics.js` beside it is correctly deferred.
-4. **`index.html` carries 21 KB of hidden Russian and English markup** delivered to every visitor. Splitting the Russian homepage (§20) removes this as a side effect.
+4. **`index.html` carries 21 KB of hidden Russian and English markup** delivered to every visitor. Splitting the Russian homepage (§20) removes this as a side effect. *(2026-09-28: `ru.html` exists, but `index.html` still carries the hidden markup — the Russian spans are the source `ru.html` is generated from. Removing English and moving the Russian copy into `tools/` would shed it.)*
 5. **No `preload` or `fetchpriority` anywhere** on the site.
 
 What is already right: zero CLS, a small DOM, no framework, no hydration, static HTML, Brotli, and lazy-loaded gallery images with explicit dimensions.
@@ -1013,7 +1026,7 @@ Organisation attribution exists on every article via `author` and `publisher`.
 | 6 | ~~`/page.html/` returns 200 with identical bytes and 404 assets~~ **FIXED** | `vercel.json` → `"trailingSlash": false` (308 to the slash-less URL) |
 | 7 | Four security headers absent; HSTS incomplete; no `vercel.json` — **PARTLY FIXED** | `nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy`, `Permissions-Policy` added. **Deferred:** CSP (needs an inventory of inline scripts, Metrika, Supabase and Google Fonts first) and HSTS `includeSubDomains` — **NOT VERIFIED** that no subdomain serves plain HTTP |
 | 8 | ~~`davomat.html` — `Disallow` + `noindex` cancel out~~ **FIXED** | `Disallow` removed from all 17 blocks; `noindex` meta kept and an `X-Robots-Tag: noindex, nofollow` header added |
-| 9 | Homepage + 5 course pages outside the hreflang graph — **PARTLY FIXED** | the 5 course pages now pair with Russian versions (hreflang in `<head>` and `sitemap.xml`); **the homepage is still outside** — needs the Russian homepage split |
+| 9 | ~~Homepage + 5 course pages outside the hreflang graph~~ **FIXED** | the 5 course pages pair with Russian versions, and `index.html` pairs with `ru.html` (hreflang in `<head>` and `sitemap.xml`) |
 | 10 | ~~Course pages carry an undeclared Russian block in a `lang="uz"` document~~ **FIXED** | `.ru-block` removed; each Uzbek course page links its Russian version (`lang="ru"`, `hreflang="ru"`) |
 | 11 | ~~Russian pages duplicate a footer link and lose the Uzbek hub~~ **FIXED** | generator restores the `maqolalar.html` row on Russian pages; all 14 pages regenerated |
 | 12 | ~~Homepage links to `stati.html` zero times~~ **FIXED** | homepage footer links both hubs; the FAQ button points Russian readers to `stati.html` |
@@ -1043,7 +1056,7 @@ Organisation attribution exists on every article via `author` and `publisher`.
 | 31 | `llms.txt` unreferenced; its FAQs paraphrase rather than mirror the pages |
 | 32 | Nav advertises a reviews section that is empty and hidden |
 | 33 | WhatsApp appears on one page only |
-| 34 | Russian pages carry no country signal and no address schema |
+| 34 | Russian pages carry no country signal and no address schema — **PARTLY FIXED**: `ru.html` shows "Самарканд, Узбекистан" and carries the organisation node with address (`addressCountry: UZ`); the Russian articles still carry neither |
 
 ### P3 — Low
 
@@ -1131,7 +1144,7 @@ The `www` certificate is fixed in the Vercel dashboard, not in the repository: a
 ### Phase 1 — Critical (P0) — 4 of 5 done
 1. ~~Block `/supabase/` and `/tools/`~~ — **done** via `.vercelignore` (better than a `vercel.json` rewrite: the files are never uploaded). *Verify with `curl` after the next deploy.*
 2. **Add `www.parvozcode.uz` in the Vercel dashboard, redirecting to the apex — STILL OPEN.** The only P0 that cannot be fixed from the repository.
-3. ~~Stop the Russian path landing on an Uzbek form~~ — **done**, minimally: the Russian pages persist the language choice. The full homepage split stays in Phase 4.
+3. ~~Stop the Russian path landing on an Uzbek form~~ — **done**: the Russian pages persist the language choice, and since 2026-09-28 they lead to the Russian homepage `ru.html`.
 4. ~~Metrika masking + privacy disclosure~~ — **done**.
 5. ~~Align the homepage FAQ JSON-LD with the visible text~~ — **done**.
 
@@ -1151,6 +1164,7 @@ The `www` certificate is fixed in the Vercel dashboard, not in the repository: a
 
 ### Phase 4 — Course SEO
 16. ~~Five Russian course pages with reciprocal hreflang; delete the `.ru-block` islands.~~ — **done 2026-09-28** (`tools/gen_courses_ru.py`; the homepage course cards switch to the Russian pages when the site is in Russian).
+16a. ~~Russian homepage `ru.html` with reciprocal hreflang~~ — **done 2026-09-28** (`tools/gen_home_ru.py`).
 17. Remove English from `index.html`.
 18. Link each course page to its two related articles; use city-qualified anchors.
 19. ~~Fix the generator's footer collision.~~ — done in Phase 2 (P1-11).
@@ -1271,7 +1285,7 @@ In implementation order.
 
 1. ~~Block `/supabase/` and `/tools/` from the deployment.~~ **Done** — `.vercelignore`. Confirm with `curl` after the next deploy.
 2. **Fix `www.parvozcode.uz`.** ← **now the first thing to do.** Add the domain in Vercel and redirect it to the apex. Anyone typing the address with `www` still gets a TLS warning. This is the only P0 left, and it is a dashboard change, not a code change.
-3. ~~Stop the Russian path landing on an Uzbek form.~~ **Done** minimally. Building the separate Russian homepage is still the highest-value *SEO* change, and is Phase 4.
+3. ~~Stop the Russian path landing on an Uzbek form.~~ **Done**, and the separate Russian homepage (`ru.html`) now exists (2026-09-28).
 4. ~~Mask the lead-form fields from Webvisor and disclose session recording.~~ **Done.**
 5. ~~Align the homepage FAQ JSON-LD with the visible answer.~~ **Done.**
 6. **Ship `vercel.json`:** security headers, `/page.html/` → `/page.html` redirect, and a branded `404.html`.

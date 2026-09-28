@@ -14,20 +14,38 @@
       time: ['Qulay vaqt', 'Ertalab (10:00–12:00)', 'Tushdan keyin (13:00–15:00)', 'Kechqurun (16:00–18:00)', 'Farqi yo`q'],
       note: 'Bolaning yoshi, savollaringiz...',
       sending: 'Yuborilmoqda...',
+      errName: "Ismingizni to'liq kiriting",
+      errPhone: "Telefon raqamini to'g'ri kiriting",
+      doneT: 'Arizangiz qabul qilindi!',
+      doneP: "Tez orada qo'ng'iroq qilamiz va bepul sinov darsining vaqtini kelishib olamiz.",
+      orCall: " — yoki bevosita qo'ng'iroq qiling: ",
     },
     ru: {
       course: ['Выберите направление', 'Программирование', 'Робототехника', 'Математика', 'Шахматы', 'Английский язык', 'Ещё не выбрал(а)'],
       time: ['Удобное время', 'Утро (10:00–12:00)', 'День (13:00–15:00)', 'Вечер (16:00–18:00)', 'Не важно'],
       note: 'Возраст ребёнка, ваши вопросы...',
       sending: 'Отправка...',
+      errName: 'Введите имя полностью',
+      errPhone: 'Введите правильный номер телефона',
+      doneT: 'Заявка принята!',
+      doneP: 'Скоро перезвоним и договоримся о времени бесплатного пробного урока.',
+      orCall: ' — или позвоните нам: ',
+      fail: 'Не удалось отправить заявку',
     },
     en: {
       course: ['Choose a course', 'Programming', 'Robotics', 'Mathematics', 'Chess', 'English', 'Not decided yet'],
       time: ['Preferred time', 'Morning (10:00–12:00)', 'Afternoon (13:00–15:00)', 'Evening (16:00–18:00)', 'Either works'],
       note: "Child's age, your questions...",
       sending: 'Sending...',
+      errName: 'Please enter your full name',
+      errPhone: 'Please enter a valid phone number',
+      doneT: 'Request received!',
+      doneP: "We'll call you soon to arrange a time for the free trial lesson.",
+      orCall: ' — or call us: ',
+      fail: 'Could not send the request',
     },
   };
+  var T = function () { return L[document.documentElement.lang] || L.uz; };
   // Kurs qiymatlari bazadagi nomlar bilan mos bo'lishi kerak
   var COURSE_VALUES = ['', 'Dasturlash', 'Robototexnika', 'Matematika', 'Shaxmat', 'Ingliz tili', ''];
   var TIME_VALUES = ['', 'Ertalab (10:00-12:00)', 'Tushdan keyin (13:00-15:00)', 'Kechqurun (16:00-18:00)', 'Farqi yo`q'];
@@ -67,19 +85,19 @@
     };
 
     if (payload.full_name.length < 2) {
-      msg.textContent = "Ismingizni to'liq kiriting";
+      msg.textContent = T().errName;
       msg.className = 'f-msg bad';
       return;
     }
     if (payload.phone.replace(/\D/g, '').length < 9) {
-      msg.textContent = "Telefon raqamini to'g'ri kiriting";
+      msg.textContent = T().errPhone;
       msg.className = 'f-msg bad';
       return;
     }
 
     btn.disabled = true;
     var oldText = btn.innerHTML;
-    btn.innerHTML = (L[document.documentElement.lang] || L.uz).sending;
+    btn.innerHTML = T().sending;
 
     fetch(C.SUPABASE_URL + '/functions/v1/submit-lead', {
       method: 'POST',
@@ -94,11 +112,11 @@
         }
         box.innerHTML =
           '<div class="f-done"><div class="fd-ico">🎉</div>' +
-          '<b>Arizangiz qabul qilindi!</b>' +
-          '<p>Tez orada qo\'ng\'iroq qilamiz va bepul sinov darsining vaqtini kelishib olamiz.</p></div>';
+          '<b>' + T().doneT + '</b><p>' + T().doneP + '</p></div>';
       })
       .catch(function (err) {
-        msg.textContent = err.message + ' — yoki bevosita qo\'ng\'iroq qiling: ' + (C.PHONE || '');
+        // Server xabarlari o'zbekcha — boshqa tilda umumiy xabar ko'rsatamiz
+        msg.textContent = (T().fail || err.message) + T().orCall + (C.PHONE || '');
         msg.className = 'f-msg bad';
         btn.disabled = false;
         btn.innerHTML = oldText;
