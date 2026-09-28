@@ -14,6 +14,18 @@
 > organisation `@id` everywhere), 23 (`Article.image`, `publisher.logo`) and the six long
 > article descriptions. Still open from P1: P0-2 (`www`, dashboard), P1-9 / P1-10 (Russian
 > course pages and hreflang — Phase 4) and P1-16 (analytics events).
+>
+> **Status update — 2026-09-28 (Phase 4, item 16 — Russian course pages).** Five Russian
+> course pages published (`kursy-programmirovaniya.html`, `robototehnika.html`,
+> `matematika.html`, `shahmaty.html`, `angliyskiy.html`), generated from the Uzbek pages by
+> `tools/gen_courses_ru.py`, each pair linked with reciprocal hreflang (`uz`, `ru`,
+> `x-default` → Uzbek) in both `<head>` and `sitemap.xml` (26 URLs). The `.ru-block` islands
+> are gone. Fixed: P1-10; P1-9 partly (course pages are in the hreflang graph; the homepage
+> still is not — it needs the Russian homepage split). P2-30 partly: the owner confirmed the
+> lesson language — **lessons are taught in Uzbek and Russian**; the pages and `llms.txt`
+> now say so. Tournament frequency is still **NOT VERIFIED** (the chess page says weekly,
+> the homepage says "announced in advance"); the Russian chess page repeats the Uzbek
+> wording unchanged rather than picking one.
 
 **Rules observed:** no production code was modified when this report was written. No review, rating, teacher, student, statistic, certification or achievement was invented. Anything that could not be established from the repository or an unauthenticated request is marked **NOT VERIFIED**.
 
@@ -1001,8 +1013,8 @@ Organisation attribution exists on every article via `author` and `publisher`.
 | 6 | ~~`/page.html/` returns 200 with identical bytes and 404 assets~~ **FIXED** | `vercel.json` → `"trailingSlash": false` (308 to the slash-less URL) |
 | 7 | Four security headers absent; HSTS incomplete; no `vercel.json` — **PARTLY FIXED** | `nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy`, `Permissions-Policy` added. **Deferred:** CSP (needs an inventory of inline scripts, Metrika, Supabase and Google Fonts first) and HSTS `includeSubDomains` — **NOT VERIFIED** that no subdomain serves plain HTTP |
 | 8 | ~~`davomat.html` — `Disallow` + `noindex` cancel out~~ **FIXED** | `Disallow` removed from all 17 blocks; `noindex` meta kept and an `X-Robots-Tag: noindex, nofollow` header added |
-| 9 | Homepage + 5 course pages outside the hreflang graph | §6 |
-| 10 | Course pages carry an undeclared Russian block in a `lang="uz"` document | `dasturlash-kurslari.html:342` |
+| 9 | Homepage + 5 course pages outside the hreflang graph — **PARTLY FIXED** | the 5 course pages now pair with Russian versions (hreflang in `<head>` and `sitemap.xml`); **the homepage is still outside** — needs the Russian homepage split |
+| 10 | ~~Course pages carry an undeclared Russian block in a `lang="uz"` document~~ **FIXED** | `.ru-block` removed; each Uzbek course page links its Russian version (`lang="ru"`, `hreflang="ru"`) |
 | 11 | ~~Russian pages duplicate a footer link and lose the Uzbek hub~~ **FIXED** | generator restores the `maqolalar.html` row on Russian pages; all 14 pages regenerated |
 | 12 | ~~Homepage links to `stati.html` zero times~~ **FIXED** | homepage footer links both hubs; the FAQ button points Russian readers to `stati.html` |
 | 13 | ~~Six commercial titles 77–83 chars; six descriptions 163–183~~ **FIXED** | every title ≤ 60, every description ≤ 155 (trimmed, no new claims) |
@@ -1027,7 +1039,7 @@ Organisation attribution exists on every article via `author` and `publisher`.
 | 27 | `maxfiylik.html` has 20 inbound links, no nav, stub footer |
 | 28 | Google Fonts: Nunito at 5 weights, render-blocking |
 | 29 | `cache-control: max-age=0` on every asset |
-| 30 | Tournament frequency and lesson language contradict themselves across pages |
+| 30 | Tournament frequency and lesson language contradict themselves across pages — **lesson language FIXED** (owner: lessons in Uzbek and Russian; English-course explanations in Uzbek or Russian); **tournament frequency still NOT VERIFIED** |
 | 31 | `llms.txt` unreferenced; its FAQs paraphrase rather than mirror the pages |
 | 32 | Nav advertises a reviews section that is empty and hidden |
 | 33 | WhatsApp appears on one page only |
@@ -1138,10 +1150,10 @@ The `www` certificate is fixed in the Vercel dashboard, not in the repository: a
 15. Add `Course.image` and a map link on each course page.
 
 ### Phase 4 — Course SEO
-16. Five Russian course pages with reciprocal hreflang; delete the `.ru-block` islands.
+16. ~~Five Russian course pages with reciprocal hreflang; delete the `.ru-block` islands.~~ — **done 2026-09-28** (`tools/gen_courses_ru.py`; the homepage course cards switch to the Russian pages when the site is in Russian).
 17. Remove English from `index.html`.
 18. Link each course page to its two related articles; use city-qualified anchors.
-19. Fix the generator's footer collision.
+19. ~~Fix the generator's footer collision.~~ — done in Phase 2 (P1-11).
 
 ### Phase 5 — Trust & conversion
 20. **Name the teachers.** One name, one photo, one paragraph each — the highest-value single change on this list.

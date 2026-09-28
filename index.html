@@ -450,7 +450,7 @@
     </div>
 
     <div class="courses-grid">
-      <a class="course-card c-code" href="dasturlash-kurslari.html" data-reveal style="--rd:.05s">
+      <a class="course-card c-code" href="dasturlash-kurslari.html" data-href-ru="kursy-programmirovaniya.html" data-reveal style="--rd:.05s">
         <div class="cc-icon" aria-hidden="true">💻</div>
         <h3 class="cc-name"><span data-lang="uz" class="show">Dasturlash</span><span data-lang="ru">Программирование</span><span data-lang="en">Programming</span></h3>
         <p class="cc-desc">
@@ -465,7 +465,7 @@
           <div class="cc-more">Dasturlash kursi haqida →</div>
         </a>
 
-      <a class="course-card c-robot" href="robototexnika-kurslari.html" data-reveal style="--rd:.1s">
+      <a class="course-card c-robot" href="robototexnika-kurslari.html" data-href-ru="robototehnika.html" data-reveal style="--rd:.1s">
         <div class="cc-icon" aria-hidden="true">🤖</div>
         <h3 class="cc-name"><span data-lang="uz" class="show">Robototexnika</span><span data-lang="ru">Робототехника</span><span data-lang="en">Robotics</span></h3>
         <p class="cc-desc">
@@ -480,7 +480,7 @@
           <div class="cc-more">Robototexnika kursi haqida →</div>
         </a>
 
-      <a class="course-card c-math" href="matematika-kurslari.html" data-reveal style="--rd:.15s">
+      <a class="course-card c-math" href="matematika-kurslari.html" data-href-ru="matematika.html" data-reveal style="--rd:.15s">
         <div class="cc-icon" aria-hidden="true">🧮</div>
         <h3 class="cc-name"><span data-lang="uz" class="show">Matematika</span><span data-lang="ru">Математика</span><span data-lang="en">Mathematics</span></h3>
         <p class="cc-desc">
@@ -495,7 +495,7 @@
           <div class="cc-more">Matematika kursi haqida →</div>
         </a>
 
-      <a class="course-card c-chess" href="shaxmat-kurslari.html" data-reveal style="--rd:.2s">
+      <a class="course-card c-chess" href="shaxmat-kurslari.html" data-href-ru="shahmaty.html" data-reveal style="--rd:.2s">
         <div class="cc-icon" aria-hidden="true">♟</div>
         <h3 class="cc-name"><span data-lang="uz" class="show">Shaxmat</span><span data-lang="ru">Шахматы</span><span data-lang="en">Chess</span></h3>
         <p class="cc-desc">
@@ -510,7 +510,7 @@
           <div class="cc-more">Shaxmat kursi haqida →</div>
         </a>
 
-      <a class="course-card c-eng" href="ingliz-tili-kurslari.html" data-reveal style="--rd:.25s">
+      <a class="course-card c-eng" href="ingliz-tili-kurslari.html" data-href-ru="angliyskiy.html" data-reveal style="--rd:.25s">
         <div class="cc-icon" aria-hidden="true">
           <svg viewBox="0 0 60 30" width="40" height="20" style="border-radius:4px;display:block">
             <clipPath id="uk2a"><path d="M0 0v30h60V0z"/></clipPath>
@@ -1305,6 +1305,11 @@ function setLang(lang) {
     btn.classList.toggle('active', btn.dataset.setLang === lang);
   });
   document.documentElement.lang = lang;
+  // Kurs kartalari: ruscha tanlaganda ruscha kurs sahifasiga (inglizcha sahifa yo'q — o'zbekchasi)
+  document.querySelectorAll('[data-href-ru]').forEach(a => {
+    if (!a.dataset.hrefUz) a.dataset.hrefUz = a.getAttribute('href');
+    a.setAttribute('href', lang === 'ru' ? a.dataset.hrefRu : a.dataset.hrefUz);
+  });
   syncThemeLabels();
   try { localStorage.setItem('parvoz-lang', lang); } catch(e) {}
 }
