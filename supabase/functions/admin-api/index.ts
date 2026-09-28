@@ -294,6 +294,17 @@ Deno.serve(async (req) => {
         active: body.active !== false,
       };
       if (!row.name) return json({ error: 'Kurs nomi kerak' }, 400);
+      // Oylik narx: faqat so'rovda bo'lsa o'zgaradi (eski panel uni o'chirib yubormasin)
+      if ('monthly_fee' in body) {
+        const v = body.monthly_fee;
+        const fee = v === null || v === '' ? null
+          : typeof v === 'number' ? v
+          : typeof v === 'string' && /^\d+$/.test(v.trim()) ? Number(v.trim()) : NaN;
+        if (fee !== null && !(Number.isInteger(fee) && fee >= 0 && fee <= 100_000_000)) {
+          return json({ error: "Oylik narx noto'g'ri" }, 400);
+        }
+        row.monthly_fee = fee;
+      }
       const q = id ? await admin.from('courses').update(row).eq('id', id) : await admin.from('courses').insert(row);
       if (q.error) return json({ error: q.error.message }, 400);
       return json({ ok: true });

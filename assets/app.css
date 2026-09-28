@@ -1027,6 +1027,15 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 }
 .pay-badge svg { width: 14px; height: 14px; flex: none; }
 .pay-state .pay-owed { color: var(--red-ink); font-weight: 800; }
+.pay-state .pay-debt { color: var(--text); font-weight: 800; }
+.pay-debt-sum {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 10px; padding: 10px 14px;
+  border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--border);
+}
+.pay-debt-sum b { font-variant-numeric: tabular-nums; }
+.pay-debt-sum small { color: var(--muted); font-size: .78rem; font-weight: 700; }
+.pay-quick .chip small { color: var(--muted); font-weight: 700; }
+.pay-fee-nudge { margin: -6px 0 14px; }
 .pay-sent { display: inline-flex; vertical-align: -2px; margin-left: 5px; color: var(--green-ink); }
 .pay-sent svg { width: 13px; height: 13px; }
 .pay-tell { margin: 0 0 14px; font-weight: 600; font-size: .9rem; line-height: 1.35; }

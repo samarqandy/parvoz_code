@@ -95,3 +95,19 @@ So'rov: `{ action: 'notify_payment', payment_id: '<uuid>' }`.
   "qabul qilindi xabarini yuborish" tugmasi bor; yuborilganlari ro'yxatda ✓✓ bilan.
 - `notified_at` ni server yozganda `marked_by_email` saqlanib qoladi
   (`private.stamp_payment` faqat foydalanuvchi so'rovida emailni yozadi).
+
+## Kurs narxi (`admin-api` → `save_course`, `monthly_fee`)
+
+`courses.monthly_fee` — kursning oylik narxi (so'm, 0 … 100 000 000, `null` — belgilanmagan).
+Admin Jamoa → Kurslar oynasida kiritadi.
+
+- `save_course` narxni faqat so'rovda `monthly_fee` kaliti bo'lsa o'zgartiradi — eski
+  panel kursni saqlaganda narx o'chib ketmaydi. Faqat son yoki raqamli satr qabul qilinadi.
+- To'lov oynasida summa: o'quvchining oxirgi to'lovi (chegirma bo'lsa ham to'g'ri),
+  u bo'lmasa — kurs narxi. Kurs narxi tez tanlash tugmasi sifatida ham chiqadi.
+- Qarzdorlar ro'yxatida taxminiy qarz: kurs narxi × to'lanmagan oylar (ko'pi bilan
+  12 oy orqaga). Chegirma hisobga olinmaydi, shuning uchun "≈" bilan ko'rsatiladi.
+  Ota-onaga boradigan xabarlarda summa **ishlatilmaydi** — noto'g'ri qarz summasi
+  ota-onaga yetib bormasligi uchun.
+- Narx o'qituvchilarga ham ko'rinadi (kurslar jadvali ular uchun ochiq), lekin
+  to'lovlar va qarzlar faqat adminga.
