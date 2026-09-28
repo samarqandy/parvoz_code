@@ -218,6 +218,9 @@ const STR = {
     delTeacher: "{email} hisobini o'chirasizmi?",
     newCourse: 'Yangi kurs', editCourse: 'Kursni tahrirlash',
     fNameStar: 'Nomi *', fIcon: 'Belgi (emoji)', fColor: 'Rang', fOpen: 'Ochiq (faol)',
+    fFee: "Oylik narx, so'm", fFeePh: 'Masalan: 300 000',
+    fFeeHint: "To'lov yozilganda summa o'zi qo'yiladi va qarz taxminan hisoblanadi. Bo'sh qoldirsangiz — narx belgilanmagan.",
+    perMonth: "{n} so'm/oy",
     delCourse: '"{name}" kursi o\'chirilsinmi?',
 
     /* --- sozlamalar --- */
@@ -248,6 +251,10 @@ const STR = {
     payPrevMonth: 'Oldingi oy', payNextMonth: 'Keyingi oy', payPickMonth: 'Oyni tanlash',
     payFutureNote: "Keyingi oy — oldindan to'lovlarni yozish uchun",
     payCsvName: "O'quvchi", payCsvStatus: 'Holat', payCsvOwed: "To'lanmagan oylar",
+    payCsvDebt: "Taxminiy qarz, so'm (kurs narxi bo'yicha)", payDebt: "≈ {n} so'm",
+    payDebtTotal: "Jami qarz ≈ {n} so'm", payDebtBasis: "kurs narxi × to'lanmagan oylar",
+    payDebtNoFee: "{n} ta o'quvchining kursida narx yo'q", payFeeChip: 'Kurs narxi',
+    payFeeNudge: "Kurs narxini Jamoa → Kurslar bo'limida belgilasangiz, summa o'zi qo'yiladi.",
     delHasPayments: "Bu o'quvchida to'lovlar yozilgan — o'chirib bo'lmaydi. O'rniga uni arxivlang.",
     setTpl: '\u{1F4AC} Ota-onaga xabarlar',
     setTplP: "Farzand kelganda, ketganda yoki darsga kelmaganda ota-onaga Telegramda boradigan matn. Faqat bugungi belgilashda yuboriladi. To'lov eslatmasi faqat To'lovlar bo'limidan qo'lda yuboriladi, «qabul qilindi» xabari esa to'lov yozilganda ketadi.",
@@ -474,6 +481,9 @@ const STR = {
     delTeacher: 'Удалить аккаунт {email}?',
     newCourse: 'Новый предмет', editCourse: 'Изменить предмет',
     fNameStar: 'Название *', fIcon: 'Значок (эмодзи)', fColor: 'Цвет', fOpen: 'Открыт (активен)',
+    fFee: 'Цена в месяц, сум', fFeePh: 'Например: 300 000',
+    fFeeHint: 'Подставляется при записи оплаты, по ней примерно считается долг. Пусто — цена не задана.',
+    perMonth: '{n} сум/мес.',
     delCourse: 'Удалить предмет «{name}»?',
 
     setLang: 'Язык',
@@ -503,6 +513,10 @@ const STR = {
     payPrevMonth: 'Предыдущий месяц', payNextMonth: 'Следующий месяц', payPickMonth: 'Выбрать месяц',
     payFutureNote: 'Следующий месяц — для записи предоплат',
     payCsvName: 'Ученик', payCsvStatus: 'Статус', payCsvOwed: 'Неоплаченные месяцы',
+    payCsvDebt: 'Примерный долг, сум (по цене курса)', payDebt: '≈ {n} сум',
+    payDebtTotal: 'Всего долг ≈ {n} сум', payDebtBasis: 'цена курса × неоплаченные месяцы',
+    payDebtNoFee: 'без цены курса — учеников: {n}', payFeeChip: 'Цена курса',
+    payFeeNudge: 'Задайте цену курса в разделе Команда → Курсы — сумма будет подставляться сама.',
     delHasPayments: 'У ученика есть оплаты — удалить нельзя. Переведите его в архив.',
     setTpl: '\u{1F4AC} Сообщения родителям',
     setTplP: 'Текст, который родитель получает в Telegram, когда ребёнок пришёл, ушёл или не пришёл. Отправляется только при отметке за сегодня. Напоминание об оплате отправляется только вручную из раздела «Оплаты», а сообщение «оплата принята» — при записи оплаты.',
@@ -2022,7 +2036,7 @@ async function loadTeam() {
       <div class="avatar" style="--acc:var(--${c.color});font-size:1.1rem">${c.icon}</div>
       <div class="row-main">
         <div class="row-title">${esc(c.name)} ${c.active ? '' : `<span class="badge">${t('closed')}</span>`}</div>
-        <div class="row-sub"><span>${t('nStudents', { n })}</span></div>
+        <div class="row-sub"><span>${t('nStudents', { n })}</span>${Number.isInteger(c.monthly_fee) ? `<span>${t('perMonth', { n: fmtSum(c.monthly_fee) })}</span>` : ''}</div>
       </div>
       <div class="row-actions">
         <button class="btn btn-sm" data-edit-course="${c.id}" type="button">${I.edit}</button>
@@ -2153,8 +2167,12 @@ function payModel() {
         }
       }
       const withAmount = [...pm.values()].filter((r) => r.amount != null).sort((a, b) => b.month.localeCompare(a.month));
-      return { s, c: courseById(s.course_id), p, owed, owedNow, rem: state.pay.rem?.get(s.id) ?? null,
-        remOk: state.pay.remOk?.get(s.id) ?? null, last: withAmount[0]?.amount ?? null };
+      const c = courseById(s.course_id);
+      const fee = Number.isInteger(c.monthly_fee) ? c.monthly_fee : null;
+      // Taxminiy qarz: kurs narxi × to'lanmagan oylar (shu oy bilan). Chegirma hisobga olinmaydi
+      const debt = !p && fee != null ? owed.length * fee : null;
+      return { s, c, p, owed, owedNow, rem: state.pay.rem?.get(s.id) ?? null,
+        remOk: state.pay.remOk?.get(s.id) ?? null, last: withAmount[0]?.amount ?? null, fee, debt };
     })
     .filter(Boolean);
 
@@ -2164,6 +2182,8 @@ function payModel() {
     ym, items, paid, unpaid,
     collected: paid.reduce((n, x) => n + (x.p.amount || 0), 0),
     multi: unpaid.filter((x) => x.owed.length >= 2).length,
+    debt: unpaid.reduce((n, x) => n + (x.debt || 0), 0),
+    noFee: unpaid.filter((x) => x.fee == null).length,
   };
 }
 
@@ -2205,7 +2225,7 @@ function payListHtml(d, tab) {
     tab === 'unpaid' ? b.owed.length - a.owed.length || a.s.full_name.localeCompare(b.s.full_name)
     : tab === 'all' ? (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name)
     : a.s.full_name.localeCompare(b.s.full_name));
-  const bar = tab === 'unpaid' ? remindBar(d, base) : '';
+  const bar = tab === 'unpaid' ? debtSummary(d) + remindBar(d, base) : '';
   if (!list.length) {
     const [ico, title, sub] = state.payQ.trim() ? ['🔍', t('noStudentsT'), ''] : !d.items.length ? ['🧑‍🎓', t('payNoStudents'), t('payNoStudentsP')]
       : tab === 'unpaid' ? ['🎉', t('payNoneUnpaid'), t('payNoneUnpaidP')] : ['🧾', t('payNonePaid'), t('payNonePaidP')];
@@ -2214,12 +2234,22 @@ function payListHtml(d, tab) {
   return bar + `<div class="rows">${list.map(payRow).join('')}</div>`;
 }
 
-function payRow({ s, c, p, owed, rem }) {
+// Qarzdorlar ustida: jami taxminiy qarz. Hech bir kursda narx bo'lmasa — ko'rsatilmaydi
+function debtSummary(d) {
+  if (!d.unpaid.length || d.noFee === d.unpaid.length) return '';
+  return `<div class="pay-debt-sum">
+    <b>${t('payDebtTotal', { n: fmtSum(d.debt) })}</b>
+    <small>${t('payDebtBasis')}${d.noFee ? ` · ${t('payDebtNoFee', { n: d.noFee })}` : ''}</small>
+  </div>`;
+}
+
+function payRow({ s, c, p, owed, rem, debt }) {
   const state_ = p
     ? `<span class="pay-badge tone-green">${I.check}${t('payPaid')}</span>
        <small>${p.amount != null ? sumText(p.amount) : t('payNoAmount')} · ${esc(shortDate(p.paid_on))}${p.notified_at ? `<span class="pay-sent" role="img" title="${t('payNotifBadge')}" aria-label="${t('payNotifBadge')}">${I.checks}</span>` : ''}</small>`
     : `<span class="pay-badge tone-red">${I.alert}${t('payUnpaid')}</span>
        ${owed.length >= 2 ? `<small class="pay-owed">${t('payArrears', { n: owed.length })}</small>` : ''}
+       ${debt ? `<small class="pay-debt">${t('payDebt', { n: fmtSum(debt) })}</small>` : ''}
        ${remBadge(rem)}`;
   return `<div class="row pay-row${p ? ' is-paid' : ''}">
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
@@ -2235,21 +2265,22 @@ function payRow({ s, c, p, owed, rem }) {
   </div>`;
 }
 
-// Tez tanlash: shu oy va oldingi oylarda eng ko'p yozilgan summalar
-function payQuickAmounts(extra) {
+// Tez tanlash: o'quvchining oxirgi summasi, kurs narxi, keyin eng ko'p yozilgan summalar
+function payQuickAmounts(first) {
   const freq = new Map();
   (state.pay?.rows ?? []).forEach((r) => { if (r.amount) freq.set(r.amount, (freq.get(r.amount) || 0) + 1); });
   const top = [...freq.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0]).map(([n]) => n);
-  return [...new Set([extra, ...top].filter(Boolean))].slice(0, 4);
+  return [...new Set([...first, ...top].filter(Boolean))].slice(0, 4);
 }
 
 function paySheet(sid) {
   const d = payModel();
   const it = d.items.find((x) => x.s.id === sid);
   if (!it) return;
-  const { s, c, p, owed, last } = it;
-  const prefill = p ? p.amount : last;
-  const quick = payQuickAmounts(last);
+  const { s, c, p, owed, last, fee } = it;
+  // O'quvchining oxirgi summasi (chegirma bo'lsa ham to'g'ri), bo'lmasa — kurs narxi
+  const prefill = p ? p.amount : (last ?? fee);
+  const quick = payQuickAmounts([last, fee]);
   const pastOwed = owed.filter((m) => m !== d.ym);
   // "Qabul qilindi" xabari — faqat yangi to'lovda. Eski oylar (tarixni kiritish) uchun
   // belgi olib qo'yilgan: ota-onalarga o'tgan oylar bo'yicha xabarlar yog'ilmasin
@@ -2263,7 +2294,8 @@ function paySheet(sid) {
         <input class="inp pay-amount" id="payAmount" inputmode="numeric" autocomplete="off" placeholder="0"
           value="${prefill != null ? fmtSum(prefill) : ''}"></label>
       ${quick.length ? `<div class="chips pay-quick" aria-label="${t('payQuick')}">${quick.map((n) =>
-        `<button class="chip" style="--acc:var(--green)" data-pay-quick="${n}" type="button">${fmtSum(n)}</button>`).join('')}</div>` : ''}
+        `<button class="chip" style="--acc:var(--green)" data-pay-quick="${n}" type="button"${n === fee ? ` title="${t('payFeeChip')}"` : ''}>${fmtSum(n)}${n === fee && n !== last ? ` <small>· ${t('payFeeChip').toLowerCase()}</small>` : ''}</button>`).join('')}</div>` : ''}
+      ${!p && prefill == null ? `<p class="f-hint pay-fee-nudge">${t('payFeeNudge')}</p>` : ''}
       <label class="field"><span>${t('payDate')}</span>
         <input class="inp" type="date" id="payDate" value="${p ? p.paid_on : todayKey()}" max="${todayKey()}"></label>
       <label class="field"><span>${t('payNote')}</span>
@@ -2540,12 +2572,12 @@ function setPayYm(ym) {
 function exportPayCsv() {
   if (!state.pay) return;
   const d = payModel();
-  const head = [t('payCsvName'), t('csvCourse'), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed')];
+  const head = [t('payCsvName'), t('csvCourse'), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed'), t('payCsvDebt')];
   const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
   const rows = [...d.items].sort((a, b) => (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name));
-  const lines = [head.map(q).join(';')].concat(rows.map(({ s, c, p, owed }) =>
+  const lines = [head.map(q).join(';')].concat(rows.map(({ s, c, p, owed, debt }) =>
     [s.full_name, c.name, s.parent_phone, p ? t('payPaid') : t('payUnpaid'), p?.amount ?? '', p?.paid_on ?? '', p?.note ?? '',
-     owed.map(ymShort).join(', ')].map(q).join(';')));
+     owed.map(ymShort).join(', '), debt ?? ''].map(q).join(';')));
   const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -3043,18 +3075,33 @@ function courseSheet(id) {
       <label class="field"><span>${t('fColor')}</span>
         <select class="inp" id="cColor">${colors.map((x) =>
           `<option value="${x}" ${c?.color === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+      <label class="field"><span>${t('fFee')}</span>
+        <input class="inp" id="cFee" inputmode="numeric" autocomplete="off" placeholder="${t('fFeePh')}"
+          value="${Number.isInteger(c?.monthly_fee) ? fmtSum(c.monthly_fee) : ''}">
+        <small class="f-hint">${t('fFeeHint')}</small></label>
+      <p class="tpl-err" id="cErr" role="alert" hidden></p>
       <label class="check-item" style="margin-bottom:14px">
         <input type="checkbox" id="cActive" ${!c || c.active ? 'checked' : ''}><span>${t('fOpen')}</span></label>
       <button class="btn btn-primary btn-block" type="submit">${t('save')}</button>
       ${c ? `<button class="btn btn-danger btn-block" style="margin-top:9px" id="cDelete" type="button">${I.trash} ${t('del')}</button>` : ''}
     </form>`, () => {
+    const feeIn = $('cFee');
+    feeIn.addEventListener('input', () => {
+      const n = parseSum(feeIn.value);
+      feeIn.value = n == null || Number.isNaN(n) ? feeIn.value.replace(/[^\d\s]/g, '') : fmtSum(n);
+      $('cErr').hidden = true;
+    });
     $('cForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const fee = parseSum(feeIn.value);
+      if (Number.isNaN(fee) || (fee != null && fee > PAY_MAX)) {
+        const er = $('cErr'); er.textContent = t('payBadAmount'); er.hidden = false; feeIn.focus(); return;
+      }
       try {
         await edge('admin-api', {
           action: 'save_course', id: c?.id ?? null,
           name: $('cName').value.trim(), icon: $('cIcon').value.trim(),
-          color: $('cColor').value, active: $('cActive').checked,
+          color: $('cColor').value, active: $('cActive').checked, monthly_fee: fee,
         });
         closeSheet(); toast(t('saved'), 'ok');
         await loadCourses(); render();
