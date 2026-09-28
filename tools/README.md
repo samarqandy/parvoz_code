@@ -48,7 +48,30 @@ so'ng xabardagi yangi `SRC_HASH` qiymatini yozing. Nav, footer yoki narx kabi
 umumiy qismlar o'zgarsa, tarjimasini `courses_ru.py` dagi `SHARED` ga yoki
 `gen_articles.py` dagi `CHROME_RU` ga qo'shing.
 
-Ikkala generatorni ham qayta ishga tushirish xavfsiz — o'zgarish bo'lmasa
-fayllar bir xil qoladi.
+## Ruscha bosh sahifa
+
+- `home_ru.py` — `ru.html` uchun `<head>`, JSON-LD va atribut (aria-label, alt)
+  tarjimalari. Sahifa matnining o'zi `index.html` dagi `<span data-lang="ru">`
+  lardan olinadi.
+- `gen_home_ru.py` — `index.html` dan `ru.html` ni yozadi.
+
+```
+python3 tools/gen_home_ru.py
+```
+
+`index.html` — manba, qo'lda tahrirlanadi; `ru.html` qo'lda tahrirlanmaydi.
+Bosh sahifa matnini o'zgartirganda ruscha spanni ham yangilang va generatorni
+ishga tushiring. Generator ruscha sahifada o'zbekcha so'z qolsa yoki `index.html`
+dagi FAQ JSON-LD savoli sahifada topilmasa to'xtaydi.
+
+Til tanlovi (`localStorage` dagi `parvoz-lang`) oxirgi ko'rilgan sahifa tiliga
+teng: ruscha sahifalar `ru`, o'zbekcha sahifalar (ruscha tanlov bo'lsa) `uz`
+yozadi. Ruscha tanlagan odam bosh sahifaga kirsa, `index.html` uni `ru.html`
+ga o'tkazadi ("Orqaga" bilan qaytganda o'tkazmaydi). Qidiruv robotlarida
+`localStorage` bo'sh — ular har doim o'z tilidagi sahifani ko'radi.
+
+Uchala generatorni ham qayta ishga tushirish xavfsiz — o'zgarish bo'lmasa
+fayllar bir xil qoladi. Tartib: `gen_articles.py`, `gen_courses_ru.py`,
+`gen_home_ru.py`.
 
 `llms.txt` hali qo'lda yangilanadi — mazmun o'zgarsa, uni ham tekshiring.

@@ -265,6 +265,8 @@ img { max-width:100%; display:block; }
 }
 .lang-btn:hover { color:var(--text); }
 .lang-btn.active { background:var(--grad-gold); color:var(--on-gold); }
+/* Boshqa tildagi sahifaga havola (index.html ↔ ru.html) — tugma bilan bir xil ko'rinadi */
+a.lang-btn { text-decoration:none; display:flex; align-items:center; }
 
 .theme-btn {
   width:34px; height:34px; border-radius:50%; flex-shrink:0;

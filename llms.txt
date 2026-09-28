@@ -32,7 +32,7 @@
 - [Shaxmat kursi](https://parvozcode.uz/shaxmat-kurslari.html): noldan boshlab qoidalar, debyut, taktika, endshpil, haftalik turnirlar.
 - [Ingliz tili kursi](https://parvozcode.uz/ingliz-tili-kurslari.html): jonli muloqot, tinglab tushunish, talaffuz, o'yin orqali grammatika.
 
-Ruscha sahifalar (Русская версия): [Программирование](https://parvozcode.uz/kursy-programmirovaniya.html) · [Робототехника](https://parvozcode.uz/robototehnika.html) · [Математика](https://parvozcode.uz/matematika.html) · [Шахматы](https://parvozcode.uz/shahmaty.html) · [Английский язык](https://parvozcode.uz/angliyskiy.html)
+Ruscha sahifalar (Русская версия): [Главная](https://parvozcode.uz/ru.html) · [Программирование](https://parvozcode.uz/kursy-programmirovaniya.html) · [Робототехника](https://parvozcode.uz/robototehnika.html) · [Математика](https://parvozcode.uz/matematika.html) · [Шахматы](https://parvozcode.uz/shahmaty.html) · [Английский язык](https://parvozcode.uz/angliyskiy.html)
 
 ## Tez-tez so'raladigan savollar
 

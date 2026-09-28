@@ -9,6 +9,9 @@
 <meta name="yandex-verification" content="af2a342adcba838e">
 <meta name="description" content="Samarqandda bolalar uchun dasturlash, robototexnika, matematika, shaxmat va ingliz tili kurslari. Birinchi dars bepul, 6 yoshdan qabul qilamiz.">
 <link rel="canonical" href="https://parvozcode.uz/">
+<link rel="alternate" hreflang="uz" href="https://parvozcode.uz/">
+<link rel="alternate" hreflang="ru" href="https://parvozcode.uz/ru.html">
+<link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/">
 
 <!-- SEO / Open Graph -->
 <meta property="og:site_name" content="Parvoz O'quv Markazi">
@@ -26,6 +29,23 @@
 <!-- PWA -->
 <meta name="theme-color" content="#071029" id="themeColorMeta">
 <link rel="manifest" href="manifest.json">
+
+<!-- Til: avval ruscha tanlagan odam bosh sahifaga kirsa — ruscha bosh sahifaga (ru.html).
+     Qidiruv robotlarida localStorage bo'sh, ular doim shu o'zbekcha sahifani ko'radi.
+     "Orqaga" tugmasi bilan qaytganda o'tkazmaymiz — aks holda odam o'zbekchaga qaytolmasdi. -->
+<script id="langRoute">
+(function () {
+  try {
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    var back = nav ? nav.type === 'back_forward' : (performance.navigation && performance.navigation.type === 2);
+    if (!back && localStorage.getItem('parvoz-lang') === 'ru') {
+      window.__toRu = true;
+      document.documentElement.style.visibility = 'hidden';
+      location.replace('ru.html' + location.search + location.hash);
+    }
+  } catch (e) {}
+})();
+</script>
 
 <!-- Tema (yorug'/qorong'i) — sahifa chizilishidan oldin qo'llanadi -->
 <script>
@@ -303,7 +323,7 @@
 
     <div class="lang-btns" role="group" aria-label="Til tanlash">
       <button class="lang-btn active" data-set-lang="uz" type="button">UZ</button>
-      <button class="lang-btn" data-set-lang="ru" type="button">RU</button>
+      <a class="lang-btn" href="ru.html" hreflang="ru" lang="ru" data-set-lang="ru">RU</a>
       <button class="lang-btn" data-set-lang="en" type="button">EN</button>
     </div>
 
@@ -462,7 +482,7 @@
           <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
           <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
         </div>
-          <div class="cc-more">Dasturlash kursi haqida →</div>
+          <div class="cc-more"><span data-lang="uz" class="show">Dasturlash kursi haqida</span><span data-lang="ru">О курсе программирования</span><span data-lang="en">About the programming course</span> →</div>
         </a>
 
       <a class="course-card c-robot" href="robototexnika-kurslari.html" data-href-ru="robototehnika.html" data-reveal style="--rd:.1s">
@@ -477,7 +497,7 @@
           <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
           <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
         </div>
-          <div class="cc-more">Robototexnika kursi haqida →</div>
+          <div class="cc-more"><span data-lang="uz" class="show">Robototexnika kursi haqida</span><span data-lang="ru">О курсе робототехники</span><span data-lang="en">About the robotics course</span> →</div>
         </a>
 
       <a class="course-card c-math" href="matematika-kurslari.html" data-href-ru="matematika.html" data-reveal style="--rd:.15s">
@@ -492,7 +512,7 @@
           <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
           <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
         </div>
-          <div class="cc-more">Matematika kursi haqida →</div>
+          <div class="cc-more"><span data-lang="uz" class="show">Matematika kursi haqida</span><span data-lang="ru">О курсе математики</span><span data-lang="en">About the math course</span> →</div>
         </a>
 
       <a class="course-card c-chess" href="shaxmat-kurslari.html" data-href-ru="shahmaty.html" data-reveal style="--rd:.2s">
@@ -507,7 +527,7 @@
           <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
           <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
         </div>
-          <div class="cc-more">Shaxmat kursi haqida →</div>
+          <div class="cc-more"><span data-lang="uz" class="show">Shaxmat kursi haqida</span><span data-lang="ru">О курсе шахмат</span><span data-lang="en">About the chess course</span> →</div>
         </a>
 
       <a class="course-card c-eng" href="ingliz-tili-kurslari.html" data-href-ru="angliyskiy.html" data-reveal style="--rd:.25s">
@@ -534,7 +554,7 @@
           <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
           <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
         </div>
-          <div class="cc-more">Ingliz tili kursi haqida →</div>
+          <div class="cc-more"><span data-lang="uz" class="show">Ingliz tili kursi haqida</span><span data-lang="ru">О курсе английского языка</span><span data-lang="en">About the English course</span> →</div>
         </a>
 
       <article class="course-card" data-reveal style="--rd:.3s; --acc:var(--gold); display:flex; flex-direction:column; justify-content:center; text-align:center;">
@@ -1294,7 +1314,11 @@ function setTheme(theme) {
 setTheme(currentTheme());
 
 /* ============ LANGUAGE ============ */
+// Ruscha bosh sahifa — alohida fayl: ru.html (tools/gen_home_ru.py shu fayldan yaratadi).
+// Bu yerda faqat o'zbekcha va inglizcha joyida almashadi; RU havolasi ru.html ga olib boradi.
+// ru.html da til doim ruscha.
 const LANGS = ['uz','ru','en'];
+const PAGE_LANG = document.documentElement.lang;
 function setLang(lang) {
   if (!LANGS.includes(lang)) lang = 'uz';
   currentLang = lang;
@@ -1311,14 +1335,26 @@ function setLang(lang) {
     a.setAttribute('href', lang === 'ru' ? a.dataset.hrefRu : a.dataset.hrefUz);
   });
   syncThemeLabels();
-  try { localStorage.setItem('parvoz-lang', lang); } catch(e) {}
+  // ru.html ga o'tilayotgan bo'lsa (langRoute) tanlovni buzmaymiz
+  if (!window.__toRu) try { localStorage.setItem('parvoz-lang', lang); } catch(e) {}
 }
 document.querySelectorAll('.lang-btn').forEach(btn => {
-  btn.addEventListener('click', () => setLang(btn.dataset.setLang));
+  btn.addEventListener('click', () => {
+    if (btn.tagName === 'A') {
+      // Boshqa tildagi sahifa: tanlovni saqlab, o'sha bo'limning o'ziga o'tamiz
+      try { localStorage.setItem('parvoz-lang', btn.dataset.setLang); } catch(e) {}
+      btn.href = btn.getAttribute('href').split('#')[0] + location.hash;
+      return;
+    }
+    setLang(btn.dataset.setLang);
+  });
 });
 let savedLang = 'uz';
 try { savedLang = localStorage.getItem('parvoz-lang') || 'uz'; } catch(e) {}
-setLang(savedLang);
+// O'zbekcha sahifa ruschani o'zida ko'rsatmaydi — buning uchun ru.html bor
+setLang(PAGE_LANG !== 'uz' ? PAGE_LANG : (savedLang === 'en' ? 'en' : 'uz'));
+// "Orqaga" bilan keshdan qaytganda tanlov shu sahifa tiliga qaytadi
+window.addEventListener('pageshow', e => { if (e.persisted) setLang(currentLang); });
 
 /* ============ NAVBAR ============ */
 const nav = document.getElementById('nav');
@@ -1436,6 +1472,11 @@ lightbox.addEventListener('close', () => { lightboxImg.src = ''; });
     yandex:   { label: 'Yandex',   cls: '' },
     telegram: { label: 'Telegram', cls: '' }
   };
+  var STARS = {
+    uz: function (n) { return n + ' yulduz'; },
+    ru: function (n) { return 'Оценка ' + n + ' из 5'; },
+    en: function (n) { return n + ' of 5 stars'; }
+  };
   function esc(t) {
     return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
       return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
@@ -1451,7 +1492,7 @@ lightbox.addEventListener('close', () => { lightboxImg.src = ''; });
         var src = SRC[r.source] || { label: r.source || '' };
         var initial = (r.author || '?').trim().charAt(0).toUpperCase();
         return '<article class="testi" data-reveal style="--rd:' + (i * 0.08) + 's">' +
-          '<div class="testi-stars" aria-label="' + stars.length + ' yulduz">' + stars + '</div>' +
+          '<div class="testi-stars" aria-label="' + esc(STARS[currentLang] ? STARS[currentLang](stars.length) : STARS.uz(stars.length)) + '">' + stars + '</div>' +
           '<p class="testi-text">' + esc(r.text) + '</p>' +
           '<div class="testi-who">' +
             '<div class="testi-ava" aria-hidden="true">' + esc(initial) + '</div>' +
