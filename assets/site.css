@@ -168,7 +168,8 @@ img { max-width:100%; display:block; }
 .skip-link:focus { left:0; }
 
 :focus-visible {
-  outline:3px solid var(--gold);
+  /* --gold yorug' fonda 1.67:1 — ko'rinmasdi; --gold-ink har ikkala mavzuda >= 4:1 */
+  outline:3px solid var(--gold-ink);
   outline-offset:3px;
   border-radius:6px;
 }
@@ -1140,7 +1141,7 @@ a.course-card { display:block; text-decoration:none; color:inherit; }
   transition: border-color .15s;
 }
 .f-inp::placeholder { color: var(--faint); }
-.f-inp:focus { border-color: var(--gold); outline: none; }
+.f-inp:focus { border-color: var(--gold-ink); }   /* klaviatura halqasi umumiy :focus-visible dan */
 select.f-inp option { background: var(--bg2); color: var(--text); }
 .f-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .f-consent {
@@ -1178,6 +1179,21 @@ select.f-inp option { background: var(--bg2); color: var(--text); }
   border-radius: var(--r-md); padding: 20px 22px; margin: 20px 0;
 }
 .btn-block { width: 100%; }
+
+/* 404 — topilmagan sahifa */
+.nf .nf-code {
+  font-family: 'Fredoka One', 'Nunito', sans-serif; font-size: clamp(3.5rem, 14vw, 6rem);
+  line-height: 1; color: var(--gold-ink); margin: 0 0 6px;
+}
+.nf .nf-ru { font-size: .92rem; }
+.nf .nf-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 8px; }
+.nf .nf-links { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.nf .nf-links li { margin: 0; }
+.nf .nf-links a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; border-radius: 99px;
+  background: var(--card); border: 1px solid var(--border); color: var(--text); font-weight: 800; text-decoration: none;
+}
+.nf .nf-links a:hover { border-color: var(--border-2); }
 
 /* ===================== MAQOLALAR ===================== */
 .art .art-lede {
