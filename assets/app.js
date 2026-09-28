@@ -811,6 +811,23 @@ function monthRange(ym) {
 
 const initials = (n) => String(n || '?').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 const courseById = (id) => state.courses.find((c) => c.id === id) || { name: '—', icon: '📘', color: 'sky' };
+
+/* Kurs belgisi. Bayroq emojisi (🇬🇧) Windows'da bayroq emas, "GB" harflari bo'lib ko'rinadi —
+   shuning uchun HTML'da uni SVG bayroq bilan chizamiz. Faqat matn turadigan joyda (<option>,
+   diagramma yozuvi) SVG qo'yib bo'lmaydi: u yerda bayroq tushirib qoldiriladi. */
+const FLAG_SVG = {
+  // Union Jack, 2:1. clipPath ishlatilmaydi: bir sahifada bir necha nusxa bo'lsa id'lar to'qnashardi
+  '🇬🇧': '<svg class="flag" viewBox="0 0 60 30" aria-hidden="true" focusable="false">'
+    + '<path fill="#012169" d="M0 0h60v30H0z"/>'
+    + '<path stroke="#fff" stroke-width="6" d="M0 0l60 30M60 0L0 30"/>'
+    + '<path fill="#c8102e" d="M-8.94-4.47L30 15l-.89 1.79L-9.83-2.68zM30 15l38.94 19.47.89-1.79L30.89 13.21z'
+    + 'M68.94-4.47L30 15l-.89-1.79 38.94-19.47zM30 15l-38.94 19.47.89 1.79L30.89 16.79z"/>'
+    + '<path fill="#fff" d="M25 0h10v30H25zM0 10h60v10H0z"/>'
+    + '<path fill="#c8102e" d="M27 0h6v30h-6zM0 12h60v6H0z"/></svg>',
+};
+const isFlagEmoji = (s) => /^[\u{1F1E6}-\u{1F1FF}]{2}$/u.test(String(s || ''));
+const cIcon = (c) => FLAG_SVG[c.icon] || esc(c.icon);                       // HTML uchun
+const cText = (c) => (c.icon && !isFlagEmoji(c.icon) ? c.icon + ' ' : '') + c.name;   // matn uchun
 const isAdmin = () => state.me?.role === 'admin';
 
 // Foydalanuvchiga ko'rinadigan kurslar
@@ -1106,7 +1123,7 @@ function courseChips() {
   if (list.length <= 1) return '';
   const chip = (id, label, icon, color) =>
     `<button class="chip ${state.courseFilter === id ? 'on' : ''}" style="--acc:var(--${color})" data-chip="${id}" type="button">${icon ? icon + ' ' : ''}${esc(label)}</button>`;
-  return `<div class="chips">${chip('all', t('all'), '', 'gold')}${list.map((c) => chip(c.id, c.name, c.icon, c.color)).join('')}</div>`;
+  return `<div class="chips">${chip('all', t('all'), '', 'gold')}${list.map((c) => chip(c.id, c.name, cIcon(c), c.color)).join('')}</div>`;
 }
 
 function visibleStudents() {
@@ -1193,7 +1210,7 @@ function viewToday() {
       // Hali "keldi" belgilanmaganlar bo'lsa — guruhni bir bosishda belgilash
       const left = arr.filter((s) => !state.today.some((r) => r.student_id === s.id && r.kind === 'in')).length;
       return `<div class="group-title">
-          <span>${c.icon} ${esc(c.name)} · ${arr.length}</span>
+          <span>${cIcon(c)} ${esc(c.name)} · ${arr.length}</span>
           ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}" type="button">
             ${ico(MARKS.in)} ${t('allArrived')} · ${left}</button>` : ''}
         </div>
@@ -1461,7 +1478,7 @@ function loadLeads() {
       <div class="row-main">
         <div class="row-title">${esc(l.full_name)}
           <span class="badge ${st.badge}">${st.label}</span>
-          ${c ? `<span class="badge badge-course" style="--acc:var(--${c.color})">${c.icon} ${esc(c.name)}</span>` : ''}</div>
+          ${c ? `<span class="badge badge-course" style="--acc:var(--${c.color})">${cIcon(c)} ${esc(c.name)}</span>` : ''}</div>
         <div class="row-sub">
           <span>\u{1F4DE} ${esc(l.phone)}</span>
           ${l.preferred_time ? `<span>\u23F0 ${esc(l.preferred_time)}</span>` : ''}
@@ -1543,7 +1560,7 @@ function rowStudent(s) {
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
-        <span class="badge badge-course" style="--acc:var(--${c.color})">${c.icon} ${esc(c.name)}</span>
+        <span class="badge badge-course" style="--acc:var(--${c.color})">${cIcon(c)} ${esc(c.name)}</span>
         ${s.active ? '' : `<span class="badge">${t('archive')}</span>`}
         ${s.telegram_chat_id
           ? `<span class="badge badge-ok">${t('tgLinked')}</span>`
@@ -1738,7 +1755,7 @@ function repGrid(d) {
 
   const body = [...byCourse.values()].map((list) => {
     const c = list[0].course;
-    const title = `<tr class="jg-group"><th class="jg-name" scope="rowgroup">${c.icon} ${esc(c.name)}</th>
+    const title = `<tr class="jg-group"><th class="jg-name" scope="rowgroup">${cIcon(c)} ${esc(c.name)}</th>
       <td colspan="${d.nDays + 1}"></td></tr>`;
     return title + list.map((r) => {
       const cells = d.daily.map((x) => {
@@ -1833,7 +1850,7 @@ function repCharts(d) {
       <details class="viz-table"><summary>${t('asTable')}</summary>
         <div class="table-wrap"><table class="tbl"><thead><tr><th>${t('colCourse')}</th>
           <th class="num">${t('colAtt')}</th><th class="num">${t('sStudents')}</th><th class="num">${t('sWorkdays')}</th></tr></thead>
-          <tbody>${d.courses.map((c) => `<tr><td>${c.course.icon} ${esc(c.course.name)}</td>
+          <tbody>${d.courses.map((c) => `<tr><td>${cIcon(c.course)} ${esc(c.course.name)}</td>
             <td class="num">${c.pct}%</td><td class="num">${c.n}</td><td class="num">${c.days}</td></tr>`).join('')}</tbody></table></div>
       </details>
     </div>` : ''}`;
@@ -1900,7 +1917,7 @@ function chartCourses(d, W) {
   const bars = d.courses.map((c, i) => {
     const y = T + i * rowH + (narrow ? 24 : (rowH - bh) / 2);
     const w = Math.max(0, (c.pct / 100) * pw);
-    const label = `${c.course.icon} ${c.course.name}`;
+    const label = cText(c.course);
     const short = label.length > max ? label.slice(0, max - 1) + '…' : label;
     const lx = narrow ? 0 : L - 10, ly = narrow ? T + i * rowH + 16 : y + bh / 2 + 5;
     return `<g class="viz-hit" tabindex="0" data-tip-t="${esc(label)}"
@@ -1954,7 +1971,7 @@ function repList(d) {
     </tr></thead><tbody>${[...d.rows].sort((a, b) => b.pct - a.pct || a.name.localeCompare(b.name)).map((r) => `
       <tr data-row="${r.id}">
         <td><div style="font-weight:800">${esc(r.name)}${r.active ? '' : ` <span class="badge">${t('archiveShort')}</span>`}</div>
-            <div style="color:var(--faint);font-size:.8rem;font-weight:700">${r.course.icon} ${esc(r.course.name)}</div></td>
+            <div style="color:var(--faint);font-size:.8rem;font-weight:700">${cIcon(r.course)} ${esc(r.course.name)}</div></td>
         <td class="num">${r.count} / ${r.daysTotal}</td>
         <td class="num"><span class="${r.absent ? 'tone-red num-on' : 'num-off'}">${r.absent}</span>
             <span class="num-off"> / </span><span class="${r.excused ? 'tone-violet num-on' : 'num-off'}">${r.excused}</span></td>
@@ -2059,7 +2076,7 @@ async function loadTeam() {
       const cs = tc.role === 'admin'
         ? `<span class="badge badge-admin">${t('allCourses')}</span>`
         : (tc.course_ids.length
-            ? tc.course_ids.map((id) => { const c = courseById(id); return `<span class="badge badge-course" style="--acc:var(--${c.color})">${c.icon} ${esc(c.name)}</span>`; }).join(' ')
+            ? tc.course_ids.map((id) => { const c = courseById(id); return `<span class="badge badge-course" style="--acc:var(--${c.color})">${cIcon(c)} ${esc(c.name)}</span>`; }).join(' ')
             : `<span class="badge badge-warn">${t('noCourseAssigned')}</span>`);
       return `<div class="row">
         <div class="avatar" style="--acc:var(--${tc.role === 'admin' ? 'violet' : 'sky'})">${esc(initials(tc.full_name || tc.email))}</div>
@@ -2080,7 +2097,7 @@ async function loadTeam() {
   $('coursesOut').innerHTML = state.courses.map((c) => {
     const n = state.students.filter((s) => s.course_id === c.id).length;
     return `<div class="row">
-      <div class="avatar" style="--acc:var(--${c.color});font-size:1.1rem">${c.icon}</div>
+      <div class="avatar" style="--acc:var(--${c.color});font-size:1.1rem">${cIcon(c)}</div>
       <div class="row-main">
         <div class="row-title">${esc(c.name)} ${c.active ? '' : `<span class="badge">${t('closed')}</span>`}</div>
         <div class="row-sub"><span>${t('nStudents', { n })}</span>${Number.isInteger(c.monthly_fee) ? `<span>${t('perMonth', { n: fmtSum(c.monthly_fee) })}</span>` : ''}</div>
@@ -2310,7 +2327,7 @@ function payRow({ s, c, p, owed, rem, debt }) {
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}${s.active ? '' : ` <span class="badge">${t('archive')}</span>`}</div>
-      <div class="row-sub"><span>${c.icon} ${esc(c.name)}</span>${s.parent_phone ? `<span>📞 ${esc(s.parent_phone)}</span>` : ''}</div>
+      <div class="row-sub"><span>${cIcon(c)} ${esc(c.name)}</span>${s.parent_phone ? `<span>📞 ${esc(s.parent_phone)}</span>` : ''}</div>
     </div>
     <div class="pay-state">${state_}</div>
     <div class="row-actions">
@@ -2343,7 +2360,7 @@ function paySheet(sid) {
   const tgOk = !!s.telegram_chat_id && !remBadName(remName(s.full_name));
   const canTell = !p && tgOk && !!state.botUsername && state.tpls?.paid?.on !== false;
   openSheet(`${t('navPay')} · ${esc(ymLabel(d.ym))}`, `
-    <div class="pay-who"><b>${esc(s.full_name)}</b><span>${c.icon} ${esc(c.name)}</span>
+    <div class="pay-who"><b>${esc(s.full_name)}</b><span>${cIcon(c)} ${esc(c.name)}</span>
       ${sfee != null ? `<span class="pay-own">${t('payOwnFee', { n: fmtSum(sfee) })}${fee != null ? ` · ${t('payOwnFeeCourse', { n: fmtSum(fee) })}` : ''}</span>` : ''}</div>
     ${pastOwed.length ? `<p class="pay-owed-list">${I.alert}<span>${t('payArrearsList')}: ${pastOwed.map((m) => esc(ymShort(m))).join(', ')}</span></p>` : ''}
     <form id="payForm" novalidate>
@@ -2501,7 +2518,7 @@ function remindSheet() {
         <button class="btn btn-sm btn-ghost" id="remToggle" type="button">${t('remNone')}</button></div>
       <div class="check-list rem-list">${ok.map(({ it }) => `
         <label class="check-item"><input type="checkbox" class="remPick" value="${it.s.id}" checked>
-          <span class="rem-who"><span class="rem-name">${esc(it.s.full_name)}</span><small>${it.c.icon} ${esc(it.c.name)}</small></span></label>`).join('')}</div>
+          <span class="rem-who"><span class="rem-name">${esc(it.s.full_name)}</span><small>${cIcon(it.c)} ${esc(it.c.name)}</small></span></label>`).join('')}</div>
       ${bad.length ? `<details class="rem-skip"><summary>${t('remSkipped', { n: bad.length })}</summary>
         <div class="rem-skip-list">${bad.map(({ it, b }) => `<div class="rem-skip-row">
           <span class="rem-who"><span class="rem-name">${esc(it.s.full_name)}</span><small>${esc(remReason(b))}</small></span>
@@ -2825,7 +2842,7 @@ function chartFinCourses(d, W) {
   const bars = d.courses.map((c, i) => {
     const y = T + i * rowH + (narrow ? 24 : (rowH - bh) / 2);
     const w = Math.max(0, (c.sum / max) * pw);
-    const label = `${c.course.icon} ${c.course.name}`;
+    const label = cText(c.course);
     const short = label.length > lim ? label.slice(0, lim - 1) + '…' : label;
     const lx = narrow ? 0 : L - 10, ly = narrow ? T + i * rowH + 16 : y + bh / 2 + 5;
     const share = d.total ? Math.round((c.sum / d.total) * 100) : 0;
@@ -3153,7 +3170,7 @@ function closeSheet() { $('sheet').close(); }
 function studentSheet(id) {
   const s = id ? state.students.find((x) => x.id === id) : null;
   const list = myCourses();
-  const opts = list.map((c) => `<option value="${c.id}" ${s && s.course_id === c.id ? 'selected' : ''}>${c.icon} ${esc(c.name)}</option>`).join('');
+  const opts = list.map((c) => `<option value="${c.id}" ${s && s.course_id === c.id ? 'selected' : ''}>${esc(cText(c))}</option>`).join('');
   openSheet(s ? t('editStudent') : t('newStudent'), `
     <form id="stForm">
       <label class="field"><span>${t('fNameReq')}</span>
@@ -3336,7 +3353,7 @@ async function teacherSheet(email) {
   }
   const checks = state.courses.map((c) => `
     <label class="check-item"><input type="checkbox" value="${c.id}" class="tcCourse"
-      ${tc && tc.course_ids.includes(c.id) ? 'checked' : ''}><span>${c.icon} ${esc(c.name)}</span></label>`).join('');
+      ${tc && tc.course_ids.includes(c.id) ? 'checked' : ''}><span>${cIcon(c)} ${esc(c.name)}</span></label>`).join('');
 
   openSheet(tc ? t('editTeacher') : t('newTeacher'), `
     <form id="tForm">
@@ -3396,7 +3413,8 @@ function courseSheet(id) {
       <label class="field"><span>${t('fNameStar')}</span>
         <input class="inp" id="cName" required value="${esc(c?.name ?? '')}"></label>
       <label class="field"><span>${t('fIcon')}</span>
-        <input class="inp" id="cIcon" maxlength="4" value="${esc(c?.icon ?? '📘')}"></label>
+        <span class="ic-field"><input class="inp" id="cIcon" maxlength="4" value="${esc(c?.icon ?? '📘')}">
+          <span class="ic-prev" id="cIconPrev" aria-hidden="true">${cIcon({ icon: c?.icon ?? '📘' })}</span></span></label>
       <label class="field"><span>${t('fColor')}</span>
         <select class="inp" id="cColor">${colors.map((x) =>
           `<option value="${x}" ${c?.color === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
@@ -3410,6 +3428,8 @@ function courseSheet(id) {
       <button class="btn btn-primary btn-block" type="submit">${t('save')}</button>
       ${c ? `<button class="btn btn-danger btn-block" style="margin-top:9px" id="cDelete" type="button">${I.trash} ${t('del')}</button>` : ''}
     </form>`, () => {
+    // Belgi qanday ko'rinishini darhol ko'rsatamiz (bayroq emojisi SVG bo'lib chiziladi)
+    $('cIcon').addEventListener('input', () => { $('cIconPrev').innerHTML = cIcon({ icon: $('cIcon').value.trim() }); });
     const feeIn = $('cFee');
     feeIn.addEventListener('input', () => {
       const n = parseSum(feeIn.value);
