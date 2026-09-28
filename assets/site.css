@@ -1054,6 +1054,15 @@ span[data-lang].show { display:inline; }
   font-size:.9rem; font-weight:800; text-decoration:none;
 }
 .cp-lang a:hover { border-color:var(--border-2); color:var(--gold-ink); }
+
+/* Til havolasidagi bayroq — SVG: emoji bayroq (🇷🇺, 🇺🇿) Windows'da "RU"/"UZ" harflari bo'lib chiqadi */
+.flag {
+  display:inline-block; height:.8em; flex-shrink:0; margin-right:.45em;
+  vertical-align:-.08em; border-radius:2px;
+  box-shadow:0 0 0 1px rgb(120 130 150 / .35);
+}
+.flag-ru { width:1.2em; }
+.flag-uz { width:1.6em; }
 .cp-hero { padding:24px 0 8px; display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; }
 .cp-badge {
   width:72px; height:72px; border-radius:22px; flex-shrink:0;
