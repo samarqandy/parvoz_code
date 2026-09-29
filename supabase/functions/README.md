@@ -30,6 +30,20 @@ Shu sababli havola boshqa odamga tarqalsa ham u hech narsa ko'ra olmaydi.
 o'zgartirilmaydi: `authenticated` rolida ular uchun `UPDATE` huquqi yo'q,
 faqat edge funksiyalar (service_role) yoza oladi.
 
+## Belgini bekor qilish (`mark-attendance` → `undo_id`)
+
+"Kelmadi" yoki "Sababli" o'sha kundagi "Keldi/Ketdi"ni o'chiradi (bir kunda bitta
+mantiqiy holat). Xato bosilsa vaqtlar yo'qolmasin: har bir belgilash javobida
+`replaced` — o'chirilgan yozuvlar (`kind`, `occurred_at`, `note`). Toastdagi
+"Bekor qilish" `{ undo_id, restore: replaced }` yuboradi: yangi belgi o'chadi,
+eskilari asl vaqti bilan qaytadi, ota-onaga xabar ketmaydi.
+
+- O'qituvchi faqat o'zi qo'ygan va o'z kursidagi belgini bekor qiladi (admin — istalganini).
+- Qaytariladigan yozuvlar o'sha kunga va bekor qilinayotgan belgi almashtira oladigan
+  turlarga tegishli bo'lishi shart (`REPLACES`), ko'pi bilan 3 ta; boshqasi — 400.
+- "Keldi" bekor qilinsa, unga bog'liq "Ketdi" ham o'chadi.
+- Panel "Keldi/Ketdi" vaqti yo'qoladigan holatda (ustidan "Kelmadi"/"Sababli") avval so'raydi.
+
 ## Ota-onaga xabar shablonlari
 
 Matnni admin paneldan (Sozlamalar → Ota-onaga xabarlar) tahrirlaydi. Saqlanadi:
