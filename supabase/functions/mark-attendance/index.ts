@@ -14,6 +14,13 @@
 //   { student_id, kind, note? }              — bitta o'quvchi
 //   { student_ids: [...], kind, note? }      — butun guruh bir bosishda
 //   { ..., date: 'YYYY-MM-DD' }              — o'tgan kunni tuzatish
+//   { undo_id, restore?: [{kind, occurred_at, note}] }
+//                                            — "Bekor qilish": yangi belgini o'chiradi va u
+//                                              almashtirgan belgilarni asl vaqti bilan qaytaradi
+//
+// Javobda `replaced` — yangi belgi o'chirgan yozuvlar (kind, occurred_at, note). Panel
+// ularni "Bekor qilish" uchun saqlab turadi: masalan, "Kelmadi" xato bosilsa, o'chgan
+// "Keldi 10:05 / Ketdi 12:02" qaytadi.
 //
 // O'tgan kun uchun ota-onaga xabar YUBORILMAYDI: kechagi dars haqida bugun
 // "farzandingiz keldi" deyish ota-onani chalg'itadi. Xabar faqat bugungi
@@ -140,6 +147,64 @@ function resolveDay(raw: unknown): [string, null] | [null, string] {
   return [key, null];
 }
 
+// "Bekor qilish": faqat o'zi qo'ygan belgini (admin — istalganini), faqat o'z kursida va
+// faqat tuzatish mumkin bo'lgan kunlarda. Qaytariladigan belgilar o'sha kunga va o'chirilgan
+// belgi almashtirishi mumkin bo'lgan turlarga tegishli bo'lishi shart. Ota-onaga xabar ketmaydi.
+async function undoMark(undoId: string, restoreRaw: unknown, email: string, role: string) {
+  const { data: row } = await admin.from('attendance')
+    .select('id, student_id, kind, occurred_at, marked_by_email, students(course_id)')
+    .eq('id', undoId).maybeSingle();
+  if (!row) return json({ error: 'Belgi topilmadi' }, 404);
+
+  if (role !== 'admin') {
+    if ((row.marked_by_email ?? '').toLowerCase() !== email) return json({ error: 'forbidden' }, 403);
+    const { data: links } = await admin
+      .from('teacher_courses').select('course_id').ilike('email', likeEsc(email));
+    const courseId = (row as any).students?.course_id;
+    if (!(links ?? []).some((l) => l.course_id === courseId)) return json({ error: 'forbidden' }, 403);
+  }
+
+  const key = dayKeyOf(new Date(row.occurred_at));
+  const [, dayErr] = resolveDay(key);
+  if (dayErr) return json({ error: dayErr }, 400);
+  const start = Date.parse(dayStartIso(key));
+  const end = Date.parse(dayEndIso(key));
+
+  const allowed = REPLACES[row.kind as Kind] ?? [];
+  const list = Array.isArray(restoreRaw) ? restoreRaw.slice(0, 3) : [];
+  const restore: Record<string, unknown>[] = [];
+  for (const x of list as any[]) {
+    const kind = String(x?.kind ?? '') as Kind;
+    const at = Date.parse(String(x?.occurred_at ?? ''));
+    if (!allowed.includes(kind) || Number.isNaN(at) || at < start || at >= end) {
+      return json({ error: 'bad request' }, 400);
+    }
+    const note = x?.note == null ? null
+      : String(x.note).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200) || null;
+    restore.push({ student_id: row.student_id, kind, note, occurred_at: new Date(at).toISOString(), marked_by_email: email });
+  }
+
+  // "Keldi" bekor qilinsa, unga bog'liq "Ketdi" ham o'chadi
+  const drop = [row.id];
+  if (row.kind === 'in') {
+    const { data: outs } = await admin.from('attendance').select('id')
+      .eq('student_id', row.student_id).eq('kind', 'out')
+      .gte('occurred_at', dayStartIso(key)).lt('occurred_at', dayEndIso(key));
+    drop.push(...(outs ?? []).map((o) => o.id));
+  }
+  const { error: derr } = await admin.from('attendance').delete().in('id', drop);
+  if (derr) return json({ error: derr.message }, 500);
+
+  // "Keldi" oldin, "Ketdi" keyin (ketdi keldisiz bo'lmaydi)
+  restore.sort((a, b) => (a.kind === 'out' ? 1 : 0) - (b.kind === 'out' ? 1 : 0));
+  let restored = 0;
+  for (const r of restore) {
+    const { error } = await admin.from('attendance').insert(r);
+    if (!error) restored++;
+  }
+  return json({ ok: true, removed: drop.length, restored });
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
@@ -157,6 +222,7 @@ Deno.serve(async (req) => {
     if (!teacher) return json({ error: 'unauthorized' }, 401);
 
     const body = await req.json();
+    if (body.undo_id) return await undoMark(String(body.undo_id), body.restore, email, teacher.role);
     const kind = String(body.kind ?? '') as Kind;
     const note = String(body.note ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200) || null;
     if (!KINDS.includes(kind)) return json({ error: 'bad request' }, 400);
@@ -195,14 +261,15 @@ Deno.serve(async (req) => {
 
     // Shu kundagi mavjud yozuvlar — bitta so'rovda hammasi uchun
     const { data: dayRows } = await admin
-      .from('attendance').select('id, kind, student_id')
+      .from('attendance').select('id, kind, student_id, occurred_at, note')
       .in('student_id', students.map((s) => s.id))
       .gte('occurred_at', dayStart).lt('occurred_at', dayEnd);
 
-    const byStudent = new Map<string, { id: string; kind: string }[]>();
+    type DayRow = { id: string; kind: string; occurred_at: string; note: string | null };
+    const byStudent = new Map<string, DayRow[]>();
     for (const r of dayRows ?? []) {
       const arr = byStudent.get(r.student_id) ?? [];
-      arr.push({ id: r.id, kind: r.kind });
+      arr.push({ id: r.id, kind: r.kind, occurred_at: r.occurred_at, note: r.note });
       byStudent.set(r.student_id, arr);
     }
 
@@ -238,7 +305,8 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const drop = existing.filter((r) => REPLACES[kind].includes(r.kind as Kind)).map((r) => r.id);
+      const dropRows = existing.filter((r) => REPLACES[kind].includes(r.kind as Kind));
+      const drop = dropRows.map((r) => r.id);
       if (drop.length) await admin.from('attendance').delete().in('id', drop);
 
       const { data: row, error: ierr } = await admin
@@ -287,6 +355,7 @@ Deno.serve(async (req) => {
         student_id: student.id, name: student.full_name, ok: true,
         id: row.id, kind: row.kind, note: row.note, occurred_at: row.occurred_at,
         removed: drop.length, notified, muted,
+        replaced: dropRows.map((r) => ({ kind: r.kind, occurred_at: r.occurred_at, note: r.note })),
       });
     }
 

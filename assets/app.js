@@ -15,6 +15,10 @@ const state = {
   students: [],
   today: [],          // tanlangan kundagi yozuvlar
   day: null,          // YYYY-MM-DD — null bo'lsa bugun
+  loadedDay: null,    // state.today qaysi kun uchun yuklangan (yarim tundan keyin yangilash uchun)
+  dayLoading: false,  // kun almashtirilganda — javob kelguncha tugmalar bloklanadi
+  err: { students: false, today: false },   // oxirgi yuklash xato bilan tugadimi
+  resumeAt: 0,        // oxirgi "ilovaga qaytildi" yangilanishi (ms)
   repTab: (() => { try { return localStorage.getItem('parvoz-rep-tab') || 'grid'; } catch (_) { return 'grid'; } })(),
   leads: [],
   leadFilter: 'new',
@@ -103,6 +107,14 @@ const STR = {
     groupDoneSkip: '{n} ta belgilandi, {k} tasi o\'tkazib yuborildi',
     groupNone: 'Belgilanadigan o\'quvchi qolmadi',
     undo: 'Bekor qilish',
+    undoAlsoOut: "«{in}» o'chirilsa, «{out}» ham o'chadi. Davom etilsinmi?",
+    replaceAsk: "{name} bugun allaqachon belgilangan: {cur}. «{label}» qo'yilsa, bu belgi o'chadi. Davom etilsinmi?",
+    loadFail: "Ma'lumot yuklanmadi — internetni tekshiring",
+    retry: 'Qayta urinish',
+    loading: 'Yuklanmoqda…',
+    serverErr: "Server javob bermadi. Birozdan keyin qayta urinib ko'ring.",
+    teacherExists: "Bu email allaqachon ro'yxatda — uni ro'yxatdan tahrirlang",
+    selfRole: "O'z rolingizni o'zgartira olmaysiz",
 
     /* --- statistika --- */
     sStudents: "O'quvchi", sPending: 'Kutilmoqda',
@@ -388,6 +400,14 @@ const STR = {
     groupDoneSkip: 'Отмечено: {n}, пропущено: {k}',
     groupNone: 'Некого отмечать',
     undo: 'Отменить',
+    undoAlsoOut: 'Если удалить «{in}», «{out}» тоже удалится. Продолжить?',
+    replaceAsk: '{name} уже отмечен(а) сегодня: {cur}. Если поставить «{label}», эта отметка удалится. Продолжить?',
+    loadFail: 'Данные не загрузились — проверьте интернет',
+    retry: 'Повторить',
+    loading: 'Загрузка…',
+    serverErr: 'Сервер не ответил. Попробуйте ещё раз чуть позже.',
+    teacherExists: 'Этот email уже есть в списке — измените его через список',
+    selfRole: 'Свою роль изменить нельзя',
 
     sStudents: 'Учеников', sPending: 'Ожидается',
     sWorkdays: 'Рабочих дней', sVisits: 'Посещений', sAvg: 'В среднем',
@@ -687,6 +707,14 @@ function applyStaticText() {
 }
 
 // Sessiya bo'lmasa kirish ekranini ko'rsatamiz
+function showBootError(what, detail) {
+  $('boot')?.classList.add('hidden');
+  $('app')?.classList.add('hidden');
+  $('auth')?.classList.add('hidden');
+  $('bootErr')?.classList.remove('hidden');
+  if ($('bootErrWhat')) $('bootErrWhat').textContent = what;
+  if ($('bootErrDetail')) $('bootErrDetail').textContent = detail || '';
+}
 function showAuth() {
   hideBoot();
   $('app')?.classList.add('hidden');
@@ -743,7 +771,11 @@ async function edge(fn, payload, { keepalive = false } = {}) {
     throw err;
   }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Xatolik (${res.status})`);
+  if (!res.ok) {
+    const err = new Error(data.error || `Xatolik (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
@@ -921,6 +953,12 @@ async function enterApp() {
       $('authErr').textContent = t('offlineRetry');
       return;
     }
+    // Server vaqtincha ishlamayapti (5xx) — bu ham ruxsat yo'qligi emas: sessiyani
+    // saqlab, "Qayta urinish" tugmali xato kartasini ko'rsatamiz
+    if (err.status !== 401 && err.status !== 403) {
+      showBootError(t('serverErr'), err.message);
+      return;
+    }
     await sb.auth.signOut();
     state.session = null;
     showAuth();
@@ -946,17 +984,25 @@ async function enterApp() {
 }
 
 async function refreshAll() {
-  await Promise.all([loadCourses(), loadStudents(), loadToday(), loadConfig(), loadLeadsData(), loadFees()]);
+  const res = await Promise.allSettled([loadCourses(), loadStudents(), loadToday(), loadConfig(), loadLeadsData(), loadFees()]);
+  state.err.students = res[0].status === 'rejected' || res[1].status === 'rejected';
+  if (res[2].status === 'rejected') dayFailed();
   renderCounts();
 }
 
+// So'rov xatosi — bo'sh ro'yxat EMAS. Xato bo'lsa eski ma'lumot saqlanadi va xato
+// yuqoriga uzatiladi; aks holda internet uzilganda o'quvchilar ro'yxati "yo'qolib"
+// qolardi va o'qituvchi belgilangan bolalarni qayta belgilardi.
+function rowsOf({ data, error }) {
+  if (error) throw error;
+  return data ?? [];
+}
+
 async function loadCourses() {
-  const { data } = await sb.from('courses').select('*').order('sort');
-  state.courses = data ?? [];
+  state.courses = rowsOf(await sb.from('courses').select('*').order('sort'));
 }
 async function loadStudents() {
-  const { data } = await sb.from('students').select('*').order('full_name');
-  state.students = data ?? [];
+  state.students = rowsOf(await sb.from('students').select('*').order('full_name'));
 }
 // Shaxsiy narxlar — faqat admin (RLS o'qituvchiga bo'sh qaytaradi)
 async function loadFees() {
@@ -968,31 +1014,69 @@ async function loadToday() {
   const key = selDay();
   const start = new Date(`${key}T00:00:00+05:00`).toISOString();
   const end = new Date(new Date(start).getTime() + 86400000).toISOString();
-  const { data } = await sb.from('attendance').select('*')
-    .gte('occurred_at', start).lt('occurred_at', end).order('occurred_at');
-  state.today = data ?? [];
+  const data = rowsOf(await sb.from('attendance').select('*')
+    .gte('occurred_at', start).lt('occurred_at', end).order('occurred_at'));
+  // Javob kelguncha boshqa kun tanlangan bo'lsa — eskirgan javobni tashlaymiz
+  if (key !== selDay()) return false;
+  state.today = data;
+  state.loadedDay = key;
+  state.err.today = false;
+  return true;
 }
 async function loadLeadsData() {
-  const { data } = await sb.from('leads').select('*').order('created_at', { ascending: false }).limit(300);
-  state.leads = data ?? [];
+  state.leads = rowsOf(await sb.from('leads').select('*').order('created_at', { ascending: false }).limit(300));
 }
 
 async function loadConfig() {
-  const { data } = await sb.from('app_config').select('key,value').in('key', ['bot_username', 'tg_mode', 'msg_templates']);
-  const cfg = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
+  const data = rowsOf(await sb.from('app_config').select('key,value').in('key', ['bot_username', 'tg_mode', 'msg_templates']));
+  const cfg = Object.fromEntries(data.map((r) => [r.key, r.value]));
   state.botUsername = cfg.bot_username ?? null;
   state.tgMode = cfg.tg_mode ?? null;
   state.tpls = parseTpls(cfg.msg_templates);
 }
 
 async function refreshLinks() {
+  // Yarim tun o'tdi — "Bugun" endi boshqa kun: belgilarni qayta yuklaymiz
+  // (viewToday yangi kunni o'zi yuklay boshlaydi — ensureDay)
+  if (state.loadedDay && state.loadedDay !== selDay() && state.view === 'today' && !typing()) render();
   const before = state.students.filter((s) => s.telegram_chat_id).length;
-  await loadStudents();
+  try { await loadStudents(); } catch (_) { return; }   // internet yo'q — eski ro'yxat qoladi
+  state.err.students = false;
   const after = state.students.filter((s) => s.telegram_chat_id).length;
   if (after !== before) {
     if (after > before) toast(t('parentsLinkedN', { n: after - before }), 'ok');
-    render();
+    if (!typing()) render();
   }
+}
+
+// Kun yuklanmadi. Qo'lda shu kunning ma'lumoti bo'lsa (qisqa uzilish) — u qoladi va belgilash
+// mumkin. Qo'ldagi ma'lumot boshqa kunniki bo'lsa (masalan, yarim tundan keyin) — uni bugun
+// deb ko'rsatmaymiz: ro'yxat tozalanadi va tugmalar yuklanguncha bloklanadi.
+function dayFailed() {
+  if (state.loadedDay === selDay()) return;
+  state.today = [];
+  state.err.today = true;
+}
+
+// Foydalanuvchi sahifadagi maydonga yozyaptimi — qayta chizib kursorni buzmaymiz
+function typing() {
+  const a = document.activeElement;
+  return !!a && $('page').contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
+}
+
+// Ilova qayta ochilganda (telefon qulfdan chiqdi, boshqa ilovadan qaytildi):
+// bugungi belgilar, arizalar va o'quvchilarni yangilaymiz — ko'pi bilan 20 soniyada bir
+async function refreshOnResume() {
+  if (!state.me || Date.now() - state.resumeAt < 20000) return;
+  state.resumeAt = Date.now();
+  // Kun almashgan bo'lsa (yarim tun) — render() eski belgilarni yashirib, yangi kunni yuklay boshlaydi
+  if (state.loadedDay !== selDay() && state.view === 'today') render();
+  const sameDay = state.loadedDay === selDay() && !state.dayLoading;
+  const res = await Promise.allSettled([loadStudents(), loadLeadsData(), sameDay ? loadToday() : null]);
+  if (res[0].status === 'fulfilled') state.err.students = false;
+  if (res[2].status === 'rejected') dayFailed();
+  renderCounts();
+  if (!typing() && ['today', 'leads', 'students'].includes(state.view)) render();
 }
 
 /* ============================================================
@@ -1102,6 +1186,15 @@ function go(view) {
 }
 
 function render() {
+  try { renderView(); } catch (err) {
+    console.error(err);
+    $('page').innerHTML = `<div class="card"><div class="empty"><div class="e-ico">⚠️</div>
+      <b>${t('error')}</b><p>${esc(err.message)}</p>
+      <button class="btn btn-primary" data-retry type="button">${t('retry')}</button></div></div>`;
+  }
+}
+
+function renderView() {
   const el = $('page');
   if (state.view === 'today') {
     el.innerHTML = viewToday();
@@ -1136,6 +1229,28 @@ function visibleStudents() {
 }
 
 const recFor = (sid, kind) => state.today.find((r) => r.student_id === sid && r.kind === kind);
+// Yangi belgi o'sha kundagi qaysi belgilarni o'chiradi — mark-attendance dagi REPLACES bilan bir xil
+const REPLACES = { in: ['absent', 'excused'], out: [], absent: ['in', 'out', 'excused'], excused: ['in', 'out', 'absent'] };
+// "Keldi" o'chsa, unga bog'liq "Ketdi" ham o'chadi — aks holda yetim "Ketdi" qoladi
+function withDependents(ids) {
+  const out = new Set(ids);
+  for (const id of ids) {
+    const r = state.today.find((x) => x.id === id);
+    if (r?.kind === 'in') state.today.filter((x) => x.student_id === r.student_id && x.kind === 'out').forEach((x) => out.add(x.id));
+  }
+  return [...out];
+}
+// "Kelmadi"/"Sababli" bugungi "Keldi/Ketdi"ni o'chiradi — kelgan-ketgan vaqti yo'qolmasin, oldin so'raymiz.
+// Kelmadi ↔ Sababli almashtirish (ota-ona sababini aytdi) odatiy tuzatish — so'ralmaydi.
+function confirmReplace(sid, kind) {
+  const gone = state.today.filter((r) => r.student_id === sid && REPLACES[kind].includes(r.kind) &&
+    (r.kind === 'in' || r.kind === 'out'));
+  if (!gone.length) return true;
+  const s = state.students.find((x) => x.id === sid);
+  const cur = gone.map((r) => MARKS[r.kind].label +
+    ((r.kind === 'in' || r.kind === 'out') && isToday() ? ' ' + hhmm(r.occurred_at) : '')).join(', ');
+  return confirm(t('replaceAsk', { name: s?.full_name ?? '', cur, label: MARKS[kind].label }));
+}
 const dayStatus = (sid) => state.today.find((r) => r.student_id === sid && (r.kind === 'absent' || r.kind === 'excused'));
 
 // Davomat holatlari
@@ -1182,7 +1297,17 @@ function dayBar() {
       <button class="daybar-back" id="dayToday" type="button">${t('backToToday')}</button></div>`}`;
 }
 
+// Tanlangan kun hali yuklanmagan (masalan, ilova ochiq turganda yarim tun o'tdi) —
+// eski kunning belgilarini bugun deb ko'rsatmaymiz: yuklanish holati va yangi so'rov
+function ensureDay() {
+  if (!state.loadedDay || state.loadedDay === selDay() || state.dayLoading || state.err.today) return;
+  state.dayLoading = true;
+  state.today = [];
+  queueMicrotask(() => setDay(selDay()));
+}
+
 function viewToday() {
+  ensureDay();
   const list = visibleStudents().filter((s) => s.active);
   const dateTxt = uzDate(new Date(`${selDay()}T00:00:00+05:00`));
   const ids = new Set(list.map((s) => s.id));
@@ -1200,15 +1325,24 @@ function viewToday() {
 
   const groups = {};
   list.forEach((s) => { (groups[s.course_id] ??= []).push(s); });
+  // Kun yuklanayotganda yoki yuklanmay qolganda belgilash mumkin emas —
+  // aks holda allaqachon belgilangan bolalar qayta belgilanadi
+  const busy = state.dayLoading || state.err.today;
+  const failed = state.err.today || (state.err.students && !state.students.length);
+  const errCard = failed
+    ? `<div class="card load-err" role="alert"><div class="empty"><div class="e-ico">⚠️</div><b>${t('loadFail')}</b>
+       <button class="btn btn-primary" data-retry type="button">${t('retry')}</button></div></div>` : '';
 
-  const body = !list.length
+  const body = failed && !list.length ? ''
+    : !list.length
     ? `<div class="card"><div class="empty"><div class="e-ico">🧑‍🎓</div><b>${t('noStudentT')}</b>
        <p>${state.search ? t('noSearch') : t('addFirst')}</p>
        ${state.search ? '' : `<button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('addStudent')}</button>`}</div></div>`
     : Object.entries(groups).map(([cid, arr]) => {
       const c = courseById(cid);
-      // Hali "keldi" belgilanmaganlar bo'lsa — guruhni bir bosishda belgilash
-      const left = arr.filter((s) => !state.today.some((r) => r.student_id === s.id && r.kind === 'in')).length;
+      // Hali hech qanday belgi qo'yilmaganlar bo'lsa — guruhni bir bosishda "Keldi".
+      // Kelmadi/Sababli qo'yilganlar bunga kirmaydi: kasal bolaning ota-onasiga "keldi" xabari ketmasin.
+      const left = busy ? 0 : arr.filter((s) => !state.today.some((r) => r.student_id === s.id)).length;
       return `<div class="group-title">
           <span>${cIcon(c)} ${esc(c.name)} · ${arr.length}</span>
           ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}" type="button">
@@ -1235,7 +1369,8 @@ function viewToday() {
       <span class="sr-only">${t('search')}</span>
       <input class="inp" id="searchInp" placeholder="${t('searchStudent')}" value="${esc(state.search)}">
     </label>
-    ${body}`;
+    ${errCard}
+    <div class="today-list"${state.dayLoading ? ' aria-busy="true"' : ''}>${body}</div>`;
 }
 
 // Har bir qatorda bitta katta tugma: keyin nima qilish kerakligini ko'rsatadi.
@@ -1258,9 +1393,11 @@ function rowToday(s, c) {
   const tone = cur ? cur.tone : 'pending';
   // Bugun — aniq soat bor. O'tgan kun — faqat holat nomi (soat yozilmagan).
   const text =
-      away ? MARKS[away.kind].label + (away.note ? ' · ' + esc(away.note) : '')
+      state.dayLoading ? t('loading')
+    : away ? MARKS[away.kind].label + (away.note ? ' · ' + esc(away.note) : '')
     : !isToday() ? (rout ? DONE.label : rin ? MARKS.in.label : t('fresh'))
-    : rout ? `${hhmm(rin.occurred_at)} → ${hhmm(rout.occurred_at)}`
+    // "Ketdi" bor-u "Keldi" yo'q (boshqa qurilmadan o'chirilgan) — sahifa yiqilmasin
+    : rout ? (rin ? `${hhmm(rin.occurred_at)} → ${hhmm(rout.occurred_at)}` : `${DONE.label} · ${hhmm(rout.occurred_at)}`)
     : rin  ? t('sinceHere', { time: hhmm(rin.occurred_at) })
     :        t('fresh');
 
@@ -1268,13 +1405,15 @@ function rowToday(s, c) {
   const alt = (kind) => {
     const m = MARKS[kind];
     return `<button class="btn btn-alt btn-tone tone-${m.tone}" data-set="${kind}" data-id="${s.id}"
-      ${away?.kind === kind ? 'disabled' : ''} type="button">${ico(m)} ${m.label}</button>`;
+      ${away?.kind === kind ? 'disabled' : ''}${lock} type="button">${ico(m)} ${m.label}</button>`;
   };
 
   // Belgi qo'yilgan bo'lsa, qatorni bosish bekor qilish oynasini ochadi
   const openAttr = marked ? ` data-more="${s.id}"` : '';
 
   const pending = state.today.some((r) => r.student_id === s.id && r._pending);
+  // Saqlanayotganda (ikki marta bosish), kun yuklanayotganda yoki yuklanmay qolganda — tugmalar o'chiq
+  const lock = pending || state.dayLoading || state.err.today ? ' disabled' : '';
 
   return `<div class="row rt tone-${tone}${marked ? '' : ' is-fresh'}${pending ? ' is-pending' : ''}"${openAttr}>
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
@@ -1292,7 +1431,7 @@ function rowToday(s, c) {
       ${alt('absent')}
       ${alt('excused')}
       ${act
-        ? `<button class="btn btn-act btn-tone tone-${act.tone}" data-mark="${act.kind}" data-id="${s.id}" type="button">${ico(act)} ${act.label}</button>`
+        ? `<button class="btn btn-act btn-tone tone-${act.tone}" data-mark="${act.kind}" data-id="${s.id}"${lock} type="button">${ico(act)} ${act.label}</button>`
         : `<span class="act-done">${ico(DONE)} ${DONE.label}</span>`}
     </div>
   </div>`;
@@ -1320,14 +1459,17 @@ function markSheet(id) {
           <div class="row-title">${m.label}</div>
           <div class="row-sub"><span>${esc(when(r))}</span></div>
         </div>
-        <button class="btn btn-sm btn-danger" data-undo="${r.id}" aria-label="${esc(t('undoAria', { label: m.label }))}" type="button">${I.trash}</button>
+        <button class="btn btn-sm btn-danger" data-undo="${r.id}" aria-label="${esc(t('undoAria', { label: m.label }))}"${r._pending ? ' disabled' : ''} type="button">${I.trash}</button>
       </div>`;
     }).join('')}</div>`, () => {
     document.querySelectorAll('[data-undo]').forEach((btn) => btn.addEventListener('click', async () => {
+      const ids = withDependents([btn.dataset.undo]);
+      if (ids.length > 1 && !confirm(t('undoAlsoOut', { in: MARKS.in.label, out: MARKS.out.label }))) return;
       btn.disabled = true;
-      const { error } = await sb.from('attendance').delete().eq('id', btn.dataset.undo);
+      const { error } = await sb.from('attendance').delete().in('id', ids);
       if (error) { toast('❌ ' + error.message, 'bad'); btn.disabled = false; return; }
-      await loadToday(); render();
+      try { await loadToday(); } catch (_) { state.today = state.today.filter((x) => !ids.includes(x.id)); }
+      render();
       toast(t('undone'), 'ok');
       if (state.today.some((r) => r.student_id === s.id)) markSheet(s.id); else closeSheet();
     }));
@@ -1357,6 +1499,9 @@ function reasonSheet(s) {
 }
 
 async function sendMark(studentId, kind, note) {
+  // Oldingi bosish hali saqlanmoqda — ikkinchi bosish "Ketdi"ni belgilab yubormasin
+  if (state.today.some((r) => r.student_id === studentId && r._pending)) return;
+  if (state.dayLoading || state.err.today) return;
   const s = state.students.find((x) => x.id === studentId);
 
   // Darhol ko'rsatamiz — server javobini kutmaymiz. Xato bo'lsa qaytaramiz.
@@ -1367,52 +1512,77 @@ async function sendMark(studentId, kind, note) {
     _pending: true,
   };
   const before = state.today;
-  state.today = [...state.today.filter((r) => !(r.student_id === studentId && r.kind === kind)), optimistic];
+  const gone = (r) => r.student_id === studentId && (r.kind === kind || REPLACES[kind].includes(r.kind));
+  state.today = [...state.today.filter((r) => !gone(r)), optimistic];
   render();
 
   try {
     const r = await edge('mark-attendance', { student_id: studentId, kind, note, date: state.day || undefined });
-    await loadToday();
+    try { await loadToday(); }
+    catch (_) {
+      // Belgi saqlandi, faqat ro'yxat yangilanmadi — server javobidan qo'yamiz
+      state.today = [...before.filter((x) => !gone(x)),
+        { id: r.id, student_id: studentId, kind, note: r.note ?? null, occurred_at: r.occurred_at }];
+    }
     render();
 
     const v = { name: s?.full_name ?? '', label: MARKS[kind].label };
     const msg = r.notified ? t('sentToParent', v)
                            : t('markedOk', v) + (isToday() && !r.muted && !s?.telegram_chat_id ? t('tgOff') : '');
-    toast(msg, 'ok', r.id ? { fn: () => undoMark(r.id) } : undefined);
+    toast(msg, 'ok', r.id ? { fn: () => undoMark(r) } : undefined);
   } catch (err) {
     state.today = before;                       // qaytaramiz
+    // Boshqa qurilmadan allaqachon belgilangan — ro'yxatni yangilaymiz, aks holda har urinish shu xato
+    if (err.status === 409) { try { await loadToday(); } catch (_) {} }
     render();
     toast('❌ ' + err.message, 'bad');
   }
 }
 
-// Toastdagi "Bekor qilish" — bitta yozuvni o'chiradi
-async function undoMark(rowId) {
+// Toastdagi "Bekor qilish": yangi belgini o'chiradi. Agar u boshqa belgilarni almashtirgan
+// bo'lsa (masalan, "Kelmadi" — "Keldi/Ketdi"ni), server ularni asl vaqti bilan qaytaradi.
+async function undoMark(r) {
   const before = state.today;
-  state.today = state.today.filter((r) => r.id !== rowId);
+  const ids = withDependents([r.id]);
+  state.today = state.today.filter((x) => !ids.includes(x.id));
   render();
-  const { error } = await sb.from('attendance').delete().eq('id', rowId);
-  if (error) { state.today = before; render(); toast('❌ ' + error.message, 'bad'); return; }
-  await loadToday(); render();
+  try {
+    if (r.replaced?.length) {
+      await edge('mark-attendance', { undo_id: r.id, restore: r.replaced });
+    } else {
+      const { error } = await sb.from('attendance').delete().in('id', ids);
+      if (error) throw error;
+    }
+  } catch (err) { state.today = before; render(); toast('❌ ' + err.message, 'bad'); return; }
+  try { await loadToday(); } catch (_) {}
+  render();
   toast(t('undone'), 'ok');
 }
 
-// Kunni almashtirish: kelajakka o'tkazmaymiz
+// Kunni almashtirish: kelajakka o'tkazmaymiz. Javob kelguncha tugmalar bloklanadi.
 async function setDay(key) {
   if (!key || key > todayKey()) return;
   state.day = key === todayKey() ? null : key;
   state.today = [];
+  state.dayLoading = true;
+  state.err.today = false;
   render();
-  await loadToday();
+  try { await loadToday(); }
+  catch (_) { if (key === selDay()) state.err.today = true; }
+  if (key !== selDay()) return;               // boshqa kun tanlandi — o'sha chaqiruv yakunlaydi
+  state.dayLoading = false;
   render();
 }
 
 /* ---- Butun guruhni bir bosishda belgilash ---- */
 async function sendGroupMark(courseId, kind) {
   const c = courseById(courseId);
+  if (state.dayLoading || state.err.today) return;
+  // Faqat bugun hali hech qanday belgi qo'yilmaganlar: "Kelmadi"/"Sababli" qo'yilgan
+  // bolani "Keldi" qilib, ota-onasiga noto'g'ri xabar yubormaymiz
   const targets = visibleStudents()
     .filter((s) => s.active && s.course_id === courseId)
-    .filter((s) => !state.today.some((r) => r.student_id === s.id && r.kind === kind));
+    .filter((s) => !state.today.some((r) => r.student_id === s.id));
 
   if (!targets.length) { toast(t('groupNone')); return; }
   if (!confirm(t('groupAsk', { course: c.name, n: targets.length, label: MARKS[kind].label }))) return;
@@ -1421,12 +1591,19 @@ async function sendGroupMark(courseId, kind) {
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>'; }
 
   try {
-    const r = await edge('mark-attendance', {
-      student_ids: targets.map((s) => s.id), kind, date: state.day || undefined,
-    });
-    await loadToday(); render();
-    toast(r.skipped ? t('groupDoneSkip', { n: r.marked, k: r.skipped }) : t('groupDone', { n: r.marked }), 'ok');
+    // Server bir so'rovda ko'pi bilan 60 ta o'quvchini qabul qiladi
+    let marked = 0, skipped = 0;
+    for (let i = 0; i < targets.length; i += 60) {
+      const r = await edge('mark-attendance', {
+        student_ids: targets.slice(i, i + 60).map((s) => s.id), kind, date: state.day || undefined,
+      });
+      marked += r.marked ?? 0; skipped += r.skipped ?? 0;
+    }
+    try { await loadToday(); } catch (_) {}
+    render();
+    toast(skipped ? t('groupDoneSkip', { n: marked, k: skipped }) : t('groupDone', { n: marked }), 'ok');
   } catch (err) {
+    try { await loadToday(); } catch (_) {}
     render();
     toast('❌ ' + err.message, 'bad');
   }
@@ -3347,10 +3524,13 @@ function parentLinkSheet(id) {
 /* ---- O'qituvchi qo'shish / tahrirlash ---- */
 async function teacherSheet(email) {
   let tc = null;
-  if (email) {
-    const { teachers } = await edge('admin-api', { action: 'list_teachers' });
-    tc = teachers.find((x) => x.email.toLowerCase() === email.toLowerCase());
-  }
+  let teachers = [];
+  try {
+    ({ teachers } = await edge('admin-api', { action: 'list_teachers' }));
+  } catch (err) { toast('❌ ' + err.message, 'bad'); return; }
+  if (email) tc = teachers.find((x) => x.email.toLowerCase() === email.toLowerCase());
+  // O'z rolini o'zgartirib bo'lmaydi: yagona administrator o'zini o'qituvchi qilib qo'ysa, tizim boshqaruvsiz qoladi
+  const isSelf = !!tc && tc.email.toLowerCase() === state.me.email.toLowerCase();
   const checks = state.courses.map((c) => `
     <label class="check-item"><input type="checkbox" value="${c.id}" class="tcCourse"
       ${tc && tc.course_ids.includes(c.id) ? 'checked' : ''}><span>${cIcon(c)} ${esc(c.name)}</span></label>`).join('');
@@ -3364,7 +3544,7 @@ async function teacherSheet(email) {
       <label class="field"><span>${t('fPass')} ${tc ? t('passKeep') : '*'}</span>
         <input class="inp" id="tPass" type="password" minlength="8" autocomplete="new-password" ${tc ? '' : 'required'}></label>
       <label class="field"><span>${t('fRole')}</span>
-        <select class="inp" id="tRole">
+        <select class="inp" id="tRole"${isSelf ? ` disabled title="${esc(t('selfRole'))}"` : ''}>
           <option value="teacher" ${tc?.role !== 'admin' ? 'selected' : ''}>${t('roleTeacherOpt')}</option>
           <option value="admin" ${tc?.role === 'admin' ? 'selected' : ''}>${t('roleAdminOpt')}</option>
         </select></label>
@@ -3379,11 +3559,17 @@ async function teacherSheet(email) {
 
     $('tForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const newEmail = $('tEmail').value.trim();
+      // Yangi hisob formasi mavjud emailni jimgina qayta yozmasin (ism, rol, parol, kurslar)
+      if (!tc && teachers.some((x) => x.email.toLowerCase() === newEmail.toLowerCase())) {
+        toast('❌ ' + t('teacherExists'), 'bad'); $('tEmail').focus(); return;
+      }
       const btn = e.submitter; if (btn) btn.disabled = true;
       try {
         await edge('admin-api', {
           action: 'save_teacher',
-          email: $('tEmail').value.trim(),
+          create: !tc,
+          email: newEmail,
           password: $('tPass').value,
           full_name: $('tName').value.trim(),
           role: $('tRole').value,
@@ -3510,9 +3696,9 @@ document.addEventListener('click', async (e) => {
     if (key < shiftDay(todayKey(), -30)) { toast(t('tooOld')); return; }
     state.day = key === todayKey() ? null : key;
     state.today = [];
+    state.dayLoading = true;
     go('today');
-    await loadToday(); render();
-    return;
+    return setDay(key);
   }
 
   if (el.closest('[data-add-student]')) return studentSheet(null);
@@ -3556,15 +3742,24 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
-  // Kelmadi / Sababli tugmalari
+  // Kelmadi / Sababli tugmalari. Bugun "Keldi/Ketdi" bo'lsa — o'chishidan oldin so'raymiz.
   const set = el.closest('[data-set]');
   if (set) {
+    if (set.disabled || !confirmReplace(set.dataset.id, set.dataset.set)) return;
     if (set.dataset.set === 'excused') {
       const st = state.students.find((x) => x.id === set.dataset.id);
       return st && reasonSheet(st);
     }
     await sendMark(set.dataset.id, 'absent');
     return;
+  }
+
+  // Yuklash xatosidan keyin "Qayta urinish"
+  const retry = el.closest('[data-retry]');
+  if (retry) {
+    retry.disabled = true;
+    await refreshAll();
+    return render();
   }
 
   // Qatorning tugmalardan tashqari joyi bosilsa — bugungi belgilar oynasi
@@ -3754,6 +3949,15 @@ document.addEventListener('change', (e) => {
   if (e.target.id === 'tplOn') tplSetDraft({ on: e.target.checked });
   if (e.target.id === 'payMonth') setPayYm(e.target.value);
 });
+// Telefon qulfdan chiqqanda / ilovaga qaytilganda ma'lumot yangilanadi (yarim tun ham shu yerda ushlanadi)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshOnResume();
+});
+window.addEventListener('pageshow', (e) => { if (e.persisted) refreshOnResume(); });
+// Internet uzildi / qaytdi: ogohlantiramiz va qaytganda darhol yangilaymiz
+window.addEventListener('offline', () => { if (state.me) toast(t('offline'), 'bad'); });
+window.addEventListener('online', () => { state.resumeAt = 0; refreshOnResume(); });
+
 // Saqlanmagan shablon bilan sahifani yopishdan oldin ogohlantiramiz
 window.addEventListener('beforeunload', (e) => {
   if (TPL_KINDS.some(tplDirty)) { e.preventDefault(); e.returnValue = ''; }

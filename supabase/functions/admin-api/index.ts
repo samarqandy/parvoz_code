@@ -253,7 +253,15 @@ Deno.serve(async (req) => {
       const role = body.role === 'admin' ? 'admin' : 'teacher';
       const courseIds: string[] = Array.isArray(body.course_ids) ? body.course_ids : [];
       if (!email) return json({ error: 'Email kerak' }, 400);
-      const { data: existing } = await admin.from('allowed_teachers').select('email').eq('email', email).maybeSingle();
+      const { data: existing } = await admin.from('allowed_teachers').select('email, role').eq('email', email).maybeSingle();
+      // "Yangi o'qituvchi" formasi mavjud hisobni jimgina qayta yozmasin (ism, rol, parol, kurslar)
+      if (body.create && existing) return json({ error: "Bu email allaqachon ro'yxatda" }, 409);
+      // O'zini yoki oxirgi administratorni o'qituvchiga tushirib bo'lmaydi — tizim boshqaruvsiz qoladi
+      if (existing?.role === 'admin' && role !== 'admin') {
+        if (email === actor.email.toLowerCase()) return json({ error: "O'z rolingizni o'zgartira olmaysiz" }, 400);
+        const { count } = await admin.from('allowed_teachers').select('*', { count: 'exact', head: true }).eq('role', 'admin');
+        if ((count ?? 0) <= 1) return json({ error: "Oxirgi administratorni o'qituvchiga aylantirib bo'lmaydi" }, 400);
+      }
       if (!existing) {
         if (password.length < 8) return json({ error: "Yangi hisob uchun kamida 8 belgili parol kerak" }, 400);
         const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
