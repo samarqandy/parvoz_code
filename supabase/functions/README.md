@@ -117,6 +117,10 @@ Admin Jamoa → Kurslar oynasida kiritadi.
 
 - `save_course` narxni faqat so'rovda `monthly_fee` kaliti bo'lsa o'zgartiradi — eski
   panel kursni saqlaganda narx o'chib ketmaydi. Faqat son yoki raqamli satr qabul qilinadi.
+- Nom: ichki bo'shliqlar yig'iladi, 80 belgigacha. Bunday nomli kurs bor bo'lsa (`courses_name_key`)
+  — **409** «… nomli kurs allaqachon bor» (panel xatoni oynaning o'zida ko'rsatadi).
+  Rang faqat `sky / green / teal / violet / rose / gold` dan (boshqasi `sky` bo'ladi — qiymat
+  panelda `style` ichiga tushadi), belgi 8 kod nuqtagacha. Yo'q `id` — **404**. Javob: `{ ok: true, id }`.
 - **Shaxsiy narx (chegirma)** — `student_fees` jadvali (`student_id` → `monthly_fee`).
   Admin o'quvchi oynasida kiritadi; bo'sh qoldirilsa yozuv o'chadi va kurs narxi olinadi.
   `students` ga ustun qilib qo'shilmadi: o'quvchilarni o'qituvchi ham ko'radi, bu jadvalni

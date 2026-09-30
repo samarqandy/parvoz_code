@@ -54,7 +54,17 @@ function currentLang() {
 
 function setLang(l) {
   if (!LANGS.includes(l)) return;
-  try { localStorage.setItem('parvoz-lang', l); } catch (_) {}
+  // Saqlanmagan shablon — avval so'raymiz (til yozilib bo'lgach "chiqmaslik"ni tanlash
+  // aralash tilli ekran qoldirardi)
+  if (typeof TPL_KINDS !== 'undefined' && TPL_KINDS.some(tplDirty)) {
+    if (!confirm(t('leaveUnsaved'))) return;
+    state.leaving = true;
+  }
+  try {
+    localStorage.setItem('parvoz-lang', l);
+    // Qayta yuklangach o'sha kun / oyda qolamiz (kechagi davomatni tuzatayotgan o'qituvchi bugunga sakramasin)
+    sessionStorage.setItem('parvoz-restore', JSON.stringify({ day: state.day, payYm: state.payYm, repYm: $('repMonth')?.value || null }));
+  } catch (_) {}
   location.reload();
 }
 
@@ -115,6 +125,14 @@ const STR = {
     serverErr: "Server javob bermadi. Birozdan keyin qayta urinib ko'ring.",
     teacherExists: "Bu email allaqachon ro'yxatda — uni ro'yxatdan tahrirlang",
     selfRole: "O'z rolingizni o'zgartira olmaysiz",
+    badPhone: "Telefon raqami noto'g'ri. Masalan: +998 90 123 45 67",
+    nameReq: 'Ismni kiriting',
+    dupStudent: "{course} kursida «{name}» allaqachon bor. Baribir qo'shilsinmi?",
+    courseClosed: 'Yopiq kurs',
+    payBadDate: "Sana kelajakda bo'lishi mumkin emas",
+    leaveUnsaved: "Saqlanmagan shablon o'zgarishlari yo'qoladi. Davom etilsinmi?",
+    close: 'Yopish',
+    colorName: 'sky:Havorang,green:Yashil,teal:Firuza,violet:Binafsha,rose:Pushti,gold:Tillarang',
 
     /* --- statistika --- */
     sStudents: "O'quvchi", sPending: 'Kutilmoqda',
@@ -408,6 +426,14 @@ const STR = {
     serverErr: 'Сервер не ответил. Попробуйте ещё раз чуть позже.',
     teacherExists: 'Этот email уже есть в списке — измените его через список',
     selfRole: 'Свою роль изменить нельзя',
+    badPhone: 'Неверный номер телефона. Например: +998 90 123 45 67',
+    nameReq: 'Введите имя',
+    dupStudent: 'В курсе {course} уже есть «{name}». Всё равно добавить?',
+    courseClosed: 'Курс закрыт',
+    payBadDate: 'Дата не может быть в будущем',
+    leaveUnsaved: 'Несохранённые изменения шаблона пропадут. Продолжить?',
+    close: 'Закрыть',
+    colorName: 'sky:Голубой,green:Зелёный,teal:Бирюзовый,violet:Фиолетовый,rose:Розовый,gold:Золотой',
 
     sStudents: 'Учеников', sPending: 'Ожидается',
     sWorkdays: 'Рабочих дней', sVisits: 'Посещений', sAvg: 'В среднем',
@@ -589,7 +615,7 @@ const STR = {
     remR_no_tg: 'не подключён к Telegram', remR_recent: 'недавно напоминали · {d}', remR_bad_name: 'проверьте имя',
     remR_blocked: 'заблокировал бота', remR_no_chat: 'чат не найден', remR_unknown: 'доставка не подтверждена',
     remR_paid: 'оплата записана', remR_inactive: 'в архиве', remR_not_started: 'ещё не учился в этом месяце', remR_failed: 'не отправлено',
-    remSend: 'Отправить напоминание: {n} учеников',
+    remSend: 'Отправить напоминание (получателей: {n})',
     remConfirm: 'Родителям {n} учеников будет отправлено сообщение в Telegram. Продолжить?',
     remProgress: 'Отправка: {n} / {total}…', remDone: '✅ Отправлено: {n}', remNotReached: 'Не доставлено или не отправлено ({n})',
     remAllReached: 'Отправлено всем', remClose: 'Закрыть',
@@ -727,6 +753,8 @@ const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) =>
 function toast(msg, kind = '', action) {
   const el = document.createElement('div');
   el.className = 'toast ' + kind;
+  // Xato — darhol o'qiladi (alert), qolganlari — navbat bilan (#toasts: role=status)
+  if (kind === 'bad') el.setAttribute('role', 'alert');
   const span = document.createElement('span');
   span.textContent = msg;
   el.appendChild(span);
@@ -973,6 +1001,7 @@ async function enterApp() {
   buildNav();
   renderUserCard();
   renderLangBtn();
+  restoreAfterLangSwitch();
   await refreshAll();
   go(location.hash.replace('#', '') || 'today');
 
@@ -981,6 +1010,16 @@ async function enterApp() {
   }
   clearInterval(state.timer);
   state.timer = setInterval(refreshLinks, 30000);
+}
+
+// Til almashtirilgandan keyin: tanlangan kun va oylar tiklanadi (bir martalik)
+function restoreAfterLangSwitch() {
+  let r = null;
+  try { r = JSON.parse(sessionStorage.getItem('parvoz-restore') || 'null'); sessionStorage.removeItem('parvoz-restore'); } catch (_) {}
+  if (!r) return;
+  if (r.day && r.day < todayKey() && r.day >= shiftDay(todayKey(), -30)) state.day = r.day;
+  if (r.payYm) state.payYm = r.payYm;
+  if (r.repYm) state.repYm = r.repYm;
 }
 
 async function refreshAll() {
@@ -1039,6 +1078,7 @@ async function refreshLinks() {
   // Yarim tun o'tdi — "Bugun" endi boshqa kun: belgilarni qayta yuklaymiz
   // (viewToday yangi kunni o'zi yuklay boshlaydi — ensureDay)
   if (state.loadedDay && state.loadedDay !== selDay() && state.view === 'today' && !typing()) render();
+  refreshLeadsQuiet(true);
   const before = state.students.filter((s) => s.telegram_chat_id).length;
   try { await loadStudents(); } catch (_) { return; }   // internet yo'q — eski ro'yxat qoladi
   state.err.students = false;
@@ -1056,6 +1096,20 @@ function dayFailed() {
   if (state.loadedDay === selDay()) return;
   state.today = [];
   state.err.today = true;
+}
+
+// Arizalar: yangi ariza sahifa ochiq turganda ham ko'rinsin (30 soniyalik taymer va
+// Arizalar bo'limiga o'tilganda). O'zgarish bo'lsa — hisoblagich va ro'yxat yangilanadi.
+let leadsAt = 0;
+async function refreshLeadsQuiet(force = false) {
+  if (!force && Date.now() - leadsAt < 10000) return;
+  leadsAt = Date.now();
+  const sig = () => state.leads.map((l) => l.id + l.status).join();
+  const before = sig();
+  try { await loadLeadsData(); } catch (_) { return; }
+  if (sig() === before) return;
+  renderCounts();
+  if (state.view === 'leads' && !typing() && !$('sheet').open) { $('page').innerHTML = viewLeadsShell(); loadLeads(); }
 }
 
 // Foydalanuvchi sahifadagi maydonga yozyaptimi — qayta chizib kursorni buzmaymiz
@@ -1100,8 +1154,9 @@ function buildNav() {
     `<button class="nav-item" data-go="${v.id}" type="button">${I[v.icon]}<span>${v.label}</span>
       <span class="nav-count" data-count="${v.id}" hidden></span></button>`).join('');
 
-  // Telefonda 4 tadan ko'p bo'lsa oxirgilari "Yana" oynasiga tushadi
-  const MAX = 4;
+  // Telefonda 5 tadan ko'p bo'lsa oxirgilari "Yana" oynasiga tushadi (5 ta bo'lsa — hammasi
+  // pastda: o'qituvchi uchun bitta bandli "Yana" oynasi keraksiz qadam edi)
+  const MAX = items.length === 5 ? 5 : 4;
   const main = items.length > MAX ? items.slice(0, MAX) : items;
   const rest = items.length > MAX ? items.slice(MAX) : [];
   $('tabbarInner').innerHTML =
@@ -1180,7 +1235,10 @@ function go(view) {
   state.view = view;
   history.replaceState(null, '', '#' + view);
   document.querySelectorAll('[data-go]').forEach((b) => b.classList.toggle('active', b.dataset.go === view));
+  // Bo'lim "Yana" ichida bo'lsa — "Yana" tugmasi faol ko'rinadi
+  $('moreTab')?.classList.toggle('active', !document.querySelector(`.tabbar [data-go="${view}"]`));
   $('pageTitle').textContent = VIEWS.find((v) => v.id === view).title;
+  $('pageTitle').title = $('pageTitle').textContent;
   render();
   window.scrollTo({ top: 0 });
 }
@@ -1200,12 +1258,12 @@ function renderView() {
     el.innerHTML = viewToday();
     $('pageTitle').textContent = isToday() ? t('tToday') : t('navToday');
   }
-  else if (state.view === 'leads') { el.innerHTML = viewLeadsShell(); loadLeads(); }
+  else if (state.view === 'leads') { el.innerHTML = viewLeadsShell(); loadLeads(); refreshLeadsQuiet(); }
   else if (state.view === 'students') el.innerHTML = viewStudents();
   else if (state.view === 'report') { el.innerHTML = viewReportShell(); loadReport(); }
   else if (state.view === 'payments') { el.innerHTML = viewPayShell(); loadPayments(); }
   else if (state.view === 'team') { el.innerHTML = viewTeamShell(); loadTeam(); }
-  else { el.innerHTML = viewSettings(); if (isAdmin()) { loadNotifyChats(); tplLive(); } }
+  else { el.innerHTML = viewSettings(); if (isAdmin()) { loadNotifyChats(); tplLive(); checkWebhook(false); } }
 }
 
 /* ============================================================
@@ -1219,13 +1277,18 @@ function courseChips() {
   return `<div class="chips">${chip('all', t('all'), '', 'gold')}${list.map((c) => chip(c.id, c.name, cIcon(c), c.color)).join('')}</div>`;
 }
 
-function visibleStudents() {
-  const allowed = new Set(myCourses().map((c) => c.id));
-  const q = state.search.trim().toLowerCase();
+// Qidiruv uchun: katta-kichik harf va apostrof turlari farq qilmaydi — iPhone ’ (U+2019),
+// o'zbekcha ʻ (U+02BB) va oddiy ' bir xil: "G'afurova" "G’af" bilan ham topiladi
+const fold = (v) => String(v ?? '').toLowerCase().replace(/[ʻʼ’‘`´']/g, "'");
+
+// closed — admin uchun yopiq kurslar o'quvchilari ham (O'quvchilar bo'limida ko'chirish/arxivlash uchun)
+function visibleStudents({ closed = false } = {}) {
+  const allowed = new Set((closed && isAdmin() ? state.courses : myCourses()).map((c) => c.id));
+  const q = fold(state.search.trim());
   return state.students.filter((s) =>
     allowed.has(s.course_id) &&
     (state.courseFilter === 'all' || s.course_id === state.courseFilter) &&
-    (!q || s.full_name.toLowerCase().includes(q)));
+    (!q || fold(s.full_name).includes(q)));
 }
 
 const recFor = (sid, kind) => state.today.find((r) => r.student_id === sid && r.kind === kind);
@@ -1289,7 +1352,7 @@ function dayBar() {
       <label class="daybar-mid">
         <span class="daybar-label">${esc(dayLabel(key))}</span>
         <span class="daybar-sub">${esc(weekdayOf(key))}</span>
-        <input type="date" id="dayPick" value="${key}" max="${todayKey()}" aria-label="${t('pickDay')}">
+        <input type="date" id="dayPick" value="${key}" min="${shiftDay(todayKey(), -30)}" max="${todayKey()}" aria-label="${t('pickDay')}">
       </label>
       <button class="daybar-nav" data-day-shift="1" type="button" aria-label="${t('nextDay')}" ${atToday ? 'disabled' : ''}>${I.chevR || '›'}</button>
     </div>
@@ -1306,22 +1369,17 @@ function ensureDay() {
   queueMicrotask(() => setDay(selDay()));
 }
 
-function viewToday() {
-  ensureDay();
+// Bugungi ekranning o'zgaruvchan qismlari: statistika va ro'yxat. Qidiruvda faqat shular
+// qayta chiziladi — qidiruv maydonining o'zi almashtirilmaydi (Android klaviaturasi so'zni
+// "yig'ib" turganda maydon almashsa, yozilgan harflar ikkilanib ketardi).
+function todayParts() {
   const list = visibleStudents().filter((s) => s.active);
-  const dateTxt = uzDate(new Date(`${selDay()}T00:00:00+05:00`));
   const ids = new Set(list.map((s) => s.id));
   const seen = (kind) => new Set(state.today.filter((r) => r.kind === kind && ids.has(r.student_id)).map((r) => r.student_id));
   const inCount = seen('in').size;
   const absentCount = seen('absent').size;
   const excusedCount = seen('excused').size;
   const pending = Math.max(0, list.length - inCount - absentCount - excusedCount);
-
-  if (!myCourses().length) {
-    return `<div class="page-head"><div><h2>${t('tToday')}</h2><p>${dateTxt}</p></div></div>
-      <div class="card"><div class="empty"><div class="e-ico">🔒</div><b>${t('noCourseT')}</b>
-      <p>${t('noCourseP')}</p></div></div>`;
-  }
 
   const groups = {};
   list.forEach((s) => { (groups[s.course_id] ??= []).push(s); });
@@ -1344,33 +1402,59 @@ function viewToday() {
       // Kelmadi/Sababli qo'yilganlar bunga kirmaydi: kasal bolaning ota-onasiga "keldi" xabari ketmasin.
       const left = busy ? 0 : arr.filter((s) => !state.today.some((r) => r.student_id === s.id)).length;
       return `<div class="group-title">
-          <span>${cIcon(c)} ${esc(c.name)} · ${arr.length}</span>
+          <span title="${esc(c.name)}">${cIcon(c)} ${esc(c.name)} · ${arr.length}</span>
           ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}" type="button">
             ${ico(MARKS.in)} ${t('allArrived')} · ${left}</button>` : ''}
         </div>
         <div class="rows">${arr.map((s) => rowToday(s, c)).join('')}</div>`;
     }).join('');
 
+  const stats = `
+      ${statTile(list.length, t('sStudents'), 'users')}
+      ${statTile(inCount, MARKS.in.label, MARKS.in.icon, MARKS.in.tone)}
+      ${statTile(absentCount, MARKS.absent.label, MARKS.absent.icon, MARKS.absent.tone)}
+      ${statTile(excusedCount, MARKS.excused.label, MARKS.excused.icon, MARKS.excused.tone)}
+      ${statTile(pending, t('sPending'), 'clock')}`;
+  const listHtml = `${errCard}<div class="today-list"${state.dayLoading ? ' aria-busy="true"' : ''}>${body}</div>`;
+  return { stats, listHtml };
+}
+
+function viewToday() {
+  ensureDay();
+  const dateTxt = uzDate(new Date(`${selDay()}T00:00:00+05:00`));
+  if (!myCourses().length) {
+    return `<div class="page-head"><div><h2>${t('tToday')}</h2><p>${dateTxt}</p></div></div>
+      <div class="card"><div class="empty"><div class="e-ico">🔒</div><b>${t('noCourseT')}</b>
+      <p>${t('noCourseP')}</p></div></div>`;
+  }
+  const p = todayParts();
   return `
     <div class="page-head">
       <div><h2>${isToday() ? t('tToday') : t('navToday')}</h2></div>
       <div class="spacer"></div>
     </div>
     ${dayBar()}
-    <div class="stats stats-compact">
-      ${statTile(list.length, t('sStudents'), 'users')}
-      ${statTile(inCount, MARKS.in.label, MARKS.in.icon, MARKS.in.tone)}
-      ${statTile(absentCount, MARKS.absent.label, MARKS.absent.icon, MARKS.absent.tone)}
-      ${statTile(excusedCount, MARKS.excused.label, MARKS.excused.icon, MARKS.excused.tone)}
-      ${statTile(pending, t('sPending'), 'clock')}
+    <div class="stats stats-compact" id="todayStats">${p.stats}
     </div>
     ${courseChips()}
     <label class="field" style="margin:14px 0">
       <span class="sr-only">${t('search')}</span>
       <input class="inp" id="searchInp" placeholder="${t('searchStudent')}" value="${esc(state.search)}">
     </label>
-    ${errCard}
-    <div class="today-list"${state.dayLoading ? ' aria-busy="true"' : ''}>${body}</div>`;
+    <div id="todayBody">${p.listHtml}</div>`;
+}
+
+// Qidiruv natijasi: maydonga tegmay, faqat ro'yxat va hisoblagichlar
+function renderSearchResults() {
+  if (state.view === 'today' && $('todayBody')) {
+    const p = todayParts();
+    $('todayStats').innerHTML = p.stats;
+    $('todayBody').innerHTML = p.listHtml;
+  } else if (state.view === 'students' && $('stList')) {
+    const list = visibleStudents({ closed: true });
+    $('stShown').textContent = t('shownN', { n: list.length });
+    $('stList').innerHTML = studentsListHtml(list);
+  } else render();
 }
 
 // Har bir qatorda bitta katta tugma: keyin nima qilish kerakligini ko'rsatadi.
@@ -1480,18 +1564,21 @@ function markSheet(id) {
 function reasonSheet(s) {
   const m = MARKS.excused;
   openSheet(esc(t('reasonOf', { name: s.full_name })), `
+    <form id="mkForm">
     <div class="chips" style="margin-bottom:14px">
       ${REASONS.map((r) => `<button class="chip" style="--acc:var(--violet)" data-reason="${esc(r)}" type="button">${esc(r)}</button>`).join('')}
     </div>
     <label class="field"><span>${t('reason')}</span>
       <input class="inp" id="mkNote" maxlength="200" placeholder="${t('reasonPh')}">
       <small class="f-hint">${t('reasonHint')}</small></label>
-    <button class="btn btn-tone tone-${m.tone} btn-block" id="mkSave" type="button">${ico(m)} ${t('markAs', { label: m.label })}</button>`, () => {
+    <button class="btn btn-tone tone-${m.tone} btn-block" id="mkSave" type="submit">${ico(m)} ${t('markAs', { label: m.label })}</button>
+    </form>`, () => {
     document.querySelectorAll('[data-reason]').forEach((b) => b.addEventListener('click', () => {
       $('mkNote').value = b.dataset.reason;
       document.querySelectorAll('[data-reason]').forEach((x) => x.classList.toggle('on', x === b));
     }));
-    $('mkSave').addEventListener('click', () => {
+    $('mkForm').addEventListener('submit', (e) => {
+      e.preventDefault();
       const note = $('mkNote').value.trim();
       closeSheet(); sendMark(s.id, 'excused', note);
     });
@@ -1561,7 +1648,12 @@ async function undoMark(r) {
 
 // Kunni almashtirish: kelajakka o'tkazmaymiz. Javob kelguncha tugmalar bloklanadi.
 async function setDay(key) {
-  if (!key || key > todayKey()) return;
+  // Kelajak yoki 30 kundan eski kun — server baribir rad etadi; maydonni joriy kunga qaytaramiz
+  if (!key || key > todayKey() || key < shiftDay(todayKey(), -30)) {
+    if (key && key < shiftDay(todayKey(), -30)) toast(t('tooOld'));
+    if ($('dayPick')) $('dayPick').value = selDay();
+    return;
+  }
   state.day = key === todayKey() ? null : key;
   state.today = [];
   state.dayLoading = true;
@@ -1665,7 +1757,7 @@ function loadLeads() {
       </div>
       <div class="row-actions">
         <a class="btn btn-sm btn-green" href="tel:${esc(l.phone)}">${I.phone} ${t('call')}</a>
-        <button class="btn btn-sm" data-lead="${l.id}" type="button">${I.edit}</button>
+        <button class="btn btn-sm btn-ico" data-lead="${l.id}" aria-label="${esc(t('edit') + ': ' + l.full_name)}" title="${t('edit')}" type="button">${I.edit}</button>
       </div>
     </div>`;
   }).join('')}</div>`;
@@ -1685,7 +1777,7 @@ function leadSheet(id) {
         `<button class="check-item" data-lead-status="${k}" type="button">
           ${l.status === k ? '\u2705' : '\u25CB'} <span>${v.label}</span></button>`).join('')}</div>
     </div>
-    <button class="btn btn-danger btn-block" style="margin-top:10px" data-lead-del="${l.id}" type="button">${I.trash} ${t('del')}</button>
+    ${isAdmin() ? `<button class="btn btn-danger btn-block" style="margin-top:10px" data-lead-del="${l.id}" type="button">${I.trash} ${t('del')}</button>` : ''}
   `, () => {
     document.querySelectorAll('[data-lead-status]').forEach((b) => b.addEventListener('click', async () => {
       const { error } = await sb.from('leads')
@@ -1697,8 +1789,9 @@ function leadSheet(id) {
     const del = document.querySelector('[data-lead-del]');
     if (del) del.addEventListener('click', async () => {
       if (!confirm(t('delLead'))) return;
-      const { error } = await sb.from('leads').delete().eq('id', l.id);
-      if (error) { toast('\u274C ' + error.message, 'bad'); return; }
+      // RLS ruxsat bermasa xato emas, 0 qator qaytadi — buni ham muvaffaqiyatsizlik deb bilamiz
+      const { data, error } = await sb.from('leads').delete().eq('id', l.id).select('id');
+      if (error || !data?.length) { toast('\u274C ' + (error?.message || t('error')), 'bad'); return; }
       closeSheet(); toast(t('deleted'), 'ok');
       await loadLeadsData(); renderCounts(); render();
     });
@@ -1708,15 +1801,22 @@ function leadSheet(id) {
 /* ============================================================
    KO'RINISH: O'QUVCHILAR
    ============================================================ */
+function studentsListHtml(list) {
+  return list.length ? `<div class="rows">${list.map(rowStudent).join('')}</div>`
+    : `<div class="card"><div class="empty"><div class="e-ico">🧑‍🎓</div><b>${t('noStudentsT')}</b>
+       <p>${t('addFirstOne')}</p>
+       <button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('addStudent')}</button></div></div>`;
+}
+
 function viewStudents() {
-  const list = visibleStudents();
-  if (!myCourses().length) {
+  const list = visibleStudents({ closed: true });
+  if (!myCourses().length && !(isAdmin() && list.length)) {
     return `<div class="page-head"><div><h2>${t('tStudents')}</h2></div></div>
       <div class="card"><div class="empty"><div class="e-ico">🔒</div><b>${t('noCourseT')}</b></div></div>`;
   }
   return `
     <div class="page-head">
-      <div><h2>${t('tStudents')}</h2><p>${t('shownN', { n: list.length })}</p></div>
+      <div><h2>${t('tStudents')}</h2><p id="stShown">${t('shownN', { n: list.length })}</p></div>
       <div class="spacer"></div>
       <button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('add')}</button>
     </div>
@@ -1725,10 +1825,7 @@ function viewStudents() {
       <span class="sr-only">${t('search')}</span>
       <input class="inp" id="searchInp" placeholder="${t('searchPh')}" value="${esc(state.search)}">
     </label>
-    ${list.length ? `<div class="rows">${list.map(rowStudent).join('')}</div>`
-      : `<div class="card"><div class="empty"><div class="e-ico">🧑‍🎓</div><b>${t('noStudentsT')}</b>
-         <p>${t('addFirstOne')}</p>
-         <button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('addStudent')}</button></div></div>`}`;
+    <div id="stList">${studentsListHtml(list)}</div>`;
 }
 
 function rowStudent(s) {
@@ -1739,6 +1836,7 @@ function rowStudent(s) {
       <div class="row-title">${esc(s.full_name)}
         <span class="badge badge-course" style="--acc:var(--${c.color})">${cIcon(c)} ${esc(c.name)}</span>
         ${s.active ? '' : `<span class="badge">${t('archive')}</span>`}
+        ${c.active === false ? `<span class="badge badge-warn">${t('courseClosed')}</span>` : ''}
         ${s.telegram_chat_id
           ? `<span class="badge badge-ok">${t('tgLinked')}</span>`
           : `<span class="badge badge-warn">${s.parent_phone ? t('tgNotLinked') : t('tgNoPhone')}</span>`}
@@ -1751,8 +1849,8 @@ function rowStudent(s) {
     </div>
     <div class="row-actions">
       ${state.botUsername
-        ? `<button class="btn btn-sm" data-link="${s.id}" title="${t('parentLink')}" type="button">${I.link}</button>` : ''}
-      <button class="btn btn-sm" data-edit-student="${s.id}" title="${t('edit')}" type="button">${I.edit}</button>
+        ? `<button class="btn btn-sm btn-ico" data-link="${s.id}" title="${t('parentLink')}" aria-label="${esc(t('parentLink') + ': ' + s.full_name)}" type="button">${I.link}</button>` : ''}
+      <button class="btn btn-sm btn-ico" data-edit-student="${s.id}" title="${t('edit')}" aria-label="${esc(t('edit') + ': ' + s.full_name)}" type="button">${I.edit}</button>
     </div>
   </div>`;
 }
@@ -1771,7 +1869,7 @@ function viewReportShell() {
     <div class="rep-filters">
       <label class="field">
         <span>${t('month')}</span>
-        <input class="inp" type="month" id="repMonth" value="${repData?.ym || currentYm()}" max="${currentYm()}">
+        <input class="inp" type="month" id="repMonth" value="${repData?.ym || state.repYm || currentYm()}" max="${currentYm()}">
       </label>
       ${list.length > 1 ? courseChips() : ''}
     </div>
@@ -1779,6 +1877,18 @@ function viewReportShell() {
 }
 
 let repData = null;
+let repSeq = 0;
+
+// Supabase bir so'rovda ko'pi bilan 1000 qator qaytaradi — undan ortig'i jimgina tushib
+// qolardi (tashriflar kam, to'lagan o'quvchi qarzdor ko'rinardi). Sahifalab o'qiymiz.
+async function fetchAll(build) {
+  const out = [];
+  for (let from = 0; ; from += 1000) {
+    const rows = rowsOf(await build().range(from, from + 999));
+    out.push(...rows);
+    if (rows.length < 1000) return out;
+  }
+}
 
 /* ------------------------------------------------------------
    Hisob-kitob.
@@ -1794,10 +1904,17 @@ async function loadReport() {
   // Qayta yuklashda eski ko'rinish so'niq turadi — sakrash va miltillash yo'q
   if (out && repData) out.classList.add('is-loading');
 
+  const seq = ++repSeq;
   const [from, to] = monthRange(ym);
-  const { data, error } = await sb.from('attendance')
-    .select('student_id,kind,note,occurred_at').gte('occurred_at', from).lt('occurred_at', to).order('occurred_at');
-  if (!$('repOut')) return;                               // foydalanuvchi boshqa bo'limga o'tib ketgan
+  let data = null, error = null;
+  // "Ketdi" hisobotda kerak emas — so'rov ikki baravar yengil
+  try {
+    data = await fetchAll(() => sb.from('attendance').select('id,student_id,kind,note,occurred_at')
+      .gte('occurred_at', from).lt('occurred_at', to).in('kind', ['in', 'absent', 'excused'])
+      .order('occurred_at').order('id'));
+  } catch (e) { error = e; }
+  // Oy yoki kurs tez almashtirilsa — eskirgan javob yangisini bosib ketmasin
+  if (seq !== repSeq || state.view !== 'report' || !$('repOut')) return;
   if (error) { $('repOut').innerHTML = `<div class="card"><div class="empty"><b>${t('error')}</b><p>${esc(error.message)}</p></div></div>`; return; }
 
   const allowed = new Set(myCourses().map((c) => c.id));
@@ -1910,6 +2027,14 @@ function renderReport() {
           `<button class="seg-btn${k === tab ? ' on' : ''}" role="tab" aria-selected="${k === tab}" data-rep-tab="${k}" type="button">${label}</button>`).join('')}</div>
         <div class="rep-body">${tab === 'grid' ? repGrid(d) : tab === 'charts' ? repCharts(d) : repList(d)}</div>`}`;
   drawCharts();
+  // Jurnal joriy oyda bugungi kunga suriladi — 1-kundan boshlab varaqlash shart emas
+  const wrap = out.querySelector('.jg-wrap');
+  const todayTh = wrap?.querySelector('th.is-today');
+  if (wrap && todayTh) {
+    const right = todayTh.offsetLeft + todayTh.offsetWidth;
+    const sticky = wrap.querySelector('.jg-pct')?.offsetWidth || 0;
+    wrap.scrollLeft = Math.max(0, right - wrap.clientWidth + sticky + 8);
+  }
 }
 
 /* ------------------------------------------------------------
@@ -2000,9 +2125,10 @@ function barPath(x, y, w, h, r) {
   r = Math.min(r, h / 2, w);
   return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
 }
+// O'q bo'linmasi butun son bo'lsin: max/2 ham butun (0 / 8 / 15 emas, 0 / 8 / 16)
 const niceMax = (v) => {
   if (v <= 4) return 4;
-  const step = v <= 10 ? 2 : v <= 20 ? 5 : v <= 50 ? 10 : 20;
+  const step = v <= 10 ? 2 : v <= 20 ? 4 : v <= 50 ? 10 : 20;
   return Math.ceil(v / step) * step;
 };
 
@@ -2264,7 +2390,7 @@ async function loadTeam() {
           <div class="row-sub">${cs}</div>
         </div>
         <div class="row-actions">
-          <button class="btn btn-sm" data-edit-teacher="${esc(tc.email)}" type="button">${I.edit}</button>
+          <button class="btn btn-sm btn-ico" data-edit-teacher="${esc(tc.email)}" aria-label="${esc(t('edit') + ': ' + (tc.full_name || tc.email))}" title="${t('edit')}" type="button">${I.edit}</button>
         </div></div>`;
     }).join('')}</div>`;
   } catch (e) {
@@ -2280,7 +2406,7 @@ async function loadTeam() {
         <div class="row-sub"><span>${t('nStudents', { n })}</span>${Number.isInteger(c.monthly_fee) ? `<span>${t('perMonth', { n: fmtSum(c.monthly_fee) })}</span>` : ''}</div>
       </div>
       <div class="row-actions">
-        <button class="btn btn-sm" data-edit-course="${c.id}" type="button">${I.edit}</button>
+        <button class="btn btn-sm btn-ico" data-edit-course="${c.id}" aria-label="${esc(t('edit') + ': ' + c.name)}" title="${t('edit')}" type="button">${I.edit}</button>
       </div></div>`;
   }).join('');
 }
@@ -2354,8 +2480,9 @@ async function loadPayments() {
   const cur = currentYm();
   const lo = ymShift(ym < cur ? ym : cur, -PAY_LOOKBACK), hi = ym > cur ? ym : cur;
   const [{ data, error }, rem] = await Promise.all([
-    sb.from('payments').select('id,student_id,month,amount,paid_on,note,notified_at')
-      .gte('month', lo + '-01').lte('month', hi + '-01'),
+    fetchAll(() => sb.from('payments').select('id,student_id,month,amount,paid_on,note,notified_at')
+      .gte('month', lo + '-01').lte('month', hi + '-01').order('id'))
+      .then((data) => ({ data, error: null }), (error) => ({ data: null, error })),
     sb.from('payment_reminders').select('student_id,status,code,sent_at,month')
       .gte('sent_at', new Date(Date.now() - 31 * 86400e3).toISOString()).order('sent_at', { ascending: false }),
     loadFees(),
@@ -2436,12 +2563,12 @@ function payModel() {
 }
 
 function payFilter(list) {
-  const q = state.payQ.trim().toLowerCase();
+  const q = fold(state.payQ.trim());
   const qd = q.replace(/\D+/g, '');
   if (!q) return list;
-  return list.filter(({ s }) => s.full_name.toLowerCase().includes(q) ||
+  return list.filter(({ s }) => fold(s.full_name).includes(q) ||
     (qd.length >= 3 && String(s.parent_phone || '').replace(/\D+/g, '').includes(qd)) ||
-    String(s.parent_name || '').toLowerCase().includes(q));
+    fold(s.parent_name).includes(q));
 }
 
 function renderPayments() {
@@ -2573,8 +2700,9 @@ function paySheet(sid) {
       e.preventDefault();
       const amount = parseSum(amt.value);
       const paidOn = $('payDate').value || todayKey();
-      const bad = Number.isNaN(amount) || (amount != null && (amount < 0 || amount > PAY_MAX)) || paidOn > todayKey();
+      const bad = Number.isNaN(amount) || (amount != null && (amount < 0 || amount > PAY_MAX));
       if (bad) { const er = $('payErr'); er.textContent = t('payBadAmount'); er.hidden = false; amt.focus(); return; }
+      if (paidOn > todayKey()) { const er = $('payErr'); er.textContent = t('payBadDate'); er.hidden = false; $('payDate').focus(); return; }
       const row = { amount, paid_on: paidOn, note: $('payNote').value.trim() || null };
       const tell = !!$('payTell')?.checked;
       const btn = $('paySave'); btn.disabled = true;
@@ -3304,10 +3432,14 @@ async function loadNotifyChats() {
       ? chats.map((c) => `<div class="row"><div class="row-main">
           <div class="row-title">${esc(c.label || t('tgUser'))}</div>
           <div class="row-sub"><span class="badge badge-ok">${t('linkedBadge')}</span></div></div>
-          <div class="row-actions"><button class="btn btn-sm btn-danger" data-notify-del="${c.chat_id}" type="button">${I.trash}</button></div></div>`).join('')
+          <div class="row-actions"><button class="btn btn-sm btn-danger btn-ico" data-notify-del="${c.chat_id}" aria-label="${esc(t('del') + ': ' + (c.label || t('tgUser')))}" type="button">${I.trash}</button></div></div>`).join('')
       : `<div class="row"><div class="row-main"><div class="row-sub">
          <span class="badge badge-warn">${t('nobodyLinked')}</span></div></div></div>`;
-  } catch (e) { out.innerHTML = ''; }
+  } catch (e) {
+    out.innerHTML = `<div class="row" role="alert"><div class="row-main"><div class="row-sub">
+      <span class="badge badge-warn">${t('loadFail')}</span></div></div>
+      <div class="row-actions"><button class="btn btn-sm" data-notify-retry type="button">${t('retry')}</button></div></div>`;
+  }
 }
 
 async function checkWebhook(autoFix) {
@@ -3330,35 +3462,67 @@ async function checkWebhook(autoFix) {
 /* ============================================================
    SHEET (modal) YORDAMCHISI
    ============================================================ */
+// Oyna qaysi tugmadan ochilgani — yopilgach fokus o'sha joyga qaytadi, hatto ro'yxat
+// qayta chizilib tugma almashgan bo'lsa ham (klaviatura foydalanuvchisi joyini yo'qotmasin)
+const ORIGIN_ATTRS = ['data-edit-student', 'data-more', 'data-pay-open', 'data-lead', 'data-edit-teacher',
+  'data-edit-course', 'data-link', 'data-set', 'data-add-student', 'data-add-teacher', 'data-add-course'];
+let sheetOrigin = null;
+let sheetOpenedAt = 0;
+
 function openSheet(title, bodyHtml, onMount) {
   const dlg = $('sheet');
+  const a = document.activeElement;
+  const attr = a && ORIGIN_ATTRS.find((x) => a.hasAttribute?.(x));
+  sheetOrigin = attr ? `[${attr}="${CSS.escape(a.getAttribute(attr))}"]` : null;
   $('sheetBody').innerHTML = `
     <div class="sheet-grab"></div>
     <div class="sheet-head"><h3>${title}</h3><div class="spacer"></div>
-      <button class="btn btn-icon btn-ghost" data-close type="button">${I.x}</button></div>
+      <button class="btn btn-icon btn-ghost" data-close aria-label="${t('close')}" type="button">${I.x}</button></div>
     ${bodyHtml}`;
-  dlg.showModal();
+  sheetOpenedAt = Date.now();
+  if (!dlg.open) dlg.showModal();
   $('sheetBody').querySelector('[data-close]').addEventListener('click', () => dlg.close());
   if (onMount) onMount(dlg);
 }
 function closeSheet() { $('sheet').close(); }
 
 /* ---- O'quvchi qo'shish / tahrirlash ---- */
+// Ota-ona telefoni: student-link dagi normPhone bilan bir xil qoida — noto'g'ri raqam bilan
+// ulanish havolasi hech qachon tasdiqlanmaydi. O'zbek raqami "+998 90 123 45 67" ko'rinishida
+// saqlanadi; chet el raqami "+" bilan yoziladi (998 bilan boshlanmasa).
+function parentPhone(raw) {
+  const v = String(raw ?? '').trim();
+  if (!v) return { ok: true, value: null };
+  let d = v.replace(/\D+/g, '');
+  if (d.length === 13 && d.startsWith('9998')) d = d.slice(1);
+  if (d.length === 9) d = '998' + d;
+  if (d.length === 12 && d.startsWith('998')) {
+    return { ok: true, value: `+998 ${d.slice(3, 5)} ${d.slice(5, 8)} ${d.slice(8, 10)} ${d.slice(10)}` };
+  }
+  if (v.startsWith('+') && !d.startsWith('998') && d.length >= 10 && d.length <= 15) return { ok: true, value: v.replace(/\s+/g, ' ') };
+  return { ok: false };
+}
+
 function studentSheet(id) {
   const s = id ? state.students.find((x) => x.id === id) : null;
   const list = myCourses();
-  const opts = list.map((c) => `<option value="${c.id}" ${s && s.course_id === c.id ? 'selected' : ''}>${esc(cText(c))}</option>`).join('');
+  // Yopiq kursdagi o'quvchining kursi ham ro'yxatda turadi — aks holda saqlashda jimgina boshqa kursga o'tib qolardi
+  const cur = s ? courseById(s.course_id) : null;
+  if (cur && cur.id && !list.some((c) => c.id === cur.id)) list.push(cur);
+  const opts = list.map((c) => `<option value="${c.id}" ${s && s.course_id === c.id ? 'selected' : ''}>${esc(cText(c))}${c.active === false ? ` (${esc(t('courseClosed'))})` : ''}</option>`).join('');
   openSheet(s ? t('editStudent') : t('newStudent'), `
     <form id="stForm">
       <label class="field"><span>${t('fNameReq')}</span>
-        <input class="inp" id="stName" required value="${esc(s?.full_name ?? '')}"></label>
+        <input class="inp" id="stName" required value="${esc(s?.full_name ?? '')}" aria-describedby="stNameErr"></label>
+      <p class="tpl-err" id="stNameErr" role="alert" hidden></p>
       <label class="field"><span>${t('fCourseReq')}</span>
         <select class="inp" id="stCourse" required>${s ? '' : `<option value="">${t('fChoose')}</option>`}${opts}</select></label>
       <label class="field"><span>${t('fParent')}</span>
         <input class="inp" id="stParent" value="${esc(s?.parent_name ?? '')}"></label>
       <label class="field"><span>${t('fPhone')}</span>
-        <input class="inp" id="stPhone" inputmode="tel" placeholder="+998 90 123 45 67" value="${esc(s?.parent_phone ?? '')}">
+        <input class="inp" id="stPhone" inputmode="tel" placeholder="+998 90 123 45 67" value="${esc(s?.parent_phone ?? '')}" aria-describedby="stPhoneErr">
         <small class="f-hint">${t('fPhoneHint')}</small></label>
+      <p class="tpl-err" id="stPhoneErr" role="alert" hidden></p>
       ${isAdmin() ? `<label class="field"><span>${t('fStFee')}</span>
         <input class="inp" id="stFee" inputmode="numeric" autocomplete="off"
           value="${s && Number.isInteger(state.fees.get(s.id)) ? fmtSum(state.fees.get(s.id)) : ''}">
@@ -3392,18 +3556,31 @@ function studentSheet(id) {
       }
       const oldFee = s && Number.isInteger(state.fees.get(s.id)) ? state.fees.get(s.id) : null;
       const feeChanged = feeIn && fee !== oldFee;
+      const showErr = (id, msg, focusId) => { const er = $(id); er.textContent = msg; er.hidden = !msg; if (msg) $(focusId).focus(); };
+      const name = $('stName').value.replace(/\s+/g, ' ').trim();
+      showErr('stNameErr', name ? '' : t('nameReq'), 'stName');
+      if (!name) return;
+      const phone = parentPhone($('stPhone').value);
+      showErr('stPhoneErr', phone.ok ? '' : t('badPhone'), 'stPhone');
+      if (!phone.ok) return;
       const row = {
-        full_name: $('stName').value.trim(),
+        full_name: name,
         course_id: $('stCourse').value,
         parent_name: $('stParent').value.trim() || null,
-        parent_phone: $('stPhone').value.trim() || null,
+        parent_phone: phone.value,
       };
       if (s) row.active = $('stActive').checked;
-      if (!row.full_name || !row.course_id) return;
+      if (!row.course_id) return;
+      // Xuddi shu kursda xuddi shu ism — ehtimol takror qo'shilyapti
+      if (!s && state.students.some((x) => x.course_id === row.course_id && fold(x.full_name) === fold(name)) &&
+          !confirm(t('dupStudent', { name, course: courseById(row.course_id).name }))) return;
+      // Ikki marta bosilsa ikki bir xil o'quvchi yaratilmasin
+      const btn = e.submitter || $('stForm').querySelector('[type="submit"]');
+      if (btn) btn.disabled = true;
       const q = s ? await sb.from('students').update(row).eq('id', s.id)
         : feeChanged ? await sb.from('students').insert(row).select('id').single()
         : await sb.from('students').insert(row);
-      if (q.error) { toast('❌ ' + q.error.message, 'bad'); return; }
+      if (q.error) { toast('❌ ' + q.error.message, 'bad'); if (btn) btn.disabled = false; return; }
       closeSheet();
       let feeErr = null;
       const sid = s ? s.id : q.data?.id;
@@ -3522,12 +3699,19 @@ function parentLinkSheet(id) {
 }
 
 /* ---- O'qituvchi qo'shish / tahrirlash ---- */
-async function teacherSheet(email) {
+// Ro'yxat serverdan olinguncha bosilgan tugma "band" ko'rinadi — sekin internetda
+// takror bosish va "hech narsa bo'lmadi" degan taassurot bo'lmasin
+let teacherLoading = false;
+async function teacherSheet(email, btn) {
+  if (teacherLoading) return;
   let tc = null;
   let teachers = [];
+  teacherLoading = true;
+  btn?.classList.add('is-busy'); btn?.setAttribute('aria-busy', 'true');
   try {
     ({ teachers } = await edge('admin-api', { action: 'list_teachers' }));
   } catch (err) { toast('❌ ' + err.message, 'bad'); return; }
+  finally { teacherLoading = false; btn?.classList.remove('is-busy'); btn?.removeAttribute('aria-busy'); }
   if (email) tc = teachers.find((x) => x.email.toLowerCase() === email.toLowerCase());
   // O'z rolini o'zgartirib bo'lmaydi: yagona administrator o'zini o'qituvchi qilib qo'ysa, tizim boshqaruvsiz qoladi
   const isSelf = !!tc && tc.email.toLowerCase() === state.me.email.toLowerCase();
@@ -3594,6 +3778,7 @@ async function teacherSheet(email) {
 function courseSheet(id) {
   const c = id ? state.courses.find((x) => x.id === id) : null;
   const colors = ['sky', 'green', 'teal', 'violet', 'rose', 'gold'];
+  const colorNames = Object.fromEntries(t('colorName').split(',').map((x) => x.split(':')));
   openSheet(c ? t('editCourse') : t('newCourse'), `
     <form id="cForm">
       <label class="field"><span>${t('fNameStar')}</span>
@@ -3602,8 +3787,9 @@ function courseSheet(id) {
         <span class="ic-field"><input class="inp" id="cIcon" maxlength="4" value="${esc(c?.icon ?? '📘')}">
           <span class="ic-prev" id="cIconPrev" aria-hidden="true">${cIcon({ icon: c?.icon ?? '📘' })}</span></span></label>
       <label class="field"><span>${t('fColor')}</span>
-        <select class="inp" id="cColor">${colors.map((x) =>
-          `<option value="${x}" ${c?.color === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+        <span class="ic-field"><select class="inp" id="cColor">${colors.map((x) =>
+          `<option value="${x}" ${c?.color === x ? 'selected' : ''}>${esc(colorNames[x] || x)}</option>`).join('')}</select>
+          <span class="ic-prev color-prev" id="cColorPrev" aria-hidden="true" style="--acc:var(--${c?.color ?? 'sky'})"></span></span></label>
       <label class="field"><span>${t('fFee')}</span>
         <input class="inp" id="cFee" inputmode="numeric" autocomplete="off" placeholder="${t('fFeePh')}"
           value="${Number.isInteger(c?.monthly_fee) ? fmtSum(c.monthly_fee) : ''}">
@@ -3616,6 +3802,7 @@ function courseSheet(id) {
     </form>`, () => {
     // Belgi qanday ko'rinishini darhol ko'rsatamiz (bayroq emojisi SVG bo'lib chiziladi)
     $('cIcon').addEventListener('input', () => { $('cIconPrev').innerHTML = cIcon({ icon: $('cIcon').value.trim() }); });
+    $('cColor').addEventListener('change', () => { $('cColorPrev').style.setProperty('--acc', `var(--${$('cColor').value})`); });
     const feeIn = $('cFee');
     feeIn.addEventListener('input', () => {
       const n = parseSum(feeIn.value);
@@ -3628,6 +3815,8 @@ function courseSheet(id) {
       if (Number.isNaN(fee) || (fee != null && fee > PAY_MAX)) {
         const er = $('cErr'); er.textContent = t('payBadAmount'); er.hidden = false; feeIn.focus(); return;
       }
+      const btn = e.submitter || $('cForm').querySelector('[type="submit"]');
+      if (btn) btn.disabled = true;
       try {
         await edge('admin-api', {
           action: 'save_course', id: c?.id ?? null,
@@ -3636,7 +3825,12 @@ function courseSheet(id) {
         });
         closeSheet(); toast(t('saved'), 'ok');
         await loadCourses(); render();
-      } catch (err) { toast('❌ ' + err.message, 'bad'); }
+      } catch (err) {
+        // Masalan, bunday nomli kurs bor — oyna ochiq qoladi, tuzatib qayta saqlash mumkin
+        const er = $('cErr'); er.textContent = err.message; er.hidden = false;
+        if (btn) btn.disabled = false;
+        $('cName').focus();
+      }
     });
     if (c) $('cDelete').addEventListener('click', async () => {
       if (!confirm(t('delCourse', { name: c.name }))) return;
@@ -3704,9 +3898,9 @@ document.addEventListener('click', async (e) => {
   if (el.closest('[data-add-student]')) return studentSheet(null);
   const edS = el.closest('[data-edit-student]');
   if (edS) return studentSheet(edS.dataset.editStudent);
-  if (el.closest('[data-add-teacher]')) return teacherSheet(null);
+  if (el.closest('[data-add-teacher]')) return teacherSheet(null, el.closest('[data-add-teacher]'));
   const edT = el.closest('[data-edit-teacher]');
-  if (edT) return teacherSheet(edT.dataset.editTeacher);
+  if (edT) return teacherSheet(edT.dataset.editTeacher, edT);
   if (el.closest('[data-add-course]')) return courseSheet(null);
   const edC = el.closest('[data-edit-course]');
   if (edC) return courseSheet(edC.dataset.editCourse);
@@ -3794,6 +3988,7 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
+  if (el.closest('[data-notify-retry]')) return loadNotifyChats();
   const nd = el.closest('[data-notify-del]');
   if (nd) {
     try {
@@ -3893,10 +4088,7 @@ document.addEventListener('input', (e) => {
   }
   if (e.target.id === 'searchInp') {
     state.search = e.target.value;
-    const pos = e.target.selectionStart;
-    render();
-    const el = $('searchInp');
-    if (el) { el.focus(); el.setSelectionRange(pos, pos); }
+    renderSearchResults();
   }
 });
 
@@ -3960,10 +4152,27 @@ window.addEventListener('online', () => { state.resumeAt = 0; refreshOnResume();
 
 // Saqlanmagan shablon bilan sahifani yopishdan oldin ogohlantiramiz
 window.addEventListener('beforeunload', (e) => {
-  if (TPL_KINDS.some(tplDirty)) { e.preventDefault(); e.returnValue = ''; }
+  if (!state.leaving && TPL_KINDS.some(tplDirty)) { e.preventDefault(); e.returnValue = ''; }
 });
 
-$('sheet').addEventListener('click', (e) => { if (e.target === $('sheet')) closeSheet(); });
+// Ochgan bosishning ikkinchisi (double-click / ikki marta tegish) fonga tushib oynani darhol
+// yopib yubormasin — ochilgandan keyingi 350 ms dagi fon bosishlari hisobga olinmaydi
+$('sheet').addEventListener('click', (e) => {
+  if (e.target === $('sheet') && Date.now() - sheetOpenedAt > 350) closeSheet();
+});
+$('sheet').addEventListener('close', () => {
+  const sel = sheetOrigin;
+  if (!sel) return;
+  const tryFocus = () => {
+    const a = document.activeElement;
+    if (a && a !== document.body && document.contains(a)) return true;
+    const el = document.querySelector(sel);
+    if (el) { el.focus({ preventScroll: true }); return true; }
+    return false;
+  };
+  // Saqlashdan keyin ro'yxat biroz kechikib qayta chiziladi — bir necha urinish
+  [0, 300, 900].forEach((ms) => setTimeout(tryFocus, ms));
+});
 
 /* ============================================================
    PWA
