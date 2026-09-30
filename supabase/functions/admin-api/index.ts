@@ -295,13 +295,17 @@ Deno.serve(async (req) => {
 
     if (action === 'save_course') {
       const id = body.id ? String(body.id) : null;
+      // Rang panelda style="--acc:var(--<rang>)" ga tushadi — faqat ma'lum qiymatlar
+      const COLORS = ['sky', 'green', 'teal', 'violet', 'rose', 'gold'];
+      const color = String(body.color ?? 'sky');
       const row: Record<string, unknown> = {
-        name: String(body.name ?? '').trim(),
-        icon: String(body.icon ?? '📘').trim() || '📘',
-        color: String(body.color ?? 'sky'),
+        name: String(body.name ?? '').replace(/\s+/g, ' ').trim(),
+        icon: [...String(body.icon ?? '📘').trim()].slice(0, 8).join('') || '📘',
+        color: COLORS.includes(color) ? color : 'sky',
         active: body.active !== false,
       };
       if (!row.name) return json({ error: 'Kurs nomi kerak' }, 400);
+      if ((row.name as string).length > 80) return json({ error: 'Kurs nomi juda uzun (80 belgigacha)' }, 400);
       // Oylik narx: faqat so'rovda bo'lsa o'zgaradi (eski panel uni o'chirib yubormasin)
       if ('monthly_fee' in body) {
         const v = body.monthly_fee;
@@ -313,9 +317,14 @@ Deno.serve(async (req) => {
         }
         row.monthly_fee = fee;
       }
-      const q = id ? await admin.from('courses').update(row).eq('id', id) : await admin.from('courses').insert(row);
-      if (q.error) return json({ error: q.error.message }, 400);
-      return json({ ok: true });
+      const q = id ? await admin.from('courses').update(row).eq('id', id).select('id')
+        : await admin.from('courses').insert(row).select('id');
+      if (q.error) {
+        if (q.error.code === '23505') return json({ error: `«${row.name}» nomli kurs allaqachon bor` }, 409);
+        return json({ error: q.error.message }, 400);
+      }
+      if (!q.data?.length) return json({ error: 'Kurs topilmadi' }, 404);
+      return json({ ok: true, id: q.data[0].id });
     }
 
     if (action === 'remove_course') {

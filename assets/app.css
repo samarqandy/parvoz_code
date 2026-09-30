@@ -12,7 +12,7 @@
   --border-2:  rgba(255,255,255,.2);
   --text:      #eef4ff;
   --muted:     #a4b6d6;
-  --faint:     #7386a8;
+  --faint:     #8d9dba;
 
   --gold:  #ffb300;
   --gold2: #ffd54f;
@@ -60,7 +60,7 @@
   --border-2:  rgba(13,27,62,.24);
   --text:      #0b1936;
   --muted:     #4c5e80;
-  --faint:     #6d7e9d;
+  --faint:     #5a6a88;
 
   --sky:   #1a7fd4;
   --teal:  #0d9aae;
@@ -378,8 +378,8 @@ select.inp option, select.inp optgroup { background: var(--sheet-bg); color: var
 
 /* ===================== KUN TANLAGICH ===================== */
 .daybar {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  margin: 14px 0 4px;
+  display: flex; align-items: center; gap: 8px;
+  margin: 14px 0 14px;
 }
 .daybar-nav {
   flex: none; width: 44px; height: 44px;
@@ -393,7 +393,7 @@ select.inp option, select.inp optgroup { background: var(--sheet-bg); color: var
 
 /* Sana maydoni ko'rinmas holda ustiga qo'yiladi — butun maydon bosiladi */
 .daybar-mid {
-  position: relative; flex: 1 1 auto; min-width: 150px;
+  position: relative; flex: 1 1 0; min-width: 0;
   display: flex; align-items: center; justify-content: center;
   min-height: 44px; padding: 0 14px;
   border: 1px solid var(--border); border-radius: var(--r-sm);
@@ -403,6 +403,7 @@ select.inp option, select.inp optgroup { background: var(--sheet-bg); color: var
 .daybar-mid { flex-direction: column; gap: 1px; padding: 5px 14px; }
 .daybar-label { font-weight: 900; font-size: .95rem; line-height: 1.2; }
 .daybar-sub { font-size: .72rem; font-weight: 700; color: var(--muted); line-height: 1.2; }
+.daybar-label, .daybar-sub { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .daybar-mid input[type="date"] {
   position: absolute; inset: 0; width: 100%; height: 100%;
   opacity: 0; border: 0; padding: 0; cursor: pointer;
@@ -411,7 +412,7 @@ select.inp option, select.inp optgroup { background: var(--sheet-bg); color: var
 .daybar .btn { flex: none; min-height: 44px; }
 
 .daybar-note {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   margin: 10px 0 2px; padding: 10px 13px;
   border-radius: var(--r-sm);
   background: color-mix(in srgb, var(--violet) 12%, transparent);
@@ -557,11 +558,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 
   /* Davomat ekranida statistika bitta qatorda — o'quvchilar ro'yxati
      birinchi ekranda ko'rinishi kerak, asosiy ish shu */
-  .stats.stats-compact { grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 14px; }
-  .stats-compact .stat { padding: 9px 2px 8px; border-radius: var(--r-sm); }
-  .stats-compact .stat b { font-size: 1.15rem; }
-  .stats-compact .stat span { font-size: .6rem; gap: 0; letter-spacing: -.01em; }
-  .stats-compact .stat span svg { display: none; }
+  .stats.stats-compact { grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 14px; }
   .page-head:has(+ .daybar) { display: none; }
 }
 @media (max-width: 400px) {
@@ -597,7 +594,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 /* Navigatsiyadagi hisoblagich (yangi arizalar) */
 .nav-count {
   margin-left: auto; min-width: 22px; height: 22px; padding: 0 6px;
-  border-radius: 99px; background: var(--red); color: #fff;
+  border-radius: 99px; background: #c62828; color: #fff;
   font-size: .72rem; font-weight: 900;
   display: inline-flex; align-items: center; justify-content: center;
 }
@@ -657,7 +654,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .tone-green   { --tone: var(--green);    --tone-ink: var(--green-ink);  --tone-grad: linear-gradient(135deg,#10b981,#34d399); --tone-on: #052e1f; }
 .tone-gold    { --tone: var(--gold);     --tone-ink: var(--gold-ink);   --tone-grad: linear-gradient(135deg,#ffb300,#ffd54f); --tone-on: var(--on-gold); }
 .tone-red     { --tone: var(--red);      --tone-ink: var(--red-ink);    --tone-grad: linear-gradient(135deg,#ef4444,#f87171); --tone-on: #2b0606; }
-.tone-violet  { --tone: var(--violet);   --tone-ink: var(--violet-ink); --tone-grad: linear-gradient(135deg,#8b5cf6,#a78bfa); --tone-on: #190a33; }
+.tone-violet  { --tone: var(--violet);   --tone-ink: var(--violet-ink); --tone-grad: linear-gradient(135deg,#9b74f7,#a78bfa); --tone-on: #190a33; }
 .tone-muted,
 .tone-pending { --tone: var(--border-2); --tone-ink: var(--faint);      --tone-grad: none;                                    --tone-on: var(--muted); }
 
@@ -689,7 +686,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 
 /* Tugmalar: chapda ikkilamchi holatlar, o'ngda keyingi qadam */
 .rt .row-actions { gap: 8px; }
-.btn-act { min-width: 132px; }
+.btn-act { min-width: 156px; }
 .btn-alt { min-width: 0; padding: 12px 14px; font-size: .88rem; }
 .btn-alt svg { width: 16px; height: 16px; }
 
@@ -843,7 +840,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 /* Ism ikki qatorgacha — "Aziza Kari…" o'rniga "Aziza / Karimova" */
 .jg-nm {
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
-  overflow: hidden; white-space: normal; overflow-wrap: anywhere; line-height: 1.2;
+  overflow: hidden; white-space: normal; overflow-wrap: break-word; line-height: 1.2;
 }
 
 .jg-cell {
@@ -964,7 +961,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .switch-txt small { color: var(--muted); font-size: .8rem; font-weight: 600; line-height: 1.35; }
 
 .tpl-field { margin-bottom: 8px; }
-.tpl-text { min-height: 128px; resize: vertical; line-height: 1.5; font-size: .95rem; }
+.tpl-text { min-height: 128px; resize: vertical; line-height: 1.5; font-size: 1rem; }
 .tpl-tools { display: flex; align-items: flex-start; gap: 10px; }
 .tpl-vars { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
 .tpl-var { --acc: var(--sky); min-height: 36px; padding: 6px 10px; font-size: .82rem; }
@@ -1039,7 +1036,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 
 .pay-row .row-main { flex: 1 1 160px; }
 .pay-state { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: 0 0 auto; text-align: right; }
-.pay-state small { color: var(--muted); font-size: .76rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pay-state small { color: var(--muted); font-size: .76rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pay-badge {
   display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px;
   font-size: .78rem; font-weight: 800; white-space: nowrap; color: var(--tone-ink);
@@ -1100,7 +1097,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .seg-pay .seg-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 54px; padding: 6px 4px; }
   .seg-pay .seg-n { margin-left: 0; }
   .pay-row .row-main { flex: 1 1 0; }
-  .pay-state { order: 3; flex: 1 1 100%; flex-direction: row; align-items: center; justify-content: flex-start; gap: 8px; }
+  .pay-state { order: 3; flex: 1 1 100%; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 4px 8px; }
   .pay-row .row-actions { order: 4; }
 }
 
@@ -1151,3 +1148,82 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   background: var(--sheet-bg); border-top: 1px solid var(--border);
 }
 .sheet-foot .btn { min-height: 50px; white-space: normal; line-height: 1.25; text-align: center; }
+
+/* ===================== QA 2-TO'PLAM: MOSLASHUV VA QULAYLIK ===================== */
+/* Havola ko'rinishidagi tugmalar (tel:, t.me) tagiga chizilmasin */
+.btn { text-decoration: none; }
+/* Uzun tarjima (ruscha) tugmadan chiqib ketmasin */
+.btn-block, .sheet .btn:not(.btn-icon) { white-space: normal; line-height: 1.25; text-align: center; }
+/* Server javobini kutayotgan tugma: belgi o'rnida aylanuvchi doira */
+.btn.is-busy { pointer-events: none; opacity: .75; }
+.btn.is-busy svg { display: none; }
+.btn.is-busy::before {
+  content: ''; width: 15px; height: 15px; flex: none; border-radius: 50%;
+  border: 2px solid currentColor; border-top-color: transparent; animation: sp .8s linear infinite;
+}
+/* Faqat belgili kichik tugma — kvadrat, matn yo'q */
+.btn-ico { padding: 8px; min-width: 38px; }
+
+/* iPhone "chiqiq"i va yumaloq burchaklari ostida matn qolmasin (viewport-fit=cover) */
+.topbar {
+  height: calc(var(--bar-h) + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+}
+.sidebar { padding-top: calc(18px + env(safe-area-inset-top)); padding-left: max(14px, env(safe-area-inset-left)); }
+.auth { padding: calc(22px + env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left)); }
+@media (min-width: 1000px) { .topbar { padding-left: 20px; padding-right: max(20px, env(safe-area-inset-right)); } }
+@media (max-width: 400px) { .topbar { padding-left: max(11px, env(safe-area-inset-left)); padding-right: max(11px, env(safe-area-inset-right)); } }
+
+/* Uzun ism / kurs nomi / email / izoh qatorni yirtmaydi */
+.row-sub span { overflow-wrap: anywhere; min-width: 0; }
+.row-title { overflow-wrap: anywhere; min-width: 0; }
+.row-title .badge { white-space: normal; max-width: 100%; line-height: 1.35; }
+.sheet-head h3 { min-width: 0; overflow-wrap: anywhere; }
+.sheet-head .btn-icon { flex: none; }
+
+/* Kurs rangi — tanlangan rang shu yerning o'zida ko'rinadi */
+.color-prev {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--acc, var(--sky)), color-mix(in srgb, var(--acc, var(--sky)) 55%, #fff));
+}
+
+/* Yorug' rejimda avatar harflari to'q fonda ko'rinmay qolardi */
+:root[data-theme="light"] .avatar {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--acc, var(--sky)) 72%, #fff), color-mix(in srgb, var(--acc, var(--sky)) 45%, #fff));
+}
+
+.load-err { margin-bottom: 12px; }
+
+@media (max-width: 999px) {
+  /* Bildirishnoma pastki menyuni yopmasin */
+  .toasts { bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 560px) {
+  /* Davomat: 5 ta son bitta qatorda, yozuv 11px dan kichik emas. Ustun yozuvidan tor
+     bo'lmaydi (min-content) — "Kutilmoqda" qirqilmaydi, ikki so'zli yozuv ikki qatorga o'tadi */
+  .stats.stats-compact:not(.pay-stats):not(.fin-stats) { grid-template-columns: repeat(5, minmax(min-content, 1fr)); gap: 4px; }
+  .stats-compact .stat { padding: 9px 2px 8px; border-radius: var(--r-sm); }
+  .stats-compact .stat b { font-size: 1.15rem; }
+  .stats-compact .stat span { display: block; font-size: .6875rem; line-height: 1.2; letter-spacing: -.01em; }
+  .stats-compact .stat span svg { display: none; }
+  /* Belgili tugma cho'zilmaydi — yonidagi matnli tugmaga joy qoladi */
+  .row-actions .btn.btn-ico { flex: 0 0 auto; min-width: 44px; }
+}
+@media (max-width: 359px) {
+  /* Eng tor telefon (320px): beshtasi sig'maydi — 3 + 2 */
+  .stats.stats-compact:not(.pay-stats):not(.fin-stats) { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .stats-compact:not(.pay-stats):not(.fin-stats) > .stat { grid-column: span 2; }
+  .stats-compact:not(.pay-stats):not(.fin-stats) > .stat:nth-child(n+4) { grid-column: span 3; }
+}
+@media (max-width: 400px) {
+  /* Kurs nomi va "Hammasi keldi" tugmasi sig'masa — ikki qatorga */
+  .group-title { flex-wrap: wrap; row-gap: 8px; }
+  .group-title > span { white-space: normal; overflow-wrap: anywhere; }
+}
+/* Sensorli ekranda bosiladigan nishonlar kamida 44px (Apple HIG / WCAG 2.5.5) */
+@media (pointer: coarse) {
+  .tb-btn, .tb-icon, .tb-avatar { min-height: 44px; }
+  .chip, .btn-sm, .tpl-var { min-height: 44px; }
+}
