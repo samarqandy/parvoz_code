@@ -57,6 +57,13 @@ const state = {
   leadFilter: 'new',
   view: 'today',
   courseFilter: 'all',
+  // Har bir ekranning o'z kurs filtri (oldin hammasi bitta edi: Hisobotda tanlangan kurs Davomatni ham toraytirardi).
+  // Davomatniki esda qoladi — ochilganda oxirgi ishlagan kursingiz.
+  cf: { today: (() => { try { return localStorage.getItem('parvoz-today-course') || 'all'; } catch (_) { return 'all'; } })() },
+  todayFilter: 'all', // 'all' | 'pending' (belgilanmagan) | 'inside' (hozir markazda)
+  todaySnap: null,    // filtr tanlangan paytdagi o'quvchilar: belgilangach qator joyida qoladi, ro'yxat "sakramaydi"
+  nudge: null,        // kecha belgilanmay qolganlar { day, items }
+  nudgeLoading: false,
   search: '',
   botUsername: null,
   tgMode: null,
@@ -144,7 +151,14 @@ const STR = {
     today: 'Bugun', yesterday: 'Kecha', backToToday: 'Bugunga qaytish',
     pastDay: 'O\'tgan kun — ota-onaga xabar yuborilmaydi',
     pickDay: 'Kunni tanlash', prevDay: 'Oldingi kun', nextDay: 'Keyingi kun',
-    allArrived: 'Hammasi keldi',
+    allArrived: 'Hammasi keldi', allLeft: 'Hammasi ketdi',
+    tfAll: 'Hammasi', tfInside: 'Markazda', todayFilterAria: 'Ro\'yxatni saralash',
+    fEmptyPending: 'Hamma belgilangan', fEmptyInside: 'Hozir markazda hech kim yo\'q',
+    groupAskOut: '{course} guruhidagi {n} o\'quvchiga «Ketdi» qo\'yilsinmi?',
+    groupAskNotif: 'Ota-onaga Telegram xabari boradi: {k} ta.',
+    undoneNotified: 'Belgi bekor qilindi. Ota-onaga xabar allaqachon ketgan edi',
+    nudgeText: 'Kecha {course}: {n} ta o\'quvchi belgilanmagan — {names}', nudgeFix: 'Tuzatish', nudgeHide: 'Yopish',
+    callParent: 'Ota-onaga qo\'ng\'iroq',
     groupAsk: '{course} guruhidagi {n} o\'quvchiga «{label}» qo\'yilsinmi?',
     groupDone: '{n} ta belgilandi',
     groupDoneSkip: '{n} ta belgilandi, {k} tasi o\'tkazib yuborildi',
@@ -450,7 +464,14 @@ const STR = {
     today: 'Сегодня', yesterday: 'Вчера', backToToday: 'Вернуться к сегодня',
     pastDay: 'Прошедший день — родителям уведомление не отправляется',
     pickDay: 'Выбрать день', prevDay: 'Предыдущий день', nextDay: 'Следующий день',
-    allArrived: 'Все пришли',
+    allArrived: 'Все пришли', allLeft: 'Все ушли',
+    tfAll: 'Все', tfInside: 'В центре', todayFilterAria: 'Фильтр списка',
+    fEmptyPending: 'Все отмечены', fEmptyInside: 'Сейчас в центре никого нет',
+    groupAskOut: 'Поставить «Ушёл» ученикам группы {course} (всего: {n})?',
+    groupAskNotif: 'Сообщение в Telegram получат родители: {k}.',
+    undoneNotified: 'Отметка отменена. Сообщение родителю уже было отправлено',
+    nudgeText: 'Вчера в {course} не отмечено: {n} — {names}', nudgeFix: 'Исправить', nudgeHide: 'Скрыть',
+    callParent: 'Позвонить родителю',
     groupAsk: 'Поставить «{label}» ученикам группы {course} (всего: {n})?',
     groupDone: 'Отмечено: {n}',
     groupDoneSkip: 'Отмечено: {n}, пропущено: {k}',
@@ -1397,9 +1418,13 @@ function toggleMenu(btn, menu) {
   btn.setAttribute('aria-expanded', String(open));
 }
 
+// Saqlangan kurs hozir ham shu foydalanuvchiga biriktirilgan bo'lsagina ishlatiladi
+const validCourseFilter = (id) => (!id || id === 'all' || !myCourses().some((c) => c.id === id) ? 'all' : id);
+
 function go(view) {
   if (!visibleViews().some((v) => v.id === view)) view = 'today';
   state.view = view;
+  state.courseFilter = validCourseFilter(state.cf[view]);
   history.replaceState(null, '', '#' + view);
   document.querySelectorAll('[data-go]').forEach((b) => {
     const on = b.dataset.go === view;
@@ -1451,6 +1476,7 @@ function renderView() {
   if (state.view === 'today') {
     el.innerHTML = viewToday();
     $('pageTitle').textContent = isToday() ? t('tToday') : t('navToday');
+    queueMicrotask(loadNudge);                      // birinchi chizishdan keyin — ro'yxatni kechiktirmaydi
   }
   else if (state.view === 'leads') { el.innerHTML = viewLeadsShell(); loadLeads(); refreshLeadsQuiet(); }
   else if (state.view === 'students') el.innerHTML = viewStudents();
@@ -1566,6 +1592,22 @@ function ensureDay() {
 // Bugungi ekranning o'zgaruvchan qismlari: statistika va ro'yxat. Qidiruvda faqat shular
 // qayta chiziladi — qidiruv maydonining o'zi almashtirilmaydi (Android klaviaturasi so'zni
 // "yig'ib" turganda maydon almashsa, yozilgan harflar ikkilanib ketardi).
+// Belgilar holati: hech narsa yo'q / hozir markazda (Keldi bor, Ketdi va Kelmadi/Sababli yo'q)
+const isUnmarked = (sid) => !state.today.some((r) => r.student_id === sid);
+const isInside = (sid) => !!recFor(sid, 'in') && !recFor(sid, 'out') && !dayStatus(sid);
+const matchesFilter = (sid, f) => (f === 'pending' ? isUnmarked(sid) : f === 'inside' ? isInside(sid) : true);
+
+// Filtr tanlanganda o'sha paytdagi o'quvchilar eslab qolinadi: belgilangan qator ro'yxatdan yo'qolmaydi
+// (aks holda keyingi bola ustiga siljib chiqib, ikkinchi bosish adashib boshqa bolaga tushardi).
+// Faol filtr yana bosilsa — ro'yxat qayta olinadi (belgilanganlar ketadi).
+function setTodayFilter(f) {
+  if (f === 'inside' && !isToday()) f = 'all';
+  state.todayFilter = f;
+  state.todaySnap = f === 'all' ? null : new Set(state.students
+    .filter((s) => s.active && myCourses().some((c) => c.id === s.course_id) && matchesFilter(s.id, f)).map((s) => s.id));
+  render();
+}
+
 function todayParts() {
   const list = visibleStudents().filter((s) => s.active);
   const ids = new Set(list.map((s) => s.id));
@@ -1575,8 +1617,17 @@ function todayParts() {
   const excusedCount = seen('excused').size;
   const pending = Math.max(0, list.length - inCount - absentCount - excusedCount);
 
+  const f = state.todayFilter === 'inside' && !isToday() ? 'all' : state.todayFilter;
+  const shown = f === 'all' || !state.todaySnap ? list : list.filter((s) => state.todaySnap.has(s.id));
+  const counts = { all: list.length, pending, inside: list.filter((s) => isInside(s.id)).length };
+  const segBtn = (k, label) => `<button class="seg-btn${f === k ? ' on' : ''}" data-today-filter="${k}" aria-pressed="${f === k}" type="button">${label} <span class="seg-n">${counts[k]}</span></button>`;
+  const seg = list.length
+    ? `<div class="seg today-seg" role="group" aria-label="${t('todayFilterAria')}">${segBtn('all', t('tfAll'))}${segBtn('pending', t('sPending'))}${isToday() ? segBtn('inside', t('tfInside')) : ''}</div>` : '';
+
+  // Guruhlar kurslarning belgilangan tartibida (oldin ro'yxatdagi birinchi ism tartibida chiqardi)
+  const order = new Map(state.courses.map((c, i) => [c.id, i]));
   const groups = {};
-  list.forEach((s) => { (groups[s.course_id] ??= []).push(s); });
+  shown.forEach((s) => { (groups[s.course_id] ??= []).push(s); });
   // Kun yuklanayotganda yoki yuklanmay qolganda belgilash mumkin emas —
   // aks holda allaqachon belgilangan bolalar qayta belgilanadi
   const busy = state.dayLoading || state.err.today;
@@ -1590,15 +1641,23 @@ function todayParts() {
     ? `<div class="card"><div class="empty"><div class="e-ico">🧑‍🎓</div><b>${t('noStudentT')}</b>
        <p>${state.search ? t('noSearch') : t('addFirst')}</p>
        ${state.search ? '' : `<button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('addStudent')}</button>`}</div></div>`
-    : Object.entries(groups).map(([cid, arr]) => {
+    : !shown.length
+    ? `<div class="card"><div class="empty"><div class="e-ico">${f === 'pending' ? '✅' : '🏠'}</div><b>${f === 'pending' ? t('fEmptyPending') : t('fEmptyInside')}</b></div></div>`
+    : Object.entries(groups).sort(([a], [b]) => (order.get(a) ?? 99) - (order.get(b) ?? 99)).map(([cid, arr]) => {
       const c = courseById(cid);
       // Hali hech qanday belgi qo'yilmaganlar bo'lsa — guruhni bir bosishda "Keldi".
       // Kelmadi/Sababli qo'yilganlar bunga kirmaydi: kasal bolaning ota-onasiga "keldi" xabari ketmasin.
-      const left = busy ? 0 : arr.filter((s) => !state.today.some((r) => r.student_id === s.id)).length;
+      const left = busy ? 0 : arr.filter((s) => isUnmarked(s.id)).length;
+      // Dars oxirida: hozir markazdagilarning hammasiga bir bosishda "Ketdi" (faqat bugun)
+      const inside = busy || !isToday() ? 0 : arr.filter((s) => isInside(s.id)).length;
       return `<div class="group-title">
           <span role="heading" aria-level="3" title="${esc(c.name)}">${cIcon(c)} ${esc(c.name)} · ${arr.length}</span>
+          <span class="group-acts">
           ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}" aria-label="${esc(t('allArrived') + ' — ' + c.name + ' · ' + left)}" type="button">
             ${ico(MARKS.in)} ${t('allArrived')} · ${left}</button>` : ''}
+          ${inside ? `<button class="btn btn-sm btn-tone tone-gold" data-group-out="${cid}" aria-label="${esc(t('allLeft') + ' — ' + c.name + ' · ' + inside)}" type="button">
+            ${ico(MARKS.out)} ${t('allLeft')} · ${inside}</button>` : ''}
+          </span>
         </div>
         <div class="rows">${arr.map((s) => rowToday(s, c)).join('')}</div>`;
     }).join('');
@@ -1610,7 +1669,7 @@ function todayParts() {
       ${statTile(excusedCount, MARKS.excused.label, MARKS.excused.icon, MARKS.excused.tone)}
       ${statTile(pending, t('sPending'), 'clock')}`;
   const listHtml = `${errCard}<div class="today-list"${state.dayLoading ? ' aria-busy="true"' : ''}>${body}</div>`;
-  return { stats, listHtml };
+  return { stats, listHtml, seg };
 }
 
 function viewToday() {
@@ -1628,8 +1687,10 @@ function viewToday() {
       <div class="spacer"></div>
     </div>
     ${dayBar()}
+    <div id="nudge">${nudgeHtml()}</div>
     <div class="stats stats-compact" id="todayStats">${p.stats}
     </div>
+    <div id="todaySeg">${p.seg}</div>
     ${courseChips()}
     <label class="field" style="margin:14px 0">
       <span class="sr-only">${t('search')}</span>
@@ -1638,11 +1699,57 @@ function viewToday() {
     <div id="todayBody">${p.listHtml}</div>`;
 }
 
+/* ---- Kecha belgilanmay qolganlar ----
+   Kecha kursda kamida bitta "Keldi" bo'lgan (dars bo'lgan) va o'quvchilarning kamida yarmi belgilangan bo'lsa,
+   qolganlari esdan chiqqan deb hisoblaymiz. O'tgan kunni tuzatganda ota-onaga xabar bormaydi (server shunday).
+   Dars jadvali o'ylab topilmaydi — dars kuni belgilarning o'zidan aniqlanadi. */
+const nudgeKey = (day, cid) => `parvoz-nudge-${day}-${cid}`;
+const nudgeHidden = (day, cid) => { try { return !!localStorage.getItem(nudgeKey(day, cid)); } catch (_) { return false; } };
+function nudgeHtml() {
+  const n = state.nudge;
+  if (!n || !isToday()) return '';
+  return n.items.filter((x) => !nudgeHidden(n.day, x.courseId)).map((x) => `
+    <div class="nudge" role="status"><span>${I.note} ${esc(t('nudgeText', { course: x.name, n: x.n, names: x.names.join(', ') + (x.more ? ` +${x.more}` : '') }))}</span>
+      <button class="btn btn-sm" data-nudge-fix="${n.day}" data-nudge-course="${x.courseId}" type="button">${t('nudgeFix')}</button>
+      <button class="btn btn-sm btn-ghost" data-nudge-hide="${x.courseId}" type="button">${t('nudgeHide')}</button></div>`).join('');
+}
+function renderNudge() { const el = $('nudge'); if (el && state.view === 'today') el.innerHTML = nudgeHtml(); }
+function hideNudge(cid) {
+  try { localStorage.setItem(nudgeKey(state.nudge.day, cid), '1'); } catch (_) {}
+  renderNudge();
+}
+async function loadNudge() {
+  if (state.view !== 'today' || !isToday() || state.nudgeLoading || !state.me || !state.students.length) return;
+  const y = shiftDay(todayKey(), -1);
+  if (state.nudge?.day === y) return;
+  state.nudgeLoading = true;
+  try {
+    const start = new Date(`${y}T00:00:00+05:00`).toISOString();
+    const end = new Date(new Date(start).getTime() + 86400000).toISOString();
+    const rows = rowsOf(await sb.from('attendance').select('student_id,kind').gte('occurred_at', start).lt('occurred_at', end));
+    const marked = new Set(rows.map((r) => r.student_id));
+    const arrived = new Set(rows.filter((r) => r.kind === 'in').map((r) => r.student_id));
+    const items = [];
+    for (const c of myCourses()) {
+      const studs = state.students.filter((s) => s.course_id === c.id && s.active && (!s.created_at || dayKey(s.created_at) <= y));
+      const missing = studs.filter((s) => !marked.has(s.id));
+      if (!studs.length || !missing.length || !studs.some((s) => arrived.has(s.id))) continue;
+      if ((studs.length - missing.length) * 2 < studs.length) continue;
+      items.push({ courseId: c.id, name: c.name, n: missing.length, names: missing.slice(0, 3).map((s) => s.full_name), more: Math.max(0, missing.length - 3) });
+    }
+    state.nudge = { day: y, items };
+  } catch (_) {
+    state.nudge = { day: y, items: [] };         // xato bo'lsa jim: bu ogohlantirish ixtiyoriy
+  } finally { state.nudgeLoading = false; }
+  renderNudge();
+}
+
 // Qidiruv natijasi: maydonga tegmay, faqat ro'yxat va hisoblagichlar
 function renderSearchResults() {
   if (state.view === 'today' && $('todayBody')) {
     const p = todayParts();
     $('todayStats').innerHTML = p.stats;
+    $('todaySeg').innerHTML = p.seg;
     $('todayBody').innerHTML = p.listHtml;
   } else if (state.view === 'students' && $('stList')) {
     const list = visibleStudents({ closed: true });
@@ -1698,7 +1805,8 @@ function rowToday(s, c) {
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
-        ${s.telegram_chat_id ? '' : `<span class="badge b-mute" title="${t('noTg')}">${I.bell}</span>`}</div>
+        ${s.telegram_chat_id ? '' : `<span class="badge b-mute" title="${t('noTg')}"><span class="sr-only">${t('noTg')}</span>${I.bell}</span>`}
+        ${s.parent_phone ? `<a class="tel-ico" href="${esc(telHref(s.parent_phone))}" title="${esc(s.parent_phone)}" aria-label="${esc(t('callParent') + ' — ' + s.full_name)}">${I.phone}</a>` : ''}</div>
       <div class="row-sub">
         ${marked
           ? `<button class="rt-status"${openAttr} type="button"
@@ -1860,7 +1968,8 @@ async function undoMark(r) {
   }
   try { await loadToday(); } catch (_) {}
   render();
-  toast(t('undone'), 'ok');
+  // Ota-onaga xabar allaqachon ketgan bo'lsa — buni yashirmaymiz: belgi o'chadi, lekin xabarni qaytarib bo'lmaydi
+  toast(r.notified ? t('undoneNotified') : t('undone'), 'ok');
 }
 
 // Kunni almashtirish: kelajakka o'tkazmaymiz. Javob kelguncha tugmalar bloklanadi.
@@ -1873,6 +1982,7 @@ async function setDay(key) {
   }
   state.day = key === todayKey() ? null : key;
   state.today = [];
+  state.todayFilter = 'all'; state.todaySnap = null;       // boshqa kun — filtr qayta boshlanadi
   state.dayLoading = true;
   state.err.today = false;
   render();
@@ -1887,35 +1997,63 @@ async function setDay(key) {
 async function sendGroupMark(courseId, kind) {
   const c = courseById(courseId);
   if (state.dayLoading || state.err.today) return;
-  // Faqat bugun hali hech qanday belgi qo'yilmaganlar: "Kelmadi"/"Sababli" qo'yilgan
-  // bolani "Keldi" qilib, ota-onasiga noto'g'ri xabar yubormaymiz
+  // "Keldi": faqat hali hech qanday belgi qo'yilmaganlar ("Kelmadi"/"Sababli" qo'yilgan bolani "Keldi" qilib,
+  // ota-onasiga noto'g'ri xabar yubormaymiz). "Ketdi": faqat hozir markazdagilar (Keldi bor, Ketdi yo'q).
   const targets = visibleStudents()
     .filter((s) => s.active && s.course_id === courseId)
-    .filter((s) => !state.today.some((r) => r.student_id === s.id));
+    .filter((s) => (kind === 'out' ? isInside(s.id) : isUnmarked(s.id)));
 
   if (!targets.length) { toast(t('groupNone')); return; }
-  if (!confirm(t('groupAsk', { course: c.name, n: targets.length, label: MARKS[kind].label }))) return;
+  const notif = isToday() && tplSaved(kind).on ? targets.filter((s) => s.telegram_chat_id).length : 0;
+  const ask = kind === 'out'
+    ? t('groupAskOut', { course: c.name, n: targets.length }) + (notif ? '\n' + t('groupAskNotif', { k: notif }) : '')
+    : t('groupAsk', { course: c.name, n: targets.length, label: MARKS[kind].label });
+  if (!confirm(ask)) return;
 
-  const btn = document.querySelector(`[data-group-mark="${courseId}"]`);
+  const btn = document.querySelector(`[data-group-${kind === 'out' ? 'out' : 'mark'}="${courseId}"]`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>'; }
 
+  const day = selDay();
   try {
     // Server bir so'rovda ko'pi bilan 60 ta o'quvchini qabul qiladi
-    let marked = 0, skipped = 0;
+    let marked = 0, skipped = 0, notified = 0;
+    const ids = [];
     for (let i = 0; i < targets.length; i += 60) {
       const r = await edge('mark-attendance', {
         student_ids: targets.slice(i, i + 60).map((s) => s.id), kind, date: state.day || undefined,
       });
-      marked += r.marked ?? 0; skipped += r.skipped ?? 0;
+      marked += r.marked ?? 0; skipped += r.skipped ?? 0; notified += r.notified ?? 0;
+      (r.results || []).forEach((x) => { if (x.ok && x.id) ids.push(x.id); });
     }
     try { await loadToday(); } catch (_) {}
     render();
-    toast(skipped ? t('groupDoneSkip', { n: marked, k: skipped }) : t('groupDone', { n: marked }), 'ok');
+    // Butun guruhni bir bosishda qaytarish ham mumkin (oldin guruh belgisida "Bekor qilish" yo'q edi)
+    toast(skipped ? t('groupDoneSkip', { n: marked, k: skipped }) : t('groupDone', { n: marked }), 'ok',
+      ids.length && selDay() === day ? { fn: () => undoGroup(ids, notified, day) } : undefined);
   } catch (err) {
     try { await loadToday(); } catch (_) {}
     render();
     toast('❌ ' + err.message, 'bad');
   }
+}
+
+// Guruh belgisini qaytarish: faqat shu bosish yaratgan yozuvlar o'chadi
+async function undoGroup(ids, notified, day) {
+  if (selDay() !== day) return;
+  const all = withDependents(ids);
+  const removed = state.today.filter((x) => all.includes(x.id));
+  state.today = state.today.filter((x) => !all.includes(x.id));
+  render();
+  try {
+    const { error } = await sb.from('attendance').delete().in('id', all);
+    if (error) throw error;
+  } catch (err) {
+    if (selDay() === day) state.today = [...state.today, ...removed.filter((x) => !state.today.some((y) => y.id === x.id))];
+    render(); toast('❌ ' + err.message, 'bad'); return;
+  }
+  try { await loadToday(); } catch (_) {}
+  render();
+  toast(notified ? t('undoneNotified') : t('undone'), 'ok');
 }
 
 
@@ -2060,7 +2198,7 @@ function rowStudent(s) {
       </div>
       <div class="row-sub">
         ${s.parent_name ? `<span>👤 ${esc(s.parent_name)}</span>` : ''}
-        ${s.parent_phone ? `<span>📞 ${esc(s.parent_phone)}</span>` : ''}
+        ${s.parent_phone ? `<a class="tel-link" href="${esc(telHref(s.parent_phone))}">📞 ${esc(s.parent_phone)}</a>` : ''}
         ${isAdmin() && Number.isInteger(state.fees.get(s.id)) ? `<span class="st-fee">💰 ${t('perMonth', { n: fmtSum(state.fees.get(s.id)) })}</span>` : ''}
       </div>
     </div>
@@ -2888,7 +3026,7 @@ function payRow({ s, c, p, owed, rem, debt }) {
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}${s.active ? '' : ` <span class="badge">${t('archive')}</span>`}</div>
-      <div class="row-sub"><span>${cIcon(c)} ${esc(c.name)}</span>${s.parent_phone ? `<span>📞 ${esc(s.parent_phone)}</span>` : ''}</div>
+      <div class="row-sub"><span>${cIcon(c)} ${esc(c.name)}</span>${s.parent_phone ? `<a class="tel-link" href="${esc(telHref(s.parent_phone))}">📞 ${esc(s.parent_phone)}</a>` : ''}</div>
     </div>
     <div class="pay-state">${state_}</div>
     <div class="row-actions">
@@ -4119,6 +4257,7 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('click', async (e) => {
   const el = e.target;
+  if (el.closest('a[href^="tel:"]')) return;      // qo'ng'iroq havolasi qatorning "belgilar oynasi"ni ochmasin
 
   const goto = el.closest('[data-goto]');
   if (goto) { go(goto.dataset.goto); return; }
@@ -4131,6 +4270,8 @@ document.addEventListener('click', async (e) => {
   const chip = el.closest('[data-chip]');
   if (chip) {
     state.courseFilter = chip.dataset.chip;
+    state.cf[state.view] = state.courseFilter;
+    if (state.view === 'today') { try { localStorage.setItem('parvoz-today-course', state.courseFilter); } catch (_) {} }
     if (state.view === 'report') {
       document.querySelectorAll('[data-chip]').forEach((b) => { const on = b.dataset.chip === state.courseFilter; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
       loadReport();
@@ -4197,6 +4338,17 @@ document.addEventListener('click', async (e) => {
   // Butun guruhni "Keldi" qilish
   const grp = el.closest('[data-group-mark]');
   if (grp) return sendGroupMark(grp.dataset.groupMark, 'in');
+  const grpOut = el.closest('[data-group-out]');
+  if (grpOut) return sendGroupMark(grpOut.dataset.groupOut, 'out');
+  const tf = el.closest('[data-today-filter]');
+  if (tf) return setTodayFilter(tf.dataset.todayFilter);
+  const nFix = el.closest('[data-nudge-fix]');
+  if (nFix) {                                      // eslatma bitta kurs haqida: shu kursga o'tib, faqat belgilanmaganlarni ko'rsatamiz
+    state.cf.today = state.courseFilter = nFix.dataset.nudgeCourse || 'all';
+    go('today'); await setDay(nFix.dataset.nudgeFix); return setTodayFilter('pending');
+  }
+  const nHide = el.closest('[data-nudge-hide]');
+  if (nHide) return hideNudge(nHide.dataset.nudgeHide);
 
   const mark = el.closest('[data-mark]');
   if (mark) {

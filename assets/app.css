@@ -1289,3 +1289,32 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
 @media (max-width: 400px) {
   .daybar-label, .daybar-sub { white-space: normal; overflow: visible; text-overflow: clip; text-align: center; }
 }
+
+/* ===================== DAVOMAT: FILTR, GURUH TUGMALARI, ESLATMA, QO'NG'IROQ ===================== */
+.today-seg { margin: 12px 0 2px; }
+.group-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; flex: none; max-width: 100%; }
+.group-title .group-acts { overflow: visible; text-overflow: clip; white-space: normal; }
+.nudge {
+  display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; margin: 12px 0 0; padding: 10px 13px;
+  border-radius: var(--r-sm); font-weight: 700; font-size: .86rem; line-height: 1.45; color: var(--gold-ink);
+  background: color-mix(in srgb, var(--gold) 12%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 38%, transparent);
+}
+.nudge > span { flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; }
+.nudge > span svg { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
+.nudge .btn { min-height: 36px; }
+.tel-link { color: inherit; text-decoration: none; font-weight: inherit; }
+.tel-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.tel-ico { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%;
+  color: var(--green-ink); background: color-mix(in srgb, var(--green) 14%, transparent); flex: none; }
+.tel-ico svg { width: 15px; height: 15px; }
+@media (pointer: coarse) {
+  .tel-ico { width: 44px; height: 44px; margin: -7px -3px; }
+  .tel-link { display: inline-flex; align-items: center; min-height: 44px; }
+  .nudge .btn { min-height: 44px; }
+}
+/* Eng tor telefon (320px): "Hammasi / Kutilmoqda / Markazda" bir qatorga sig'maydi — son yozuv ostida */
+.today-seg .seg-btn { min-width: 0; }
+@media (max-width: 359px) {
+  .today-seg .seg-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; padding: 6px 2px; font-size: .82rem; }
+  .today-seg .seg-n { margin-left: 0; }
+}
