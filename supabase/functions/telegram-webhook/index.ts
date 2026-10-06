@@ -63,6 +63,20 @@ const ASK_CONTACT = {
 };
 const HIDE_KEYBOARD = { remove_keyboard: true };
 
+// Qo'lda yozilgan telefon raqami: "998901234567", "90 123 45 67", "+998 90 123 45 67".
+// Yozilgan raqamni tekshirib bo'lmaydi — faqat Telegram o'zi tasdiqlagan kontakt (tugma) qabul qilinadi.
+const PHONE_LIKE = /^\+?[\d\s\-()]{7,20}$/;
+
+// Raqamni tasdiqlash kutilmoqdami (havola ochilgan, 15 daqiqa o'tmagan)
+async function waitingForContact(chatId: number | string): Promise<boolean> {
+  const cutoff = new Date(Date.now() - PENDING_TTL_MIN * 60_000).toISOString();
+  const { data } = await admin.from('students').select('id')
+    .eq('pending_chat_id', chatId).gte('pending_at', cutoff).limit(1).maybeSingle();
+  return !!data;
+}
+const ASK_AGAIN = `📱 Raqamni yozib yuborish shart emas — yozilgan raqam tekshirilmaydi.\n\n` +
+  `Pastdagi <b>«📱 Raqamimni tasdiqlash»</b> tugmasini bosing.`;
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('ok');
 
@@ -85,6 +99,13 @@ Deno.serve(async (req) => {
   const text = String(msg.text ?? '').trim();
   const say = (t: string, extra: Record<string, unknown> = {}) =>
     tg(token, 'sendMessage', { chat_id: chatId, parse_mode: 'HTML', text: t, ...extra });
+
+  const greet = () => say(
+    `👋 Assalomu alaykum! Bu — <b>Parvoz O'quv Markazi</b> davomat boti.\n\n` +
+    `Farzandingizga ulanish uchun o'qituvchi bergan maxsus havolani bosing.\n\n` +
+    `Havola faqat markazga qoldirilgan telefon raqamingiz bilan ochiladi.`,
+    { reply_markup: HIDE_KEYBOARD }
+  );
 
   try {
     /* ---------- Xodim: ariza xabarnomalariga ulanish ---------- */
@@ -194,6 +215,12 @@ Deno.serve(async (req) => {
         && student.link_expires_at && Date.parse(student.link_expires_at) > Date.now();
 
       if (!valid) {
+        // Ota-ona havola o'rniga raqamni yozib yuborgan bo'lishi mumkin ("998901234567" — 12 belgi, kodga o'xshaydi):
+        // tugmani yashirmaymiz va havola "eskirgan" demaymiz
+        if (!startMatch) {
+          if (await waitingForContact(chatId)) { await say(ASK_AGAIN, { reply_markup: ASK_CONTACT }); return new Response('ok'); }
+          if (PHONE_LIKE.test(text)) { await greet(); return new Response('ok'); }
+        }
         await say(`❌ Havola eskirgan yoki noto'g'ri.\n\nO'qituvchidan yangi havola so'rang — har bir havola <b>48 soat</b> amal qiladi.`,
           { reply_markup: HIDE_KEYBOARD });
         return new Response('ok');
@@ -231,6 +258,12 @@ Deno.serve(async (req) => {
       return new Response('ok');
     }
 
+    // Raqamni tasdiqlash kutilayotganda boshqa har qanday matn ("+998 90 ...", "salom"): tugma yashirilmasin
+    if (await waitingForContact(chatId)) {
+      await say(ASK_AGAIN, { reply_markup: ASK_CONTACT });
+      return new Response('ok');
+    }
+
     // Ulangan ota-ona to'lov eslatmasiga javob yozsa ("to'ladim") — bot javob o'qimasligini aytamiz,
     // aks holda unga "havolani bosing" deb qayta ulanish taklif qilinardi
     const { data: linked } = await admin.from('students').select('id')
@@ -244,12 +277,7 @@ Deno.serve(async (req) => {
       return new Response('ok');
     }
 
-    await say(
-      `👋 Assalomu alaykum! Bu — <b>Parvoz O'quv Markazi</b> davomat boti.\n\n` +
-      `Farzandingizga ulanish uchun o'qituvchi bergan maxsus havolani bosing.\n\n` +
-      `Havola faqat markazga qoldirilgan telefon raqamingiz bilan ochiladi.`,
-      { reply_markup: HIDE_KEYBOARD }
-    );
+    await greet();
   } catch (_e) {
     // Telegram qayta yubormasligi uchun baribir 200
   }

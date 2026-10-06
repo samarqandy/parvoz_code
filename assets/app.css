@@ -1313,8 +1313,55 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
   .nudge .btn { min-height: 44px; }
 }
 /* Eng tor telefon (320px): "Hammasi / Kutilmoqda / Markazda" bir qatorga sig'maydi — son yozuv ostida */
-.today-seg .seg-btn { min-width: 0; }
+.today-seg .seg-btn, .seg-link .seg-btn { min-width: 0; }
 @media (max-width: 359px) {
-  .today-seg .seg-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; padding: 6px 2px; font-size: .82rem; }
-  .today-seg .seg-n { margin-left: 0; }
+  .today-seg .seg-btn, .seg-link .seg-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; padding: 6px 2px; font-size: .82rem; }
+  .today-seg .seg-n, .seg-link .seg-n { margin-left: 0; }
 }
+
+/* ===================== DAVOMAT: TELEGRAM ULANISH HOLATI, OY TEKSHIRUVI ===================== */
+.badge-bad { background: color-mix(in srgb, var(--red) 14%, transparent); border-color: color-mix(in srgb, var(--red) 38%, transparent); color: var(--red-ink); }
+.st-link-sum { margin: 12px 0 0; font-size: .86rem; font-weight: 700; color: var(--muted); }
+.st-hint { margin-top: 2px; font-size: .8rem; font-weight: 600; color: var(--red-ink); }
+.row-actions .btn:not(.btn-ico) { white-space: nowrap; }
+.pay-check { margin: 14px 0 0; padding: 0; }
+.pay-check > summary { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 14px; cursor: pointer; list-style: none; }
+.pay-check > summary::-webkit-details-marker { display: none; }
+.pay-check > summary b { flex: 1; font-weight: 800; }
+.pay-check > summary::after { content: ""; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); margin: -4px 4px 0 2px; transition: transform .15s; }
+.pay-check[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+.pay-check-ok { display: flex; align-items: center; gap: 10px; padding: 10px 14px; min-height: 48px; color: var(--muted); }
+.pay-check-ok svg { width: 18px; height: 18px; color: var(--green-ink); flex: none; }
+.pay-check-ok b { flex: 1; color: var(--text); font-weight: 800; }
+.pay-check-body { display: grid; gap: 8px; padding: 0 12px 12px; }
+.pay-check-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; padding: 8px 12px; border-radius: var(--r-sm); font: inherit; font-weight: 700; text-align: left; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); }
+.pay-check-item b { flex: none; min-width: 26px; padding: 1px 8px; border-radius: 999px; text-align: center; color: var(--gold-ink); background: color-mix(in srgb, var(--gold) 16%, transparent); }
+.pay-check-item.on { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.pay-check-info { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: .86rem; font-weight: 600; color: var(--muted); }
+.pay-check-info svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+.pay-focus { margin: 12px 0 0; }
+.pay-focus .chip svg { width: 14px; height: 14px; margin-left: 2px; vertical-align: -2px; }
+.pay-check-body > .btn { justify-self: start; }
+
+.st-hint-soft { color: var(--muted); }
+
+/* ===================== DAVOMAT: KELMAYOTGANLAR ===================== */
+.seg-rep, .seg-away { margin-bottom: 14px; }
+@media (max-width: 480px) {
+  .seg-rep { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.seg-away .seg-btn { min-width: 0; }
+.away-note { margin: 0 0 12px; font-size: .82rem; font-weight: 600; color: var(--muted); }
+.away-last { color: var(--red-ink); font-weight: 800; }
+.away-row .row-actions .btn { white-space: nowrap; text-decoration: none; }
+@media (max-width: 359px) {
+  .seg-away .seg-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; padding: 6px 2px; font-size: .82rem; }
+  .seg-away .seg-n { margin-left: 0; }
+}
+
+/* ===================== ARIZA -> O'QUVCHI ===================== */
+.lead-wait { color: var(--gold-ink); font-weight: 800; }
+.lead-dup { color: var(--gold-ink); font-weight: 700; }
+.lead-dup svg { width: 14px; height: 14px; vertical-align: -2px; }
+.lead-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: -4px 0 14px; padding: 10px 12px; border-radius: var(--r-sm); font-size: .84rem; font-weight: 600; line-height: 1.45; color: var(--muted); background: var(--surface-2); border: 1px dashed var(--border-2); }
+.lead-note > span { flex: 1 1 200px; min-width: 0; }

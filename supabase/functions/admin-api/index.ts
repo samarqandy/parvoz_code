@@ -128,6 +128,20 @@ const sanaOf = (key: string) => `${Number(key.slice(8, 10))}-${OYLAR[Number(key.
 const normName = (n: unknown) => String(n ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
 const badName = (n: string) => /https?:\/\/|www\.|t\.me\/|@/i.test(n) || /\d{7,}/.test(n.replace(/[\s().-]/g, ''));
 
+// Auth foydalanuvchisini email bo'yicha topamiz. listUsers() bir sahifada 50 tani qaytaradi — sahifalab o'qiymiz,
+// aks holda ro'yxat oxiridagi foydalanuvchi "topilmadi" bo'lib, parol o'zgarmay / o'chmay qolardi.
+async function findAuthUser(email: string) {
+  const want = email.toLowerCase();
+  for (let page = 1; page <= 20; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) return null;
+    const hit = data?.users?.find((x) => (x.email ?? '').toLowerCase() === want);
+    if (hit) return hit;
+    if (!data?.users || data.users.length < 200) return null;
+  }
+  return null;
+}
+
 // Telegram javobini holatga aylantiramiz. abort — qolganlarini yubormaslik kerak.
 function classify(r: any): { status: 'sent' | 'failed' | 'unknown'; code: string; abort?: string } {
   if (r?.ok) return { status: 'sent', code: 'sent' };
@@ -253,6 +267,16 @@ Deno.serve(async (req) => {
       const role = body.role === 'admin' ? 'admin' : 'teacher';
       const courseIds: string[] = Array.isArray(body.course_ids) ? body.course_ids : [];
       if (!email) return json({ error: 'Email kerak' }, 400);
+      // Kurslar mavjudligini oldindan tekshiramiz: boshqa administrator kursni o'chirgan bo'lsa, o'qituvchi jimgina
+      // kurssiz qolmasin (avval eski biriktirishlar o'chib, yangilari xato bilan yozilmay qolardi)
+      const wanted = role === 'admin' ? [] : [...new Set(courseIds.map((c) => String(c)))];
+      if (wanted.some((c) => !UUID_RE.test(c))) return json({ error: "Kurs identifikatori noto'g'ri" }, 400);
+      if (wanted.length) {
+        const { data: found } = await admin.from('courses').select('id').in('id', wanted);
+        if ((found ?? []).length !== wanted.length) {
+          return json({ error: "Tanlangan kurslardan biri topilmadi (boshqa administrator o'chirgan bo'lishi mumkin). Sahifani yangilang." }, 409);
+        }
+      }
       const { data: existing } = await admin.from('allowed_teachers').select('email, role').eq('email', email).maybeSingle();
       // "Yangi o'qituvchi" formasi mavjud hisobni jimgina qayta yozmasin (ism, rol, parol, kurslar)
       if (body.create && existing) return json({ error: "Bu email allaqachon ro'yxatda" }, 409);
@@ -265,18 +289,35 @@ Deno.serve(async (req) => {
       if (!existing) {
         if (password.length < 8) return json({ error: "Yangi hisob uchun kamida 8 belgili parol kerak" }, 400);
         const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
-        if (error && !/already|exists|registered/i.test(error.message)) return json({ error: error.message }, 400);
+        if (error) {
+          if (!/already|exists|registered/i.test(error.message)) return json({ error: error.message }, 400);
+          // Bu email bilan hisob allaqachon bor (masalan, o'zi ro'yxatdan o'tgan va tasdiqlanmagan): administrator
+          // belgilagan parol qo'llanadi va hisob tasdiqlanadi — aks holda eski parol qolib, yangisi ishlamasdi
+          const u = await findAuthUser(email);
+          if (!u) return json({ error: "Bu email bilan hisob bor, lekin uni yangilab bo'lmadi" }, 500);
+          const { error: perr } = await admin.auth.admin.updateUserById(u.id, { password, email_confirm: true });
+          if (perr) return json({ error: perr.message }, 400);
+        }
       } else if (password) {
         if (password.length < 8) return json({ error: "Parol kamida 8 belgi bo'lishi kerak" }, 400);
-        const { data: list } = await admin.auth.admin.listUsers();
-        const u = list?.users?.find((x) => (x.email ?? '').toLowerCase() === email);
-        if (u) await admin.auth.admin.updateUserById(u.id, { password });
+        const u = await findAuthUser(email);
+        if (u) {
+          const { error: perr } = await admin.auth.admin.updateUserById(u.id, { password });
+          if (perr) return json({ error: perr.message }, 400);
+        }
       }
       const { error: uerr } = await admin.from('allowed_teachers').upsert({ email, full_name: fullName, role, added_by: actor.email });
       if (uerr) return json({ error: uerr.message }, 500);
-      await admin.from('teacher_courses').delete().eq('email', email);
-      if (role !== 'admin' && courseIds.length) {
-        await admin.from('teacher_courses').insert(courseIds.map((cid) => ({ email, course_id: cid })));
+      // Avval yangi biriktirishlar yoziladi, keyin ortiqchasi o'chadi: yozish xato bersa eski biriktirishlar saqlanib qoladi
+      if (wanted.length) {
+        const { error: terr } = await admin.from('teacher_courses').upsert(wanted.map((cid) => ({ email, course_id: cid })));
+        if (terr) return json({ error: terr.message }, 500);
+      }
+      const { data: have } = await admin.from('teacher_courses').select('course_id').eq('email', email);
+      const stale = (have ?? []).map((r) => r.course_id).filter((c) => !wanted.includes(c));
+      if (stale.length) {
+        const { error: derr } = await admin.from('teacher_courses').delete().eq('email', email).in('course_id', stale);
+        if (derr) return json({ error: derr.message }, 500);
       }
       return json({ ok: true });
     }
@@ -287,8 +328,7 @@ Deno.serve(async (req) => {
       if (email === actor.email.toLowerCase()) return json({ error: "O'zingizni o'chira olmaysiz" }, 400);
       await admin.from('teacher_courses').delete().eq('email', email);
       await admin.from('allowed_teachers').delete().eq('email', email);
-      const { data: list } = await admin.auth.admin.listUsers();
-      const u = list?.users?.find((x) => (x.email ?? '').toLowerCase() === email);
+      const u = await findAuthUser(email);
       if (u) await admin.auth.admin.deleteUser(u.id);
       return json({ ok: true });
     }
