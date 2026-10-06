@@ -28,10 +28,14 @@
 })();
 </script>
 
+<link rel="preconnect" href="https://pthqtdcbphqixeuqkgwa.supabase.co" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/app.css">
+<!-- Shrift ko'rinishni to'smaydi: sekin yoki yopiq tarmoqda panel tizim shrifti bilan darhol ochiladi
+     (oldin shrift CSS'i kelguncha sahifa oq qolar va quyidagi xato kuzatuvchisi ishga tushmasdi) -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 
 <script>
 // Telefonda konsolni ochib bo'lmaydi — xatoni ekranning o'zida ko'rsatamiz,
@@ -91,7 +95,7 @@
 <!-- Yuklanish ekrani -->
 <div class="auth" id="boot">
   <div style="text-align:center">
-    <div style="width:64px;aspect-ratio:447/559;margin:0 auto 14px;background:var(--logo-url) center/contain no-repeat"></div>
+    <div class="boot-logo"></div>
     <span class="spin" style="color:var(--gold)"></span>
   </div>
 </div>

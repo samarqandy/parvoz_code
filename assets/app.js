@@ -4,8 +4,41 @@
 const SUPABASE_URL = 'https://pthqtdcbphqixeuqkgwa.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0aHF0ZGNicGhxaXhldXFrZ3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDM4ODgsImV4cCI6MjEwNTQ3OTg4OH0.S0gqEi-dwcfLlkgiB44xZj64KtpLoCDVOz66P3SD3TY';
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-sb.auth.onAuthStateChange((_e, s) => { if (s) state.session = s; });
+// Barcha tarmoq so'rovlari: 20 soniyada javob bo'lmasa to'xtatiladi (aks holda belgi "saqlanmoqda"
+// bo'lib abadiy qotib qolardi). Server vaqti (Date sarlavhasi) — qurilma soati noto'g'ri bo'lsa
+// "Bugun"ni to'g'ri kunga qaytarish uchun.
+const NET_TIMEOUT_MS = window.__NET_TIMEOUT_MS || 20000;   // (sinov uchun o'zgartirilishi mumkin)
+let clockOffset = 0;        // server vaqti − qurilma vaqti (ms); 1 daqiqadan kichik farq hisobga olinmaydi
+let clockWarned = false;
+function noteServerDate(res) {
+  const ms = Date.parse(res?.headers?.get?.('date') ?? '');
+  if (!Number.isFinite(ms)) return;
+  const off = ms - Date.now();
+  clockOffset = Math.abs(off) > 60000 ? off : 0;
+  if (Math.abs(off) > 120000 && !clockWarned && state.me) {
+    clockWarned = true;
+    toast(t('clockSkew', { n: Math.round(Math.abs(off) / 60000) }), 'bad');
+  }
+}
+function netFetch(input, init = {}) {
+  if (init.keepalive) return fetch(input, init);          // sahifa yopilayotganda — kutmaymiz
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), NET_TIMEOUT_MS);
+  if (init.signal) {
+    if (init.signal.aborted) ctrl.abort();
+    else init.signal.addEventListener('abort', () => ctrl.abort(), { once: true });
+  }
+  return fetch(input, { ...init, signal: ctrl.signal })
+    .then((res) => { noteServerDate(res); return res; })
+    .finally(() => clearTimeout(timer));
+}
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { global: { fetch: netFetch } });
+sb.auth.onAuthStateChange((e, s) => {
+  if (s) state.session = s;
+  // Boshqa tabda chiqib ketildi / sessiya bekor qilindi — bu tab ham kirish ekraniga qaytsin
+  if (e === 'SIGNED_OUT' && state.me && !state.signingOut) sessionLost();
+});
 
 /* ---------------- Holat ---------------- */
 const state = {
@@ -131,6 +164,10 @@ const STR = {
     courseClosed: 'Yopiq kurs',
     payBadDate: "Sana kelajakda bo'lishi mumkin emas",
     leaveUnsaved: "Saqlanmagan shablon o'zgarishlari yo'qoladi. Davom etilsinmi?",
+    netTimeout: "Server javob bermadi. Internetni tekshirib, qayta urinib ko'ring",
+    sessionEnded: 'Sessiya tugadi — qaytadan kiring',
+    clockSkew: "Telefon soati noto'g'ri (server vaqtidan {n} daqiqa farq). Sana va vaqtni avtomatik qilib qo'ying",
+    offlineBoot: "Ulanish tiklanganda panel o'zi ochiladi",
     close: 'Yopish', ariaMain: 'Asosiy menyu', ariaNav: 'Navigatsiya', ariaDialog: 'Oyna',
     updateAvail: 'Panelning yangi versiyasi bor', updateNow: 'Yangilash',
     colorName: 'sky:Havorang,green:Yashil,teal:Firuza,violet:Binafsha,rose:Pushti,gold:Tillarang',
@@ -433,6 +470,10 @@ const STR = {
     courseClosed: 'Курс закрыт',
     payBadDate: 'Дата не может быть в будущем',
     leaveUnsaved: 'Несохранённые изменения шаблона пропадут. Продолжить?',
+    netTimeout: 'Сервер не отвечает. Проверьте интернет и повторите',
+    sessionEnded: 'Сессия завершена — войдите снова',
+    clockSkew: 'Часы телефона неверны (разница {n} мин.). Включите автоматические дату и время',
+    offlineBoot: 'Панель откроется сама, когда появится связь',
     close: 'Закрыть', ariaMain: 'Главное меню', ariaNav: 'Навигация', ariaDialog: 'Окно',
     updateAvail: 'Доступна новая версия панели', updateNow: 'Обновить',
     colorName: 'sky:Голубой,green:Зелёный,teal:Бирюзовый,violet:Фиолетовый,rose:Розовый,gold:Золотой',
@@ -779,7 +820,10 @@ function toast(msg, kind = '', action) {
     el.appendChild(btn);
   }
 
-  $('toasts').appendChild(el);
+  // Ketma-ket belgilashda bildirishnomalar ekranning yarmini yopib qo'ymasin: eng ko'pi bilan ikkita
+  const box = $('toasts');
+  while (box.children.length >= 2) box.firstElementChild.remove();
+  box.appendChild(el);
   // "Bekor qilish" bor xabar 10 soniya turadi; ustiga bosilsa/fokus tushsa to'xtaydi
   // (klaviatura va ekran o'qigich foydalanuvchisi ulgurishi uchun)
   const ms = action ? 10000 : kind === 'bad' ? 6000 : 4200;
@@ -791,41 +835,71 @@ function toast(msg, kind = '', action) {
 }
 
 async function edge(fn, payload, { keepalive = false } = {}) {
-  let token = SUPABASE_ANON;
-  // keepalive — sahifa yopilayotganda: kutishga vaqt yo'q, oxirgi ma'lum sessiya bilan darhol yuboramiz
-  if (keepalive) token = state.session?.access_token ?? SUPABASE_ANON;
-  else try {
-    const { data } = await sb.auth.getSession();
-    if (data.session) { state.session = data.session; token = data.session.access_token; }
-  } catch (_) { token = state.session?.access_token ?? SUPABASE_ANON; }
-  let res;
-  try {
-    res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
-      method: 'POST', keepalive,
-      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    });
-  } catch (_) {
-    // Tarmoq yiqildi — buni ruxsat xatosi bilan aralashtirmaymiz
-    const err = new Error(t('offline'));
-    err.offline = true;
-    throw err;
+  for (let attempt = 0; ; attempt++) {
+    let token = SUPABASE_ANON;
+    // keepalive — sahifa yopilayotganda: kutishga vaqt yo'q, oxirgi ma'lum sessiya bilan darhol yuboramiz
+    if (keepalive) token = state.session?.access_token ?? SUPABASE_ANON;
+    else try {
+      const { data } = await sb.auth.getSession();
+      if (data.session) { state.session = data.session; token = data.session.access_token; }
+    } catch (_) { token = state.session?.access_token ?? SUPABASE_ANON; }
+    let res;
+    try {
+      res = await netFetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
+        method: 'POST', keepalive,
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON, Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
+      // Tarmoq yiqildi yoki 20 soniyada javob kelmadi — buni ruxsat xatosi bilan aralashtirmaymiz
+      const timeout = e?.name === 'AbortError';
+      const err = new Error(timeout ? t('netTimeout') : t('offline'));
+      err.offline = !timeout;
+      err.timeout = timeout;
+      throw err;
+    }
+    // 401: token eskirgan bo'lishi mumkin — bir marta yangilab, qayta urinamiz
+    if (res.status === 401 && attempt === 0 && !keepalive && state.session) {
+      try {
+        const { data, error } = await sb.auth.refreshSession();
+        if (!error && data?.session) { state.session = data.session; continue; }
+      } catch (_) { /* quyida sessiya yo'qoldi deb hisoblaymiz */ }
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(data.error || `Xatolik (${res.status})`);
+      err.status = res.status;
+      if (res.status === 401) sessionLost();
+      throw err;
+    }
+    return data;
   }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(data.error || `Xatolik (${res.status})`);
-    err.status = res.status;
-    throw err;
-  }
-  return data;
+}
+
+// Panel ochiq paytida sessiya bekor bo'ldi (boshqa tabda chiqildi, foydalanuvchi o'chirildi, parol almashdi):
+// "Xatolik (401)" va cheksiz "Qayta urinish" o'rniga kirish ekrani
+let sessionLostShown = false;
+async function sessionLost() {
+  if (!state.me || sessionLostShown) return;
+  sessionLostShown = true;
+  state.signingOut = true;
+  try { await sb.auth.signOut(); } catch (_) {}
+  clearInterval(state.timer);
+  state.me = null; state.session = null;
+  showAuth();
+  $('authErr').textContent = t('sessionEnded');
+  state.signingOut = false;
 }
 
 const TZ = 'Asia/Samarkand';
-const dayKey = (iso) => new Intl.DateTimeFormat('en-CA',
-  { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
-const hhmm = (iso) => new Intl.DateTimeFormat('uz-UZ',
-  { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
-const todayKey = () => dayKey(new Date());
+// Formatlovchilar bir marta yaratiladi: har chaqiruvda yangisini qursak, 60 o'quvchili ro'yxatni
+// chizish ~170 ta Intl.DateTimeFormat yaratardi va har bosish sezilarli kechikardi
+const DAY_FMT = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+const HM_FMT = new Intl.DateTimeFormat('uz-UZ', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false });
+const dayKey = (iso) => DAY_FMT.format(new Date(iso));
+const hhmm = (iso) => HM_FMT.format(new Date(iso));
+// "Bugun" server vaqti bo'yicha (qurilma soati 1 daqiqadan ortiq og'gan bo'lsa tuzatiladi)
+const todayKey = () => dayKey(Date.now() + clockOffset);
 
 // Brauzer uz-UZ oy nomlarini "M09" deb beradi — o'zimiz formatlaymiz
 // uz-UZ oylarni "M09" deb chiqaradi, ru-RU esa kelishikni chalkashtiradi —
@@ -975,6 +1049,7 @@ $('authForm').addEventListener('submit', async (e) => {
 });
 
 async function logout() {
+  state.signingOut = true;
   await sb.auth.signOut();
   clearInterval(state.timer);
   location.reload();
@@ -990,6 +1065,12 @@ async function enterApp() {
     // Internet yo'qligi — ruxsat yo'qligi EMAS. Sessiyani saqlab qolamiz,
     // aks holda o'qituvchi har uzilishda qaytadan parol kiritishga majbur bo'ladi.
     if (err.offline || !navigator.onLine) {
+      if (state.session) {
+        // Sessiya bor: kirish formasi emas — "internet yo'q" kartasi; ulanganda o'zi qayta urinadi
+        state.retryOnline = true;
+        showBootError(t('offline'), t('offlineBoot'));
+        return;
+      }
       showAuth();
       $('authErr').textContent = t('offlineRetry');
       return;
@@ -1007,6 +1088,7 @@ async function enterApp() {
     return;
   }
 
+  sessionLostShown = false;
   $('auth').classList.add('hidden');
   hideBoot();
   $('app').classList.remove('hidden');
@@ -1045,8 +1127,8 @@ async function refreshAll() {
 // So'rov xatosi — bo'sh ro'yxat EMAS. Xato bo'lsa eski ma'lumot saqlanadi va xato
 // yuqoriga uzatiladi; aks holda internet uzilganda o'quvchilar ro'yxati "yo'qolib"
 // qolardi va o'qituvchi belgilangan bolalarni qayta belgilardi.
-function rowsOf({ data, error }) {
-  if (error) throw error;
+function rowsOf({ data, error, status }) {
+  if (error) { if (status === 401) sessionLost(); throw error; }
   return data ?? [];
 }
 
@@ -1095,6 +1177,7 @@ async function refreshLinks() {
   // (viewToday yangi kunni o'zi yuklay boshlaydi — ensureDay)
   if (state.loadedDay && state.loadedDay !== selDay() && state.view === 'today' && !typing()) render();
   refreshLeadsQuiet(true);
+  refreshTodayQuiet();
   const before = state.students.filter((s) => s.telegram_chat_id).length;
   try { await loadStudents(); } catch (_) { return; }   // internet yo'q — eski ro'yxat qoladi
   state.err.students = false;
@@ -1103,6 +1186,18 @@ async function refreshLinks() {
     if (after > before) toast(t('parentsLinkedN', { n: after - before }), 'ok');
     if (!typing()) render();
   }
+}
+
+// Boshqa qurilma (yoki boshqa o'qituvchi) qo'ygan belgilar: ochiq turgan Davomat ekrani eskirib
+// qolmasin. Aks holda eskirgan ekranda "Kelmadi" bosilsa, tasdiqlash so'ralmay, boshqa qurilmadagi
+// "Keldi" o'chib ketardi. Faqat ko'rinib turgan, band bo'lmagan ekran yangilanadi.
+async function refreshTodayQuiet() {
+  if (state.view !== 'today' || document.hidden || state.dayLoading || state.err.today || typing()) return;
+  if ($('sheet').open || state.today.some((r) => r._pending)) return;
+  const sig = () => state.today.map((r) => r.id + r.kind).sort().join();
+  const before = sig(), day = selDay();
+  try { await loadToday(); } catch (_) { return; }
+  if (selDay() === day && sig() !== before && !typing() && !$('sheet').open) render();
 }
 
 // Kun yuklanmadi. Qo'lda shu kunning ma'lumoti bo'lsa (qisqa uzilish) — u qoladi va belgilash
@@ -1641,13 +1736,15 @@ async function sendMark(studentId, kind, note) {
 
   try {
     const r = await edge('mark-attendance', { student_id: studentId, kind, note, date: state.day || undefined });
-    try { await loadToday(); }
-    catch (_) {
-      // Belgi saqlandi, faqat ro'yxat yangilanmadi — server javobidan qo'yamiz
+    // Server javobini darhol qo'yamiz (xabar ro'yxatni qayta o'qishni kutmaydi), haqiqiy holat esa
+    // quyida fonda solishtiriladi — 60 o'quvchili ro'yxatda bu har bosishni ~0,6 s tezlashtiradi
+    if (selDay() === day) {
+      // occurred_at server javobida bo'lmasa (eski versiya) — optimistik qatorning vaqti qoladi
       state.today = [...state.today.filter((x) => x.id !== optimistic.id && !gone(x)),
-        { id: r.id, student_id: studentId, kind, note: r.note ?? null, occurred_at: r.occurred_at }];
+        { id: r.id, student_id: studentId, kind, note: r.note ?? null, occurred_at: r.occurred_at || optimistic.occurred_at }];
     }
     render();
+    reconcileToday(day);
 
     const v = { name: s?.full_name ?? '', label: MARKS[kind].label };
     const msg = r.notified ? t('sentToParent', v)
@@ -1665,6 +1762,16 @@ async function sendMark(studentId, kind, note) {
     render();
     toast('❌ ' + err.message, 'bad');
   }
+}
+
+// Belgi saqlangandan keyin kun ro'yxatini serverdagi holat bilan solishtirish (fonda, xabarni kutdirmasdan).
+// Boshqa belgi hali saqlanayotgan bo'lsa (ketma-ket bosish) — tegmaymiz: keyingi javob o'zi solishtiradi.
+async function reconcileToday(day) {
+  if (state.today.some((r) => r._pending)) return;
+  const sig = () => state.today.map((r) => r.id + r.kind).sort().join();
+  const before = sig();
+  try { await loadToday(); } catch (_) { return; }
+  if (selDay() === day && sig() !== before && !state.today.some((r) => r._pending)) render();
 }
 
 // Toastdagi "Bekor qilish": yangi belgini o'chiradi. Agar u boshqa belgilarni almashtirgan
@@ -2080,7 +2187,7 @@ function renderReport() {
   const todayTh = wrap?.querySelector('th.is-today');
   if (wrap && todayTh) {
     const right = todayTh.offsetLeft + todayTh.offsetWidth;
-    const sticky = wrap.querySelector('.jg-pct')?.offsetWidth || 0;
+    const sticky = wrap.querySelector('.jg-sum')?.offsetWidth || 0;   // yopishqoq % ustuni (.jg-sum)
     wrap.scrollLeft = Math.max(0, right - wrap.clientWidth + sticky + 8);
   }
 }
@@ -4241,7 +4348,18 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('pageshow', (e) => { if (e.persisted) refreshOnResume(); });
 // Internet uzildi / qaytdi: ogohlantiramiz va qaytganda darhol yangilaymiz
 window.addEventListener('offline', () => { if (state.me) toast(t('offline'), 'bad'); });
-window.addEventListener('online', () => { state.resumeAt = 0; refreshOnResume(); });
+window.addEventListener('online', () => {
+  state.resumeAt = 0;
+  // Internet yo'q holda ochilgan panel: ulanishi bilan o'zi kirishni davom ettiradi
+  if (state.retryOnline && !state.me) {
+    state.retryOnline = false;
+    $('bootErr')?.classList.add('hidden');
+    $('boot')?.classList.remove('hidden');
+    enterApp();
+    return;
+  }
+  refreshOnResume();
+});
 
 // Saqlanmagan shablon bilan sahifani yopishdan oldin ogohlantiramiz
 window.addEventListener('beforeunload', (e) => {
