@@ -698,7 +698,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 /* Kuni tugadi */
 .act-done {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  min-width: 132px; min-height: 46px; padding: 0 16px;
+  min-width: 156px; min-height: 46px; padding: 0 16px;
   border-radius: var(--r-sm); border: 1px dashed var(--border-2);
   color: var(--muted); font-weight: 800; font-size: .9rem;
 }
@@ -1255,3 +1255,23 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
 /* Hisobot ro'yxati: o'quvchi nomi — qatorni ochadigan tugma (klaviatura uchun) */
 .row-toggle { background: none; border: 0; padding: 0; font: inherit; font-weight: 800; color: inherit; text-align: left; cursor: pointer; }
 .row-toggle:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Yuklanish ekranidagi logotip (inline style'dagi var(--logo-url) hujjat asosiga nisbatan
+   /logo-dark.webp ni so'rab 404 olardi) */
+.boot-logo { width: 64px; aspect-ratio: 447/559; margin: 0 auto 14px; background: var(--logo-url) center/contain no-repeat; }
+
+/* Triage: qolgan kichik vizual tuzatishlar */
+/* Sensorli ekran: "Hammasi keldi" va yuqori paneldagi belgilar 44px dan kichik emas */
+@media (pointer: coarse) {
+  .group-title .btn { min-height: 44px; }
+  .tb-icon, .tb-avatar { min-width: 44px; }
+}
+/* Tor telefonda sarlavha ikki qatorga o'tadi (ellipsis o'rniga) */
+@media (max-width: 400px) {
+  .topbar h1 { font-size: .95rem; line-height: 1.15; white-space: normal;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+}
+/* Jurnal: ism ustuni telefonda biroz kengroq — "Muhammadali" o'rtasidan bo'linmasin */
+@media (max-width: 999px) {
+  .jg-name { min-width: 124px; max-width: 124px; font-size: .74rem; }
+}
