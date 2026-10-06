@@ -76,6 +76,9 @@
     var boot = document.getElementById('boot');
     if (boot && !boot.classList.contains('hidden')) {
       fail('Juda uzoq yuklanmoqda / Долго загружается', 'timeout 15s');
+      // Bu "yumshoq" xato: panel keyinroq yuklansa, karta o'zi yopiladi (app.js hideBoot)
+      var be = document.getElementById('bootErr');
+      if (be && !be.classList.contains('hidden')) be.setAttribute('data-soft', '1');
     }
   }, 15000);
 
@@ -120,7 +123,7 @@
       <label class="field"><span data-t="fPass">Parol</span>
         <input class="inp" id="authPass" type="password" required minlength="8" autocomplete="current-password"></label>
       <button class="btn btn-primary btn-block" id="authSubmit" type="submit" data-t="signIn">Kirish</button>
-      <div class="err" id="authErr"></div>
+      <div class="err" id="authErr" role="alert"></div>
     </form>
     <div class="chips auth-langs">
       <button class="chip" data-lang-pick="uz" type="button">O'zbekcha</button>
@@ -138,7 +141,7 @@
       <div class="logo"></div>
       <div><b>Parvoz</b><small data-t="authTitle">Davomat tizimi</small></div>
     </div>
-    <nav class="side-nav" id="sideNav" aria-label="Asosiy menyu"></nav>
+    <nav class="side-nav" id="sideNav" data-t-aria="ariaMain" aria-label="Asosiy menyu"></nav>
   </aside>
 
   <div class="main">
@@ -171,14 +174,14 @@
     <main class="page" id="page"></main>
   </div>
 
-  <nav class="tabbar" aria-label="Navigatsiya">
+  <nav class="tabbar" data-t-aria="ariaNav" aria-label="Navigatsiya">
     <div class="tabbar-inner" id="tabbarInner"></div>
   </nav>
 </div>
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
-<dialog class="sheet" id="sheet" aria-label="Oyna">
+<dialog class="sheet" id="sheet" data-t-aria="ariaDialog" aria-label="Oyna">
   <div class="sheet-inner" id="sheetBody"></div>
 </dialog>
 

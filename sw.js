@@ -1,6 +1,7 @@
 /* Parvoz Davomat — service worker.
    Faqat panel qobig'ini keshlaydi; Supabase so'rovlari va sayt sahifalariga tegmaydi. */
-const CACHE = 'parvoz-davomat-v3';
+const CACHE = 'parvoz-davomat-v4';
+const NET_TIMEOUT = 4000;   // sekin internetda keshdagi qobiq 4 soniyadan keyin ochiladi
 const SHELL = [
   '/davomat.html',
   '/assets/app.css',
@@ -32,14 +33,22 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== self.location.origin) return;          // Supabase, shriftlar — tegmaymiz
   if (!SHELL.includes(url.pathname)) return;                // faqat panel fayllari
 
-  // Tarmoq birinchi, keshdan zaxira — yangilanishlar darhol yetib boradi
+  // Tarmoq birinchi, keshdan zaxira — yangilanishlar darhol yetib boradi.
+  // Sekin tarmoqda 4 soniyadan keyin keshdagi nusxa ochiladi (tarmoq javobi baribir keshni yangilaydi).
+  const network = fetch(req).then((res) => {
+    // Faqat to'g'ri javob keshlanadi: 404/5xx yoki portal sahifasi yaxshi nusxani bosib ketmasin
+    if (res.ok && res.type === 'basic') {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(req, copy));
+      return res;
+    }
+    // Xato javob: yaxshi nusxa bo'lsa panel shuni oladi (deploy paytidagi 404/502 paneli buzmasin)
+    return caches.match(req).then((old) => old || res);
+  });
+  const cached = () => caches.match(req).then((r) => r || (req.mode === 'navigate' ? caches.match('/davomat.html') : undefined));
+  network.catch(() => {});   // keshdagi nusxa yutsa, keyingi tarmoq xatosi "unhandled" bo'lmasin
+  const slow = new Promise((resolve) => setTimeout(() => cached().then(resolve), NET_TIMEOUT));
   e.respondWith(
-    fetch(req)
-      .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy));
-        return res;
-      })
-      .catch(() => caches.match(req).then((r) => r || caches.match('/davomat.html')))
+    Promise.race([network.catch(() => cached()), slow]).then((r) => r || network)
   );
 });
