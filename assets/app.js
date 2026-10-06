@@ -64,6 +64,12 @@ const state = {
   todaySnap: null,    // filtr tanlangan paytdagi o'quvchilar: belgilangach qator joyida qoladi, ro'yxat "sakramaydi"
   nudge: null,        // kecha belgilanmay qolganlar { day, items }
   nudgeLoading: false,
+  stLink: 'all',       // O'quvchilar: 'all' | 'unlinked' | 'linked' (faqat xotirada: saqlanib qolgan filtr keyingi kirishda ro'yxatni "qisqargandek" ko'rsatardi)
+  payFocus: null,      // To'lovlar > "Oy tekshiruvi": 'noAmt' | 'noFee' | 'noTg' — ro'yxat shu qatorlargacha toraytirilgan
+  payCheckOpen: false,
+  awayDays: (() => { try { const n = Number(localStorage.getItem('parvoz-away-days')); return [7, 14, 30].includes(n) ? n : 14; } catch (_) { return 14; } })(),
+  awayLoading: false,
+  awayErr: false,
   search: '',
   botUsername: null,
   tgMode: null,
@@ -136,7 +142,10 @@ const STR = {
     r1: 'Kasal', r2: 'Oilaviy sabab', r3: "Ta'til / safar", r4: 'Maktab ishi',
 
     /* --- kun tanlash va guruhni belgilash --- */
-    tabGrid: 'Jurnal', tabCharts: 'Diagrammalar', tabList: "Ro'yxat",
+    tabGrid: 'Jurnal', tabCharts: 'Diagrammalar', tabList: "Ro'yxat", tabAway: 'Kelmayotganlar',
+    awayAria: 'Necha kundan beri kelmagan', awayDaysN: '{n} kun', awayNote: 'Oxirgi 60 kundagi \u00abKeldi\u00bb belgilari asosida. Dars kunlari belgilardan aniqlanadi \u2014 dars jadvali yo\'q.',
+    awayLast: 'Oxirgi tashrif: {date} \u00b7 {n} kun oldin', awayNever: 'Oxirgi 60 kunda kelmagan', awayMissed: '{n} ta dars o\'tkazdi',
+    awayNone: 'Uzoq kelmagan o\'quvchi yo\'q', awayNoneP: 'Tanlangan muddatda hamma kelgan yoki dars o\'tmagan.', awayHead: '{n} ta o\'quvchi {d} kundan beri kelmagan',
     chDaily: "Kunlar bo'yicha davomat",
     chDailySub: "Har kuni nechta o'quvchi keldi, sababli yoki sababsiz qoldi",
     chCourses: "Kurslar bo'yicha davomat",
@@ -237,6 +246,29 @@ const STR = {
     noStudentsT: "O'quvchi yo'q",
     addFirstOne: "Birinchi o'quvchini qo'shing.",
     tgLinked: 'Telegram \u2713', tgNotLinked: 'Ulanmagan', tgNoPhone: 'Raqam kiritilmagan',
+    stLinkSummary: '{a} / {b} ota-ona Telegramga ulangan', stLinkAria: 'Telegram ulanishi bo\'yicha saralash',
+    stLinkNo: 'Ulanmagan', stLinkYes: 'Ulangan', stLinkAllDone: 'Hammasi ulangan', stLinkNoneYet: 'Hali birorta ota-ona ulanmagan',
+    lsWaiting: 'Havola yaratilgan \u00b7 {h} soat qoldi', lsPending: 'Ota-ona ochdi, raqamni tasdiqlayapti',
+    lsMismatch: 'Raqam mos kelmadi ({n}/3)', lsCancelled: 'Havola bekor: raqam 3 marta mos kelmadi',
+    lsCancelledHint: 'Raqamni tekshiring \u2014 eski havola ishlamaydi', lsExpired: 'Havola eskirgan',
+    lsFix: 'Raqamni tuzatish', lsLink: 'Havola', lsStopNote: 'Ota-ona to\'xtatgan bo\'lishi mumkin \u2014 yuborishdan oldin so\'rang.',
+    parentsUnlinkedN: '{n} ta ota-ona ulanishi o\'chdi',
+    dvBlocked: 'ota-ona botni bloklagan \u2014 xabar yetmadi', dvFailed: 'ota-onaga xabar yuborilmadi', dvUnknown: 'xabar yetib bordimi \u2014 noma\'lum',
+    dvBad: 'ism yoki izohda havola/raqam bor \u2014 xabar yuborilmadi', markedWarn: '\u2714\uFE0F {name}: {label} \u2014 {why}',
+    groupNotifyFail: '{k} ta ota-onaga xabar yetmadi', groupNotifyUnknown: '{k} tasida xabar holati noma\'lum',
+    leadEnroll: 'O\'quvchi sifatida qo\'shish', leadPhoneFilled: 'Arizadagi raqam qo\'yildi, tekshiring',
+    leadNameNote: 'Arizadagi ism: {name}. Forma \u00abIsmingiz\u00bb deb so\'raydi, shuning uchun ota-ona ismiga qo\'yildi.', leadNameIsStudent: 'Bu o\'quvchining ismi',
+    leadEnrolledOk: 'O\'quvchi qo\'shildi, ariza \u00abYozildi\u00bb deb belgilandi', leadEnrolledNoStatus: 'O\'quvchi qo\'shildi, lekin ariza holati yangilanmadi',
+    leadDupStudent: 'Bu raqam: {name} ({course}) ota-onasida bor', leadDupLead: 'Takror ariza: shu raqamdan yana {n} ta', leadWait: '{t} kutmoqda',
+    lsStalled: 'Ota-ona ochdi, raqamni tasdiqlamadi \u00b7 {ago}', lsStalledHint: 'Ota-onadan havolani qayta bosib, \u00ab\ud83d\udcf1 Raqamimni tasdiqlash\u00bb tugmasini bosishini so\'rang',
+    lsRotate: 'Bu o\'quvchi uchun {ago} havola yaratilgan. Yangi havola yaratilsa, eskisi ishlamay qoladi. Davom etasizmi?',
+    durMin: '{n} daqiqa', durHour: '{n} soat', durDay: '{n} kun', agoFmt: '{d} oldin', justNow: 'hozirgina',
+    payCheck: 'Oy tekshiruvi', payCheckOk: 'Hammasi joyida', payCheckNoAmt: 'Summasiz to\'lovlar',
+    payCheckNoFee: 'Narxi belgilanmagan o\'quvchilar', payCheckNoTg: 'Qarzdor, Telegramga ulanmagan',
+    payCheckEmpty: '{month} uchun hali birorta to\'lov yozilmagan', payFocusChip: 'Filtr: {name}', payFocusClear: 'Filtrni olib tashlash',
+    setCourseFee: 'Kurs narxini belgilash',
+    remNoPayWarn: '{month} uchun hali birorta ham to\'lov yozilmagan. Ota-onalarga \u00abto\'lov qayd etilmagan\u00bb xabari ketadi. Avval to\'laganlarni kiriting.',
+    remConfirmNoPay: 'Hali hech kim to\'lamagan deb hisoblanmoqda. Ishonchingiz komilmi?',
     parentLink: 'Ota-ona ulanishi',
     newStudent: "Yangi o'quvchi", editStudent: "O'quvchini tahrirlash",
     fNameReq: 'Ism-familiya *', fCourseReq: 'Kurs *', fChoose: 'Tanlang...',
@@ -449,7 +481,10 @@ const STR = {
     mIn: 'Пришёл', mOut: 'Ушёл', mAbsent: 'Не пришёл', mExcused: 'По причине', mDone: 'Завершено',
     r1: 'Болезнь', r2: 'Семейные обстоятельства', r3: 'Отпуск / поездка', r4: 'Дела в школе',
 
-    tabGrid: 'Журнал', tabCharts: 'Графики', tabList: 'Список',
+    tabGrid: 'Журнал', tabCharts: 'Графики', tabList: 'Список', tabAway: 'Не ходят',
+    awayAria: 'Сколько дней не ходит', awayDaysN: '{n} дн.', awayNote: 'По отметкам \u00abПришёл\u00bb за последние 60 дней. Дни занятий определяются по отметкам \u2014 расписания нет.',
+    awayLast: 'Последний визит: {date} \u00b7 {n} дн. назад', awayNever: 'Не приходил за последние 60 дней', awayMissed: 'пропущено занятий: {n}',
+    awayNone: 'Нет учеников, которые давно не ходят', awayNoneP: 'За выбранный срок все приходили или занятий не было.', awayHead: 'Не ходят {d} дн. и более: {n}',
     chDaily: 'Посещаемость по дням',
     chDailySub: 'Сколько учеников пришло, отсутствовало по причине и без',
     chCourses: 'Посещаемость по курсам',
@@ -545,6 +580,29 @@ const STR = {
     noStudentsT: 'Учеников нет',
     addFirstOne: 'Добавьте первого ученика.',
     tgLinked: 'Telegram \u2713', tgNotLinked: 'Не подключён', tgNoPhone: 'Номер не указан',
+    stLinkSummary: 'Подключено родителей: {a} из {b}', stLinkAria: 'Фильтр по подключению Telegram',
+    stLinkNo: 'Не подключены', stLinkYes: 'Подключены', stLinkAllDone: 'Все подключены', stLinkNoneYet: 'Пока ни один родитель не подключён',
+    lsWaiting: 'Ссылка создана \u00b7 осталось {h} ч', lsPending: 'Родитель открыл, подтверждает номер',
+    lsMismatch: 'Номер не совпал ({n}/3)', lsCancelled: 'Ссылка отменена: номер не совпал 3 раза',
+    lsCancelledHint: 'Проверьте номер \u2014 прежняя ссылка не работает', lsExpired: 'Ссылка устарела',
+    lsFix: 'Исправить номер', lsLink: 'Ссылка', lsStopNote: 'Родитель мог отключить рассылку \u2014 сначала уточните.',
+    parentsUnlinkedN: 'Отключилось родителей: {n}',
+    dvBlocked: 'родитель заблокировал бота \u2014 сообщение не дошло', dvFailed: 'сообщение родителю не отправлено', dvUnknown: 'неизвестно, дошло ли сообщение',
+    dvBad: 'в имени или заметке есть ссылка/номер \u2014 сообщение не отправлено', markedWarn: '\u2714\uFE0F {name}: {label} \u2014 {why}',
+    groupNotifyFail: 'Сообщение не дошло до родителей: {k}', groupNotifyUnknown: 'Неизвестно, дошло ли сообщение: {k}',
+    leadEnroll: 'Добавить как ученика', leadPhoneFilled: 'Номер из заявки подставлен, проверьте',
+    leadNameNote: 'Имя из заявки: {name}. Форма спрашивает \u00abВаше имя\u00bb, поэтому подставлено как имя родителя.', leadNameIsStudent: 'Это имя ученика',
+    leadEnrolledOk: 'Ученик добавлен, заявка отмечена как \u00abЗаписан\u00bb', leadEnrolledNoStatus: 'Ученик добавлен, но статус заявки не обновлён',
+    leadDupStudent: 'Этот номер у родителя: {name} ({course})', leadDupLead: 'Повторная заявка: ещё {n} с этого номера', leadWait: 'ждёт {t}',
+    lsStalled: 'Родитель открыл, но не подтвердил номер \u00b7 {ago}', lsStalledHint: 'Попросите родителя снова открыть ссылку и нажать \u00ab\ud83d\udcf1 Raqamimni tasdiqlash\u00bb',
+    lsRotate: 'Для этого ученика ссылка уже создана {ago}. Если создать новую, прежняя перестанет работать. Продолжить?',
+    durMin: '{n} мин.', durHour: '{n} ч.', durDay: '{n} дн.', agoFmt: '{d} назад', justNow: 'только что',
+    payCheck: 'Проверка месяца', payCheckOk: 'Всё в порядке', payCheckNoAmt: 'Оплаты без суммы',
+    payCheckNoFee: 'Ученики без цены', payCheckNoTg: 'Должник, не подключён к Telegram',
+    payCheckEmpty: 'За {month} ещё нет ни одной оплаты', payFocusChip: 'Фильтр: {name}', payFocusClear: 'Сбросить фильтр',
+    setCourseFee: 'Указать цену курса',
+    remNoPayWarn: 'За {month} не записано ни одной оплаты. Родителям уйдёт сообщение \u00abоплата не зафиксирована\u00bb. Сначала внесите оплаты.',
+    remConfirmNoPay: 'Сейчас считается, что никто не платил. Вы уверены?',
     parentLink: 'Подключение родителя',
     newStudent: 'Новый ученик', editStudent: 'Изменить ученика',
     fNameReq: 'Имя и фамилия *', fCourseReq: 'Предмет *', fChoose: 'Выберите...',
@@ -1254,15 +1312,18 @@ async function refreshLinks() {
   if (state.loadedDay && state.loadedDay !== selDay() && state.view === 'today' && !typing()) render();
   refreshLeadsQuiet(true);
   refreshTodayQuiet();
-  const before = state.students.filter((s) => s.telegram_chat_id).length;
+  const sig = () => state.students.map((s) => `${s.id}:${linkState(s).k}`).join();
+  const before = state.students.filter((s) => s.telegram_chat_id).length, sigBefore = sig();
   try { await loadStudents(); } catch (_) { return; }   // internet yo'q — eski ro'yxat qoladi
   state.err.students = false;
   const after = state.students.filter((s) => s.telegram_chat_id).length;
   if (after !== before) {
     if (after > before) toast(t('parentsLinkedN', { n: after - before }), 'ok');
-    // Faqat ulanish belgisi ko'rinadigan ekranlar qayta chiziladi: Sozlamalarda yozilayotgan token yoki shablon yo'qolmasin
-    if (!typing() && (state.view === 'today' || state.view === 'students')) render();
+    else toast(t('parentsUnlinkedN', { n: before - after }));
   }
+  // Faqat ulanish belgisi ko'rinadigan ekranlar qayta chiziladi: Sozlamalarda yozilayotgan token yoki shablon yo'qolmasin.
+  // Ulanish holati o'zgarsa ham (havola ochildi, raqam mos kelmadi...) ro'yxat yangilanadi — faqat son o'zgarganda emas
+  if ((after !== before || sig() !== sigBefore) && !typing() && (state.view === 'today' || state.view === 'students')) render();
 }
 
 // Boshqa qurilma (yoki boshqa o'qituvchi) qo'ygan belgilar: ochiq turgan Davomat ekrani eskirib
@@ -1752,7 +1813,7 @@ function renderSearchResults() {
     $('todaySeg').innerHTML = p.seg;
     $('todayBody').innerHTML = p.listHtml;
   } else if (state.view === 'students' && $('stList')) {
-    const list = visibleStudents({ closed: true });
+    const list = studentsShown();
     $('stShown').textContent = t('shownN', { n: list.length });
     $('stList').innerHTML = studentsListHtml(list);
   } else render();
@@ -1805,7 +1866,7 @@ function rowToday(s, c) {
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
-        ${s.telegram_chat_id ? '' : `<span class="badge b-mute" title="${t('noTg')}"><span class="sr-only">${t('noTg')}</span>${I.bell}</span>`}
+        ${s.telegram_chat_id ? '' : `<span class="badge b-mute" title="${esc(linkTitle(s))}"><span class="sr-only">${esc(linkTitle(s))}</span>${I.bell}</span>`}
         ${s.parent_phone ? `<a class="tel-ico" href="${esc(telHref(s.parent_phone))}" title="${esc(s.parent_phone)}" aria-label="${esc(t('callParent') + ' — ' + s.full_name)}">${I.phone}</a>` : ''}</div>
       <div class="row-sub">
         ${marked
@@ -1920,9 +1981,12 @@ async function sendMark(studentId, kind, note) {
     reconcileToday(day);
 
     const v = { name: s?.full_name ?? '', label: MARKS[kind].label };
-    const msg = r.notified ? t('sentToParent', v)
-                           : t('markedOk', v) + (isToday() && !r.muted && !s?.telegram_chat_id ? t('tgOff') : '');
-    toast(msg, 'ok', r.id ? { fn: () => undoMark(r) } : undefined);
+    // Xabar yetib bormagan bo'lsa (bot bloklangan, Telegram javob bermadi...) o'qituvchi darhol bilsin — telefon qilish mumkin
+    const why = deliveryWhy(r.delivery);
+    const msg = why ? t('markedWarn', { ...v, why })
+      : r.notified ? t('sentToParent', v)
+      : t('markedOk', v) + (isToday() && !r.muted && !s?.telegram_chat_id ? t('tgOff') : '');
+    toast(msg, why ? 'bad' : 'ok', r.id ? { fn: () => undoMark(r) } : undefined);
   } catch (err) {
     // Faqat shu bosishning o'zgarishini qaytaramiz: butun ro'yxatni eski nusxaga almashtirsak,
     // shu orada boshqa o'quvchiga qo'yilgan (muvaffaqiyatli) belgi yo'qolib, qayta belgilanardi
@@ -1935,6 +1999,15 @@ async function sendMark(studentId, kind, note) {
     render();
     toast('❌ ' + err.message, 'bad');
   }
+}
+
+// mark-attendance `delivery`: xabar ota-onaga yetdimi. Bo'sh qaytsa — gap yo'q (yetdi, o'chirilgan, ulanmagan yoki o'tgan kun)
+function deliveryWhy(code) {
+  if (code === 'blocked') return t('dvBlocked');
+  if (code === 'unknown') return t('dvUnknown');
+  if (code === 'bad_name' || code === 'bad_note') return t('dvBad');
+  if (code === 'failed' || code === 'no_chat' || code === 'skipped') return t('dvFailed');
+  return '';
 }
 
 // Belgi saqlangandan keyin kun ro'yxatini serverdagi holat bilan solishtirish (fonda, xabarni kutdirmasdan).
@@ -2016,19 +2089,21 @@ async function sendGroupMark(courseId, kind) {
   const day = selDay();
   try {
     // Server bir so'rovda ko'pi bilan 60 ta o'quvchini qabul qiladi
-    let marked = 0, skipped = 0, notified = 0;
+    let marked = 0, skipped = 0, notified = 0, nFail = 0, nUnk = 0;
     const ids = [];
     for (let i = 0; i < targets.length; i += 60) {
       const r = await edge('mark-attendance', {
         student_ids: targets.slice(i, i + 60).map((s) => s.id), kind, date: state.day || undefined,
       });
       marked += r.marked ?? 0; skipped += r.skipped ?? 0; notified += r.notified ?? 0;
+      nFail += r.notify_failed ?? 0; nUnk += r.notify_unknown ?? 0;
       (r.results || []).forEach((x) => { if (x.ok && x.id) ids.push(x.id); });
     }
     try { await loadToday(); } catch (_) {}
     render();
     // Butun guruhni bir bosishda qaytarish ham mumkin (oldin guruh belgisida "Bekor qilish" yo'q edi)
-    toast(skipped ? t('groupDoneSkip', { n: marked, k: skipped }) : t('groupDone', { n: marked }), 'ok',
+    const warn = [nFail && t('groupNotifyFail', { k: nFail }), nUnk && t('groupNotifyUnknown', { k: nUnk })].filter(Boolean).join('. ');
+    toast((skipped ? t('groupDoneSkip', { n: marked, k: skipped }) : t('groupDone', { n: marked })) + (warn ? `. ${warn}` : ''), warn ? 'bad' : 'ok',
       ids.length && selDay() === day ? { fn: () => undoGroup(ids, notified, day) } : undefined);
   } catch (err) {
     try { await loadToday(); } catch (_) {}
@@ -2066,6 +2141,34 @@ const LEAD_STATUS = {
   enrolled:  { label: t('lEnrolled'),  badge: 'badge-ok' },
   rejected:  { label: t('lRejected'),  badge: '' },
 };
+
+// Takror raqam: arizadagi telefon allaqachon o'quvchining ota-onasida yoki boshqa arizada bor (oxirgi 9 raqam bo'yicha).
+// O'qituvchi faqat o'z kurslaridagi o'quvchilarni ko'radi (RLS) — shuning uchun bu ogohlantirish, qat'iy qoida emas.
+const phoneTail = (v) => String(v || '').replace(/\D+/g, '').slice(-9);
+function leadDup(l) {
+  const tail = phoneTail(l.phone);
+  if (tail.length < 9 || (l.status !== 'new' && l.status !== 'contacted')) return { students: [], leads: 0 };
+  return {
+    students: state.students.filter((s) => s.active && phoneTail(s.parent_phone) === tail),
+    leads: state.leads.filter((x) => x.id !== l.id && phoneTail(x.phone) === tail).length,
+  };
+}
+function leadDupHtml(l) {
+  const d = leadDup(l);
+  const parts = [];
+  if (d.students.length) {
+    const first = d.students[0];
+    parts.push(t('leadDupStudent', { name: esc(first.full_name), course: esc(courseById(first.course_id).name) }) + (d.students.length > 1 ? ` +${d.students.length - 1}` : ''));
+  }
+  if (d.leads) parts.push(t('leadDupLead', { n: d.leads }));
+  return parts.length ? `<div class="row-sub lead-dup">${parts.map((x) => `<span>${I.alert} ${x}</span>`).join('')}</div>` : '';
+}
+// Yangi ariza qancha vaqtdan beri kutmoqda (SLA o'ylab topilmagan — faqat fakt)
+function leadWaitText(l) {
+  if (l.status !== 'new') return '';
+  const d = durText(Date.now() + clockOffset - Date.parse(l.created_at));
+  return d ? t('leadWait', { t: d }) : t('justNow');
+}
 
 function viewLeadsShell() {
   const counts = { all: state.leads.length };
@@ -2107,8 +2210,10 @@ function loadLeads() {
           <span>\u{1F4DE} ${esc(l.phone)}</span>
           ${l.preferred_time ? `<span>\u23F0 ${esc(l.preferred_time)}</span>` : ''}
           <span>${when}</span>
+          ${leadWaitText(l) ? `<span class="lead-wait">${leadWaitText(l)}</span>` : ''}
         </div>
         ${l.note ? `<div class="row-sub"><span>\u{1F4AC} ${esc(l.note)}</span></div>` : ''}
+        ${leadDupHtml(l)}
       </div>
       <div class="row-actions">
         <a class="btn btn-sm btn-green" href="tel:${esc(l.phone)}">${I.phone} ${t('call')}</a>
@@ -2125,8 +2230,10 @@ function leadSheet(id) {
     <div class="card" style="margin-bottom:14px">
       <div class="row-sub"><span>\u{1F4DE} <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a></span></div>
       ${l.note ? `<div class="row-sub" style="margin-top:6px"><span>\u{1F4AC} ${esc(l.note)}</span></div>` : ''}
-      <div class="row-sub" style="margin-top:6px"><span>${uzDate(l.created_at)}, ${hhmm(l.created_at)}</span></div>
+      <div class="row-sub" style="margin-top:6px"><span>${uzDate(l.created_at)}, ${hhmm(l.created_at)}</span>${leadWaitText(l) ? `<span class="lead-wait">${leadWaitText(l)}</span>` : ''}</div>
+      ${leadDupHtml(l)}
     </div>
+    ${l.status !== 'enrolled' ? `<button class="btn btn-primary btn-block" style="margin-bottom:14px" data-lead-enroll type="button">${I.plus} ${t('leadEnroll')}</button>` : ''}
     <div class="field"><span>${t('status')}</span>
       <div class="check-list">${Object.entries(LEAD_STATUS).map(([k, v]) =>
         `<button class="check-item" data-lead-status="${k}" type="button">
@@ -2134,6 +2241,7 @@ function leadSheet(id) {
     </div>
     ${isAdmin() ? `<button class="btn btn-danger btn-block" style="margin-top:10px" data-lead-del="${l.id}" type="button">${I.trash} ${t('del')}</button>` : ''}
   `, () => {
+    document.querySelector('[data-lead-enroll]')?.addEventListener('click', () => { closeSheet(); studentSheet(null, { lead: l }); });
     document.querySelectorAll('[data-lead-status]').forEach((b) => b.addEventListener('click', async () => {
       const { error } = await sb.from('leads')
         .update({ status: b.dataset.leadStatus, handled_by: state.me.email }).eq('id', l.id);
@@ -2157,14 +2265,85 @@ function leadSheet(id) {
    KO'RINISH: O'QUVCHILAR
    ============================================================ */
 function studentsListHtml(list) {
+  if (!list.length && (state.search.trim() || stLinkF() !== 'all')) {
+    const [ico, title] = state.search.trim() ? ['🔍', t('noStudentsT')] : stLinkF() === 'unlinked' ? ['🎉', t('stLinkAllDone')] : ['🔗', t('stLinkNoneYet')];
+    return `<div class="card"><div class="empty"><div class="e-ico">${ico}</div><b>${title}</b></div></div>`;
+  }
   return list.length ? `<div class="rows">${list.map(rowStudent).join('')}</div>`
     : `<div class="card"><div class="empty"><div class="e-ico">🧑‍🎓</div><b>${t('noStudentsT')}</b>
        <p>${t('addFirstOne')}</p>
        <button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('addStudent')}</button></div></div>`;
 }
 
-function viewStudents() {
+/* ---- Ota-ona Telegramga ulanishi: holat, filtr ----
+   Holat studentlar jadvalidagi mavjud ustunlardan hisoblanadi (server o'zgarmaydi); qoidalar telegram-webhook bilan bir xil:
+   noto'g'ri raqam bilan 3 urinish havolani bekor qiladi, raqamni tasdiqlash 15 daqiqa kutadi, havola 48 soat amal qiladi. */
+const LINK_MAX_TRIES = 3, LINK_PENDING_MIN = 15, LINK_TTL_H = 48;
+// Davomiylik: "12 daqiqa" / "3 soat" / "2 kun" (1 daqiqadan kam — null)
+function durText(ms) {
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return null;
+  if (m < 60) return t('durMin', { n: m });
+  const h = Math.floor(m / 60);
+  return h < 48 ? t('durHour', { n: h }) : t('durDay', { n: Math.floor(h / 24) });
+}
+const agoText = (ms) => { const d = durText(ms); return d ? t('agoFmt', { d }) : t('justNow'); };
+function linkState(s) {
+  if (s.telegram_chat_id) return { k: 'linked' };
+  if (!s.parent_phone) return { k: 'nophone' };
+  const now = Date.now() + clockOffset;
+  const tries = s.link_attempts || 0;
+  const exp = s.link_expires_at ? Date.parse(s.link_expires_at) : 0;
+  const pend = s.pending_chat_id && s.pending_at ? Date.parse(s.pending_at) : 0;
+  const fresh = !!pend && now - pend <= LINK_PENDING_MIN * 60000;
+  if (tries >= LINK_MAX_TRIES && !exp) return { k: 'cancelled' };
+  if (fresh && tries === 0) return { k: 'pending' };
+  if (tries > 0 && (exp > now || fresh)) return { k: 'mismatch', n: tries };
+  if (exp && exp <= now) return { k: 'expired' };
+  if (pend) return { k: 'stalled', ago: now - pend };                        // ochgan, lekin raqamni tasdiqlamagan
+  if (exp > now) return { k: 'waiting', h: Math.max(1, Math.ceil((exp - now) / 3600000)) };
+  return { k: 'none' };
+}
+// Matn: nishon va Bugun ekranidagi qo'ng'iroqcha tavsifi uchun
+function linkLabel(ls) {
+  return ls.k === 'waiting' ? t('lsWaiting', { h: ls.h }) : ls.k === 'pending' ? t('lsPending')
+    : ls.k === 'mismatch' ? t('lsMismatch', { n: ls.n }) : ls.k === 'cancelled' ? t('lsCancelled')
+    : ls.k === 'stalled' ? t('lsStalled', { ago: agoText(ls.ago) }) : ls.k === 'expired' ? t('lsExpired') : '';
+}
+const linkTitle = (s) => { const l = linkLabel(linkState(s)); return l ? `${t('noTg')} \u00b7 ${l}` : t('noTg'); };
+function linkBadge(s) {
+  const ls = linkState(s);
+  if (ls.k === 'linked') return `<span class="badge badge-ok">${t('tgLinked')}</span>`;
+  if (ls.k === 'nophone') return `<span class="badge badge-warn">${t('tgNoPhone')}</span>`;
+  if (ls.k === 'none') return `<span class="badge badge-warn">${t('tgNotLinked')}</span>`;
+  const cls = ls.k === 'cancelled' ? 'badge badge-bad' : ls.k === 'waiting' || ls.k === 'pending' ? 'badge' : 'badge badge-warn';
+  return `<span class="${cls}">${esc(linkLabel(ls))}</span>`;
+}
+const stLinkF = () => (state.stLink === 'unlinked' || state.stLink === 'linked' ? state.stLink : 'all');
+function linkStats() {
+  const allowed = new Set((isAdmin() ? state.courses : myCourses()).map((c) => c.id));
+  const scoped = state.students.filter((s) => allowed.has(s.course_id) && (state.courseFilter === 'all' || s.course_id === state.courseFilter));
+  const base = scoped.filter((s) => s.active);
+  const linked = base.filter((s) => s.telegram_chat_id).length;
+  return { all: scoped.length, total: base.length, linked, unlinked: base.length - linked };
+}
+function studentsShown() {
   const list = visibleStudents({ closed: true });
+  const f = stLinkF();
+  return f === 'unlinked' ? list.filter((s) => s.active && !s.telegram_chat_id)
+    : f === 'linked' ? list.filter((s) => s.active && s.telegram_chat_id) : list;
+}
+function studentsLinkHtml() {
+  const st = linkStats();
+  if (!st.total || !state.botUsername) return '';
+  const f = stLinkF();
+  const btn = (k, label, n) => `<button class="seg-btn${f === k ? ' on' : ''}" data-st-link="${k}" aria-pressed="${f === k}" type="button">${label} <span class="seg-n">${n}</span></button>`;
+  return `<p class="st-link-sum">${t('stLinkSummary', { a: st.linked, b: st.total })}</p>
+    <div class="seg seg-link" role="group" aria-label="${t('stLinkAria')}">${btn('all', t('all'), st.all)}${btn('unlinked', t('stLinkNo'), st.unlinked)}${btn('linked', t('stLinkYes'), st.linked)}</div>`;
+}
+
+function viewStudents() {
+  const list = studentsShown();
   if (!myCourses().length && !(isAdmin() && list.length)) {
     return `<div class="page-head"><div><h2>${t('tStudents')}</h2></div></div>
       <div class="card"><div class="empty"><div class="e-ico">🔒</div><b>${t('noCourseT')}</b></div></div>`;
@@ -2176,11 +2355,26 @@ function viewStudents() {
       <button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('add')}</button>
     </div>
     ${courseChips()}
+    ${studentsLinkHtml()}
     <label class="field" style="margin:14px 0">
       <span class="sr-only">${t('search')}</span>
       <input class="inp" id="searchInp" placeholder="${t('searchPh')}" value="${esc(state.search)}">
     </label>
     <div id="stList">${studentsListHtml(list)}</div>`;
+}
+
+// Ulanmagan, raqami bor o'quvchida havola tugmasi yozuvli; 3 marta xato raqamdan keyin asosiy amal — raqamni tuzatish
+function studentActions(s) {
+  const ls = linkState(s);
+  const edit = `<button class="btn btn-sm btn-ico" data-edit-student="${s.id}" title="${t('edit')}" aria-label="${esc(t('edit') + ': ' + s.full_name)}" type="button">${I.edit}</button>`;
+  if (!state.botUsername) return edit;
+  const lbl = esc(t('parentLink') + ': ' + s.full_name);
+  const iconLink = `<button class="btn btn-sm btn-ico" data-link="${s.id}" title="${t('parentLink')}" aria-label="${lbl}" type="button">${I.link}</button>`;
+  if (ls.k === 'cancelled') {
+    return `<button class="btn btn-sm btn-primary" data-edit-student="${s.id}" data-focus-phone aria-label="${esc(t('lsFix') + ': ' + s.full_name)}" type="button">${I.edit} ${t('lsFix')}</button>${iconLink}`;
+  }
+  if (ls.k === 'linked' || ls.k === 'nophone') return iconLink + edit;
+  return `<button class="btn btn-sm" data-link="${s.id}" title="${t('parentLink')}" aria-label="${lbl}" type="button">${I.link} ${t('lsLink')}</button>${edit}`;
 }
 
 function rowStudent(s) {
@@ -2192,21 +2386,17 @@ function rowStudent(s) {
         <span class="badge badge-course" style="--acc:var(--${c.color})">${cIcon(c)} ${esc(c.name)}</span>
         ${s.active ? '' : `<span class="badge">${t('archive')}</span>`}
         ${c.active === false ? `<span class="badge badge-warn">${t('courseClosed')}</span>` : ''}
-        ${s.telegram_chat_id
-          ? `<span class="badge badge-ok">${t('tgLinked')}</span>`
-          : `<span class="badge badge-warn">${s.parent_phone ? t('tgNotLinked') : t('tgNoPhone')}</span>`}
+        ${linkBadge(s)}
       </div>
+      ${linkState(s).k === 'cancelled' ? `<div class="st-hint">${t('lsCancelledHint')}</div>`
+        : linkState(s).k === 'stalled' ? `<div class="st-hint st-hint-soft">${t('lsStalledHint')}</div>` : ''}
       <div class="row-sub">
         ${s.parent_name ? `<span>👤 ${esc(s.parent_name)}</span>` : ''}
         ${s.parent_phone ? `<a class="tel-link" href="${esc(telHref(s.parent_phone))}">📞 ${esc(s.parent_phone)}</a>` : ''}
         ${isAdmin() && Number.isInteger(state.fees.get(s.id)) ? `<span class="st-fee">💰 ${t('perMonth', { n: fmtSum(state.fees.get(s.id)) })}</span>` : ''}
       </div>
     </div>
-    <div class="row-actions">
-      ${state.botUsername
-        ? `<button class="btn btn-sm btn-ico" data-link="${s.id}" title="${t('parentLink')}" aria-label="${esc(t('parentLink') + ': ' + s.full_name)}" type="button">${I.link}</button>` : ''}
-      <button class="btn btn-sm btn-ico" data-edit-student="${s.id}" title="${t('edit')}" aria-label="${esc(t('edit') + ': ' + s.full_name)}" type="button">${I.edit}</button>
-    </div>
+    <div class="row-actions">${studentActions(s)}</div>
   </div>`;
 }
 
@@ -2358,13 +2548,91 @@ async function loadReport() {
   renderReport();
 }
 
+/* ------------------------------------------------------------
+   KELMAYOTGANLAR — uzoq vaqtdan beri kelmagan o'quvchilar (oy chegarasiz: har oyning 1-sanasida nolga tushmaydi).
+   Oxirgi 60 kundagi "Keldi" belgilaridan hisoblanadi; server o'zgarmaydi. Dars jadvali bazada yo'q, shuning uchun
+   kursning dars kunlari hisobotdagi qoida bilan bir xil: kursdan kimdir "Keldi" belgilangan kunlar. O'quvchi ro'yxatga
+   tushishi uchun oxirgi tashrifdan beri kamida 2 ta dars o'tgan bo'lishi shart — shu bilan kursda dars bo'lmagan
+   davr (ta'til, belgi qo'yilmagan haftalar) yolg'on signal bermaydi.
+   ------------------------------------------------------------ */
+const AWAY_WINDOW = 60, AWAY_MIN_MISSED = 2, AWAY_TTL = 90000;
+let awayRaw = null, awaySeq = 0;               // { at, rows: [{ sid, day }] }
+const awayStale = () => !awayRaw || Date.now() - awayRaw.at > AWAY_TTL;
+const dayDiff = (a, b) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
+async function loadAway() {
+  const seq = ++awaySeq;
+  state.awayLoading = true; state.awayErr = false;
+  if (!awayRaw && state.view === 'report') renderReport();
+  try {
+    const from = new Date(Date.now() + clockOffset - AWAY_WINDOW * 86400e3).toISOString();
+    const rows = await fetchAll(() => sb.from('attendance').select('student_id,occurred_at').eq('kind', 'in')
+      .gte('occurred_at', from).order('occurred_at').order('id'));
+    if (seq !== awaySeq) return;
+    awayRaw = { at: Date.now(), rows: rows.map((r) => ({ sid: r.student_id, day: dayKey(r.occurred_at) })) };
+  } catch (_) {
+    if (seq !== awaySeq) return;
+    state.awayErr = true;
+  }
+  state.awayLoading = false;
+  if (state.view === 'report') renderReport();
+}
+function awayModel(days) {
+  const today = todayKey(), winStart = shiftDay(today, -AWAY_WINDOW);
+  const sCourse = new Map(state.students.map((s) => [s.id, s.course_id]));
+  const last = new Map(), lessons = new Map();
+  (awayRaw?.rows ?? []).forEach(({ sid, day }) => {
+    if (!last.has(sid) || day > last.get(sid)) last.set(sid, day);
+    const cid = sCourse.get(sid);
+    if (!cid) return;
+    if (!lessons.has(cid)) lessons.set(cid, new Set());
+    lessons.get(cid).add(day);
+  });
+  const allowed = new Set(myCourses().map((c) => c.id));
+  const out = [];
+  state.students.forEach((s) => {
+    if (!s.active || !allowed.has(s.course_id) || (state.courseFilter !== 'all' && s.course_id !== state.courseFilter)) return;
+    const joined = s.created_at ? dayKey(s.created_at) : null;
+    if (joined && dayDiff(joined, today) < days) return;            // yangi qo'shilgan — hali erta
+    const lv = last.get(s.id) || null;
+    const since = lv ? dayDiff(lv, today) : null;
+    if (lv && since < days) return;
+    const after = lv || (joined && joined > winStart ? joined : winStart);
+    const missed = [...(lessons.get(s.course_id) ?? [])].filter((d) => d > after).length;
+    if (missed < AWAY_MIN_MISSED) return;
+    out.push({ s, c: courseById(s.course_id), last: lv, since, missed });
+  });
+  return out.sort((a, b) => (b.since ?? 1e9) - (a.since ?? 1e9) || a.s.full_name.localeCompare(b.s.full_name));
+}
+function repAway() {
+  if (state.awayErr) {
+    return `<div class="card"><div class="empty"><b>${t('error')}</b><button class="btn btn-sm" data-away-retry type="button" style="margin-top:10px">${t('retry')}</button></div></div>`;
+  }
+  if (!awayRaw) return '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+  const list = awayModel(state.awayDays);
+  const seg = [7, 14, 30].map((n) => `<button class="seg-btn${state.awayDays === n ? ' on' : ''}" data-away-days="${n}" aria-pressed="${state.awayDays === n}" type="button">${t('awayDaysN', { n })} <span class="seg-n">${awayModel(n).length}</span></button>`).join('');
+  const row = ({ s, c, last, since, missed }) => `<div class="row away-row">
+    <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
+    <div class="row-main">
+      <div class="row-title">${esc(s.full_name)} <span class="badge badge-course" style="--acc:var(--${c.color})">${cIcon(c)} ${esc(c.name)}</span></div>
+      <div class="row-sub"><span class="away-last">${last ? t('awayLast', { date: esc(shortDate(last)), n: since }) : t('awayNever')}</span><span>${t('awayMissed', { n: missed })}</span></div>
+      ${s.parent_name || s.parent_phone ? `<div class="row-sub">${s.parent_name ? `<span>👤 ${esc(s.parent_name)}</span>` : ''}${s.parent_phone ? `<a class="tel-link" href="${esc(telHref(s.parent_phone))}">📞 ${esc(s.parent_phone)}</a>` : ''}</div>` : ''}
+    </div>
+    ${s.parent_phone ? `<div class="row-actions"><a class="btn btn-sm btn-green" href="${esc(telHref(s.parent_phone))}" aria-label="${esc(t('callParent') + ' — ' + s.full_name)}">${I.phone} ${t('call')}</a></div>` : ''}
+  </div>`;
+  return `<div class="seg seg-away" role="group" aria-label="${t('awayAria')}">${seg}</div>
+    <p class="away-note">${t('awayNote')}</p>
+    ${list.length ? `<div class="rows">${list.map(row).join('')}</div>`
+      : `<div class="card"><div class="empty"><div class="e-ico">🎉</div><b>${t('awayNone')}</b><p>${t('awayNoneP')}</p></div></div>`}`;
+}
+
 function renderReport() {
   const out = $('repOut');
   if (!out || !repData) return;
   const d = repData;
-  const empty = !d.rows.length || !d.total;
+  const noStudents = !d.rows.length;
+  const empty = noStudents || !d.total;
 
-  const tabs = [['grid', t('tabGrid')], ['charts', t('tabCharts')], ['list', t('tabList')]];
+  const tabs = [['grid', t('tabGrid')], ['charts', t('tabCharts')], ['list', t('tabList')], ['away', t('tabAway')]];
   const tab = tabs.some(([k]) => k === state.repTab) ? state.repTab : 'grid';
 
   out.classList.remove('is-loading');
@@ -2376,11 +2644,14 @@ function renderReport() {
       ${statTile(d.absences, MARKS.absent.label, MARKS.absent.icon, MARKS.absent.tone)}
       ${statTile(d.avg + '%', t('sAvg'), 'chart')}
     </div>
-    ${empty
+    ${noStudents
       ? `<div class="card"><div class="empty"><div class="e-ico">📭</div><b>${t('noData')}</b><p>${t('noDataP')}</p></div></div>`
-      : `<div class="seg" role="tablist" aria-label="${t('tReport')}">${tabs.map(([k, label]) =>
+      : `<div class="seg seg-rep" role="tablist" aria-label="${t('tReport')}">${tabs.map(([k, label]) =>
           `<button class="seg-btn${k === tab ? ' on' : ''}" role="tab" aria-selected="${k === tab}" data-rep-tab="${k}" type="button">${label}</button>`).join('')}</div>
-        <div class="rep-body">${tab === 'grid' ? repGrid(d) : tab === 'charts' ? repCharts(d) : repList(d)}</div>`}`;
+        <div class="rep-body">${tab === 'away' ? repAway()
+          : empty ? `<div class="card"><div class="empty"><div class="e-ico">📭</div><b>${t('noData')}</b><p>${t('noDataP')}</p></div></div>`
+          : tab === 'grid' ? repGrid(d) : tab === 'charts' ? repCharts(d) : repList(d)}</div>`}`;
+  if (tab === 'away' && !noStudents && !state.awayLoading && !state.awayErr && awayStale()) queueMicrotask(loadAway);
   drawCharts();
   // Jurnal: bitta Tab bekati (180 katak = 180 ta Tab edi); ichida strelkalar bilan yuriladi
   const firstCell = out.querySelector('.jg-cell.is-today.is-fix, .jg-cell.is-fix') || out.querySelector('.jg-cell');
@@ -2966,14 +3237,44 @@ function payFilter(list) {
     fold(s.parent_name).includes(q));
 }
 
+/* ---- Oy tekshiruvi: pul raqamlari jimgina noto'g'ri bo'lib qolmasin ----
+   Hammasi payModel() dan — qo'shimcha so'rov yo'q. Summasiz to'lov xato emas (ba'zan summa noma'lum), shuning uchun ogohlantirish. */
+function payChecks(d) {
+  const noAmt = d.paid.filter((x) => x.p.amount == null);
+  const noFee = d.unpaid.filter((x) => x.rate == null);
+  const noTg = state.botUsername ? d.unpaid.filter((x) => !x.s.telegram_chat_id) : [];
+  return { noAmt, noFee, noTg, warn: [noAmt, noFee, noTg].filter((l) => l.length).length, empty: d.items.length > 0 && !d.paid.length };
+}
+const PAY_FOCUS = {
+  noAmt: { tab: 'paid', label: 'payCheckNoAmt' },
+  noFee: { tab: 'unpaid', label: 'payCheckNoFee' },
+  noTg: { tab: 'unpaid', label: 'payCheckNoTg' },
+};
+function payCheckHtml(d, c) {
+  if (!d.items.length) return '';
+  const item = (k, n) => (n ? `<button class="pay-check-item${state.payFocus === k ? ' on' : ''}" data-pay-focus="${k}" aria-pressed="${state.payFocus === k}" type="button"><span>${t(PAY_FOCUS[k].label)}</span><b>${n}</b></button>` : '');
+  const empty = c.empty ? `<p class="pay-check-info">${I.note}<span>${t('payCheckEmpty', { month: ymLabel(d.ym) })}</span></p>` : '';
+  if (!c.warn && !empty) return `<div class="card pay-check pay-check-ok">${I.check}<b>${t('payCheck')}</b><span class="badge badge-ok">${t('payCheckOk')}</span></div>`;
+  return `<details class="card pay-check" id="payCheck"${state.payCheckOpen || state.payFocus ? ' open' : ''}>
+    <summary><b>${t('payCheck')}</b>${c.warn ? `<span class="badge badge-warn">${c.warn}</span>` : `<span class="badge badge-ok">${t('payCheckOk')}</span>`}</summary>
+    <div class="pay-check-body">${item('noAmt', c.noAmt.length)}${item('noFee', c.noFee.length)}${item('noTg', c.noTg.length)}${empty}
+      ${c.noFee.length && isAdmin() ? `<button class="btn btn-sm" data-goto="team" type="button">${t('setCourseFee')}</button>` : ''}</div>
+  </details>`;
+}
+
 function renderPayments() {
   const out = $('payOut');
   if (!out || !state.pay) return;
   if (state.payMode === 'fin') return renderFinance(out);
   const d = payModel();
-  const tab = ['unpaid', 'paid', 'all'].includes(state.payTab) ? state.payTab : 'unpaid';
+  const checks = payChecks(d);
+  // Tanlangan tekshiruvda hech narsa qolmasa (hammasi tuzatildi) filtr o'zi yo'qoladi
+  if (state.payFocus && !(checks[state.payFocus]?.length)) state.payFocus = null;
+  const tab = state.payFocus ? PAY_FOCUS[state.payFocus].tab
+    : ['unpaid', 'paid', 'all'].includes(state.payTab) ? state.payTab : 'unpaid';
   out.classList.remove('is-loading');
   out.innerHTML = `
+    ${payCheckHtml(d, checks)}
     <div class="stats stats-compact pay-stats">
       ${statTile(d.paid.length, t('payPaid'), 'check', 'green')}
       ${statTile(d.unpaid.length, t('payUnpaid'), 'alert', 'red')}
@@ -2987,16 +3288,18 @@ function renderPayments() {
       <span class="sr-only">${t('paySearch')}</span>
       <input class="inp" id="payQ" type="search" placeholder="${t('paySearch')}" value="${esc(state.payQ)}" autocomplete="off">
     </label>
-    <div id="payList">${payListHtml(d, tab)}</div>`;
+    <div id="payList">${payListHtml(d, tab, checks)}</div>`;
 }
 
-function payListHtml(d, tab) {
-  const base = tab === 'paid' ? d.paid : tab === 'unpaid' ? d.unpaid : d.items;
+function payListHtml(d, tab, checks = payChecks(d)) {
+  const focus = state.payFocus && checks[state.payFocus] ? state.payFocus : null;
+  const base = focus ? checks[focus] : tab === 'paid' ? d.paid : tab === 'unpaid' ? d.unpaid : d.items;
   const list = payFilter(base).sort((a, b) =>
     tab === 'unpaid' ? b.owed.length - a.owed.length || a.s.full_name.localeCompare(b.s.full_name)
     : tab === 'all' ? (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name)
     : a.s.full_name.localeCompare(b.s.full_name));
-  const bar = tab === 'unpaid' ? debtSummary(d) + remindBar(d, base) : '';
+  const chip = focus ? `<div class="chips pay-focus"><button class="chip on" style="--acc:var(--gold)" data-pay-focus-clear aria-label="${esc(t('payFocusClear'))}" type="button">${esc(t('payFocusChip', { name: t(PAY_FOCUS[focus].label) }))} ${I.x}</button></div>` : '';
+  const bar = focus ? chip : tab === 'unpaid' ? debtSummary(d) + remindBar(d, base) : '';
   if (!list.length) {
     const [ico, title, sub] = state.payQ.trim() ? ['🔍', t('noStudentsT'), ''] : !d.items.length ? ['🧑‍🎓', t('payNoStudents'), t('payNoStudentsP')]
       : tab === 'unpaid' ? ['🎉', t('payNoneUnpaid'), t('payNoneUnpaidP')] : ['🧾', t('payNonePaid'), t('payNonePaidP')];
@@ -3208,9 +3511,12 @@ function remindSheet() {
     cnt('no_tg') && t('remSumNoTg', { n: cnt('no_tg') }), cnt('recent') && t('remSumRecent', { n: cnt('recent') }),
     cnt('bad_name') && t('remSumBad', { n: cnt('bad_name') })].filter(Boolean).join(' · ');
   const tplText = tplSaved('pay').text;
+  // Bu oy hali birorta to'lov yozilmagan bo'lsa, "to'lov qayd etilmagan" xabari hammaga ketadi — ehtimol hali kiritilmagan, to'lov emas
+  const noPay = d.items.length > 0 && !d.paid.length;
 
   openSheet(`${t('remTitle')} · ${esc(ymLabel(d.ym))}`, `
     <div id="remBody">
+      ${noPay ? `<p class="tpl-err" role="alert">${t('remNoPayWarn', { month: esc(ymLabel(d.ym)) })}</p>` : ''}
       ${state.payQ.trim() ? `<p class="rem-scope">${t('remBySearch', { n: cands.length })}</p>` : ''}
       <p class="rem-summary">${summary}</p>
       <div class="tpl-prev-head"><span>${t('tplPrev')}</span></div>
@@ -3244,13 +3550,13 @@ function remindSheet() {
       document.querySelectorAll('.remPick').forEach((x) => { x.checked = all; });
       refresh();
     });
-    $('remSend').addEventListener('click', () => remindSend(picks(), d.ym));
+    $('remSend').addEventListener('click', () => remindSend(picks(), d.ym, noPay));
     refresh();
   });
 }
 
-async function remindSend(ids, ym) {
-  if (!ids.length || !confirm(t('remConfirm', { n: ids.length }))) return;
+async function remindSend(ids, ym, noPay = false) {
+  if (!ids.length || !confirm(t('remConfirm', { n: ids.length }) + (noPay ? `\n\n${t('remConfirmNoPay')}` : ''))) return;
   const btn = $('remSend');
   btn.disabled = true;
   const label = btn.querySelector('span');
@@ -3334,7 +3640,7 @@ function setPayYm(ym) {
   if (!/^\d{4}-\d{2}$/.test(ym || '')) return;
   const max = payMaxYm();
   state.payYm = ym > max ? max : ym;
-  state.pay = null;
+  state.pay = null; state.payFocus = null;
   render();
 }
 
@@ -3885,25 +4191,30 @@ function parentPhone(raw) {
   return { ok: false };
 }
 
-function studentSheet(id) {
+function studentSheet(id, { focusPhone = false, lead = null } = {}) {
   const s = id ? state.students.find((x) => x.id === id) : null;
   const list = myCourses();
   // Yopiq kursdagi o'quvchining kursi ham ro'yxatda turadi — aks holda saqlashda jimgina boshqa kursga o'tib qolardi
   const cur = s ? courseById(s.course_id) : null;
   if (cur && cur.id && !list.some((c) => c.id === cur.id)) list.push(cur);
-  const opts = list.map((c) => `<option value="${c.id}" ${s && s.course_id === c.id ? 'selected' : ''}>${esc(cText(c))}${c.active === false ? ` (${esc(t('courseClosed'))})` : ''}</option>`).join('');
+  // Arizadan: kurs oldindan tanlanadi (agar o'qituvchining kurslari ichida bo'lsa); ariza ismi — ota-ona ismiga (forma "Ismingiz" deb so'raydi)
+  const leadPhone = lead ? (() => { const p = parentPhone(lead.phone); return p.ok && p.value ? p.value : lead.phone; })() : '';
+  const pickCourse = (c) => (s ? s.course_id === c.id : !!lead && lead.course_id === c.id);
+  const opts = list.map((c) => `<option value="${c.id}" ${pickCourse(c) ? 'selected' : ''}>${esc(cText(c))}${c.active === false ? ` (${esc(t('courseClosed'))})` : ''}</option>`).join('');
   openSheet(s ? t('editStudent') : t('newStudent'), `
     <form id="stForm">
       <label class="field"><span>${t('fNameReq')}</span>
         <input class="inp" id="stName" required value="${esc(s?.full_name ?? '')}" aria-describedby="stNameErr"></label>
       <p class="tpl-err" id="stNameErr" role="alert" hidden></p>
+      ${lead ? `<div class="lead-note" id="stLeadNote"><span>${t('leadNameNote', { name: esc(lead.full_name) })}</span>
+        <button class="btn btn-sm" id="stLeadName" type="button">${t('leadNameIsStudent')}</button></div>` : ''}
       <label class="field"><span>${t('fCourseReq')}</span>
         <select class="inp" id="stCourse" required>${s ? '' : `<option value="">${t('fChoose')}</option>`}${opts}</select></label>
       <label class="field"><span>${t('fParent')}</span>
-        <input class="inp" id="stParent" value="${esc(s?.parent_name ?? '')}"></label>
+        <input class="inp" id="stParent" value="${esc(s?.parent_name ?? lead?.full_name ?? '')}"></label>
       <label class="field"><span>${t('fPhone')}</span>
-        <input class="inp" id="stPhone" inputmode="tel" placeholder="+998 90 123 45 67" value="${esc(s?.parent_phone ?? '')}" aria-describedby="stPhoneErr">
-        <small class="f-hint">${t('fPhoneHint')}</small></label>
+        <input class="inp" id="stPhone" inputmode="tel" placeholder="+998 90 123 45 67" value="${esc(s?.parent_phone ?? leadPhone)}" aria-describedby="stPhoneErr">
+        <small class="f-hint">${t('fPhoneHint')}</small>${lead ? `<small class="f-hint">${t('leadPhoneFilled')}</small>` : ''}</label>
       <p class="tpl-err" id="stPhoneErr" role="alert" hidden></p>
       ${isAdmin() ? `<label class="field"><span>${t('fStFee')}</span>
         <input class="inp" id="stFee" inputmode="numeric" autocomplete="off" aria-describedby="stFeeErr"
@@ -3915,6 +4226,11 @@ function studentSheet(id) {
       <button class="btn btn-primary btn-block" type="submit">${s ? t('save') : t('add')}</button>
       ${s ? `<button class="btn btn-danger btn-block" style="margin-top:9px" id="stDelete" type="button">${I.trash} ${t('del')}</button>` : ''}
     </form>`, () => {
+    if (focusPhone) { const ph = $('stPhone'); ph.focus(); ph.select(); }
+    $('stLeadName')?.addEventListener('click', () => {
+      $('stName').value = lead.full_name; $('stParent').value = '';
+      $('stLeadNote').hidden = true; $('stName').focus();
+    });
     const feeIn = $('stFee');
     // Bo'sh maydonda tanlangan kursning narxi ko'rinadi — nima olinishini admin bilsin
     const feePh = () => {
@@ -3968,9 +4284,15 @@ function studentSheet(id) {
           : await sb.from('student_fees').upsert({ student_id: sid, monthly_fee: fee });
         feeErr = fq.error;
       }
+      // Arizadan qo'shilgan o'quvchi: ariza "Yozildi" bo'ladi (o'quvchi qo'shilgan bo'lsa ham, holat yangilanmasa — alohida xabar)
+      let leadErr = null;
+      if (lead && !s) leadErr = (await sb.from('leads').update({ status: 'enrolled', handled_by: state.me.email }).eq('id', lead.id)).error;
       if (feeErr) toast(t('stFeeFail', { e: feeErr.message }), 'bad');
+      else if (lead && !s) toast(t(leadErr ? 'leadEnrolledNoStatus' : 'leadEnrolledOk'), leadErr ? 'bad' : 'ok');
       else toast(s ? t('saved') : t('studentAdded'), 'ok');
-      await Promise.all([loadStudents(), loadFees()]); render();
+      await Promise.all([loadStudents(), loadFees(), lead ? loadLeadsData() : null]);
+      if (lead) renderCounts();
+      render();
     });
     if (s) $('stDelete').addEventListener('click', async () => {
       if (!confirm(t('delStudent', { name: s.full_name }))) return;
@@ -4033,6 +4355,11 @@ function parentLinkSheet(id) {
     return;
   }
 
+  // Havola ochilganda har safar yangisi yaratiladi va eskisi o'chadi: yuborilgan havolani tasodifan buzib qo'ymaylik
+  const live = s.link_expires_at ? Date.parse(s.link_expires_at) : 0;
+  const now = Date.now() + clockOffset;
+  if (live > now && !confirm(t('lsRotate', { ago: agoText(Math.max(0, now - (live - LINK_TTL_H * 3600000))) }))) return;
+
   // Yangi havola so'raymiz
   openSheet(t('parentLinkT'),
     `<div class="link-state"><div class="skel"></div><div class="skel"></div></div>`,
@@ -4059,7 +4386,8 @@ function parentLinkSheet(id) {
           <li>${t('step2')}</li>
           <li>${t('step3')}</li>
         </ol>
-        <p class="link-dim">${t('linkTtl', { h: r.ttl_hours })}</p>`;
+        <p class="link-dim">${t('linkTtl', { h: r.ttl_hours })}</p>
+        <p class="link-dim">${t('lsStopNote')}</p>`;
 
       const copy = async () => {
         try { await navigator.clipboard.writeText(r.url); toast(t('linkCopied'), 'ok'); }
@@ -4276,6 +4604,7 @@ document.addEventListener('click', async (e) => {
       document.querySelectorAll('[data-chip]').forEach((b) => { const on = b.dataset.chip === state.courseFilter; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
       loadReport();
     } else if (state.view === 'payments' && state.pay) {
+      state.payFocus = null;
       // Kurs filtri faqat ro'yxatni o'zgartiradi — bazaga qayta so'rov shart emas
       document.querySelectorAll('[data-chip]').forEach((b) => { const on = b.dataset.chip === state.courseFilter; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
       renderPayments();
@@ -4291,6 +4620,13 @@ document.addEventListener('click', async (e) => {
     hideTip();
     return keepFocus(renderReport);
   }
+  const awayDays = el.closest('[data-away-days]');
+  if (awayDays) {
+    state.awayDays = Number(awayDays.dataset.awayDays);
+    try { localStorage.setItem('parvoz-away-days', String(state.awayDays)); } catch (_) {}
+    return keepFocus(renderReport);
+  }
+  if (el.closest('[data-away-retry]')) { state.awayErr = false; return loadAway(); }
 
   // Jurnal katagi: o'sha kunni Davomat ekranida ochamiz (tuzatish uchun)
   const jump = el.closest('[data-jump]');
@@ -4307,7 +4643,12 @@ document.addEventListener('click', async (e) => {
 
   if (el.closest('[data-add-student]')) return studentSheet(null);
   const edS = el.closest('[data-edit-student]');
-  if (edS) return studentSheet(edS.dataset.editStudent);
+  if (edS) return studentSheet(edS.dataset.editStudent, { focusPhone: edS.hasAttribute('data-focus-phone') });
+  const stLink = el.closest('[data-st-link]');
+  if (stLink) {
+    state.stLink = stLink.dataset.stLink;
+    return render();
+  }
   if (el.closest('[data-add-teacher]')) return teacherSheet(null, el.closest('[data-add-teacher]'));
   const edT = el.closest('[data-edit-teacher]');
   if (edT) return teacherSheet(edT.dataset.editTeacher, edT);
@@ -4441,8 +4782,15 @@ document.addEventListener('click', async (e) => {
 
   const payShift = el.closest('[data-pay-shift]');
   if (payShift && !payShift.disabled) return setPayYm(ymShift(payYm(), Number(payShift.dataset.payShift)));
+  const payFocus = el.closest('[data-pay-focus]');
+  if (payFocus) {
+    state.payFocus = state.payFocus === payFocus.dataset.payFocus ? null : payFocus.dataset.payFocus;
+    return keepFocus(renderPayments);
+  }
+  if (el.closest('[data-pay-focus-clear]')) { state.payFocus = null; return keepFocus(renderPayments); }
   const payTab = el.closest('[data-pay-tab]');
   if (payTab) {
+    state.payFocus = null;
     state.payTab = payTab.dataset.payTab;
     try { localStorage.setItem('parvoz-pay-tab', state.payTab); } catch (_) {}
     return keepFocus(renderPayments);
@@ -4452,6 +4800,7 @@ document.addEventListener('click', async (e) => {
   if (payOpen) return paySheet(payOpen.dataset.payOpen);
   if (el.closest('#payCsv')) return exportPayCsv();
   if (el.closest('#payMode')) {
+    state.payFocus = null;
     state.payMode = state.payMode === 'fin' ? 'list' : 'fin';
     try { localStorage.setItem('parvoz-pay-mode', state.payMode); } catch (_) {}
     const btn = $('payMode');
@@ -4558,6 +4907,9 @@ document.addEventListener('keydown', (e) => {
 });
 // Ko'rsatkich ekranga qadalgan — sahifa yoki jurnal siljisa yashiramiz
 window.addEventListener('scroll', hideTip, { passive: true, capture: true });
+
+// <details> ochilgani esda qoladi: ro'yxat qayta chizilganda "Oy tekshiruvi" yopilib qolmasin (toggle pufakchalamaydi — capture)
+document.addEventListener('toggle', (e) => { if (e.target.id === 'payCheck') state.payCheckOpen = e.target.open; }, true);
 
 document.addEventListener('change', (e) => {
   if (e.target.id === 'repMonth') { hideTip(); loadReport(); }

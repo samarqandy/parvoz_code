@@ -28,6 +28,12 @@
 //
 // Xabar matni — shablondan (admin paneldan tahrirlaydi, app_config.msg_templates).
 // Shablon yo'q yoki buzilgan bo'lsa — quyidagi standart matn.
+//
+// Yuborish ikki bosqichda: avval hamma belgilar yoziladi, keyin xabarlar ketadi (5 ta chat parallel,
+// bitta chatga ketma-ket, umumiy vaqt chegarasi bilan) — 60 o'quvchilik guruh bitta sekin Telegramda
+// so'rovni to'xtatib qo'ymaydi. Javobda har bir o'quvchi uchun `delivery` — xabar yetdimi:
+//   sent | blocked | no_chat | failed | unknown (javob kelmadi, yetgan bo'lishi mumkin) | skipped (vaqt tugadi)
+//   | muted (admin o'chirgan) | no_tg (ota-ona ulanmagan) | bad_name / bad_note (xavfsizlik) | null (o'tgan kun)
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const admin = createClient(
@@ -66,6 +72,48 @@ const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const redact = (s: string) => s.replace(/bot\d+:[\w-]+/g, 'bot***');
 // ilike da _ va % qolip belgisi — foydalanuvchining o'z emaili qolip bo'lib qolmasin
 const likeEsc = (s: string) => s.replace(/[\\%_]/g, '\\$&');
+
+// O'qituvchi yozgan ism va izoh ota-onaga bot orqali boradi: karta raqami / havola bo'lib ketmasin
+// (xuddi shu qoida admin-api dagi to'lov xabarida ham bor)
+const normName = (n: unknown) => String(n ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
+const badName = (n: string) => /https?:\/\/|www\.|t\.me\/|@/i.test(n) || /\d{7,}/.test(n.replace(/[\s().-]/g, ''));
+const badNote = (n: string) => /https?:\/\/|www\.|t\.me\/|@/i.test(n) || /\d{9,}/.test(n.replace(/[\s().-]/g, ''));
+
+// Telegram javobini holatga aylantiramiz (admin-api dagi classify bilan bir xil). abort — qolganlarini yubormaslik kerak.
+function classify(r: any): { status: 'sent' | 'failed' | 'unknown'; code: string; abort?: string } {
+  if (r?.ok) return { status: 'sent', code: 'sent' };
+  if (r?.net) return { status: 'unknown', code: 'unknown' };
+  const ec = Number(r?.error_code) || 0;
+  const d = String(r?.description ?? '');
+  if (ec === 403) return { status: 'failed', code: 'blocked' };
+  if (ec === 401 || ec === 404) return { status: 'failed', code: 'failed', abort: 'token' };
+  if (ec === 429) return { status: 'failed', code: 'failed', abort: 'rate_limited' };
+  if (ec === 400 && /can't parse entities|message is too long|text is empty|must be non-empty/i.test(d)) return { status: 'failed', code: 'failed', abort: 'format' };
+  if (ec === 400 && /chat not found|PEER_ID_INVALID|user not found/i.test(d)) return { status: 'failed', code: 'no_chat' };
+  if (!ec) return { status: 'unknown', code: 'unknown' };
+  return { status: 'failed', code: 'failed' };
+}
+
+async function sendTg(token: string, chatId: number | string, text: string): Promise<any> {
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', link_preview_options: { is_disabled: true } }),
+      signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
+    });
+    return await r.json().catch(() => ({ ok: false }));
+  } catch (_e) {
+    return { ok: false, net: true };
+  }
+}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Xabar yuborish: bir vaqtda 5 ta chat, bitta chatga ketma-ket. Panel javobni 20 s kutadi: yangi xabar so'rov boshlanganidan
+// 11 s o'tgach boshlanmaydi, bitta xabar esa ko'pi bilan 6 s kutiladi — eng yomon holda ham ~18 s da javob qaytadi.
+const SEND_CONCURRENCY = 5;
+const SEND_DEADLINE_MS = 11_000;
+const SEND_TIMEOUT_MS = 6_000;
 
 // Samarqand bo'yicha kun kaliti (UTC+5, yoz vaqti yo'q)
 function dayKeyOf(d: Date): string {
@@ -206,6 +254,7 @@ async function undoMark(undoId: string, restoreRaw: unknown, email: string, role
 }
 
 Deno.serve(async (req) => {
+  const reqStart = Date.now();
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
 
@@ -274,6 +323,7 @@ Deno.serve(async (req) => {
     }
 
     const results: Record<string, unknown>[] = [];
+    const toSend: { chat: number; text: string; res: Record<string, unknown> }[] = [];
     let notifiedCount = 0;
 
     // Bot tokeni va shablonlar — faqat bugungi belgilashda, bitta so'rovda
@@ -321,42 +371,68 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      let notified = false;
-      // Admin bu turdagi xabarni o'chirib qo'ygan — belgi yoziladi, xabar ketmaydi
-      const muted = isToday && !tpls[kind].on;
-      if (isToday && !muted && token && student.telegram_chat_id) {
-        const time = new Intl.DateTimeFormat('uz-UZ', {
-          hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ,
-        }).format(new Date(row.occurred_at));
-        const text = renderTpl(tpls[kind].text, {
-          ism: student.full_name ?? '',
-          vaqt: time,
-          kurs: (student as any).courses?.name ?? '',
-          sana: sanaOf(dayKey!),
-          sabab: note ?? '',
-        });
-
-        // Telegram ishlamasa ham belgi saqlangan — xato butun guruhni to'xtatmasin
-        try {
-          const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: student.telegram_chat_id, text, parse_mode: 'HTML' }),
-            signal: AbortSignal.timeout(10_000),
+      // Xabar holati: sent/... ketadigan bo'lsa quyida (2-bosqich) to'ldiriladi
+      let delivery: string | null = null;
+      let text: string | null = null;
+      if (isToday) {
+        if (!tpls[kind].on) delivery = 'muted';                    // admin bu turdagi xabarni o'chirib qo'ygan — belgi yoziladi, xabar ketmaydi
+        else if (!student.telegram_chat_id) delivery = 'no_tg';
+        else if (!token) delivery = 'no_bot';
+        else if (badName(normName(student.full_name))) delivery = 'bad_name';
+        else if (note && badNote(note)) delivery = 'bad_note';
+        else {
+          const time = new Intl.DateTimeFormat('uz-UZ', {
+            hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ,
+          }).format(new Date(row.occurred_at));
+          text = renderTpl(tpls[kind].text, {
+            ism: normName(student.full_name),
+            vaqt: time,
+            kurs: (student as any).courses?.name ?? '',
+            sana: sanaOf(dayKey!),
+            sabab: note ?? '',
           });
-          notified = !!(await r.json().catch(() => null))?.ok;
-        } catch (_e) {
-          notified = false;
+          delivery = text ? 'pending' : 'failed';
+          if (!text) text = null;
         }
-        if (notified) notifiedCount++;
       }
 
-      results.push({
+      const res: Record<string, unknown> = {
         student_id: student.id, name: student.full_name, ok: true,
         id: row.id, kind: row.kind, note: row.note, occurred_at: row.occurred_at,
-        removed: drop.length, notified, muted,
+        removed: drop.length, notified: false, muted: delivery === 'muted', delivery,
         replaced: dropRows.map((r) => ({ kind: r.kind, occurred_at: r.occurred_at, note: r.note })),
-      });
+      };
+      results.push(res);
+      if (text) toSend.push({ chat: Number(student.telegram_chat_id), text, res });
+    }
+
+    // ---- 2-bosqich: xabarlar. Telegram ishlamasa ham belgilar saqlangan — xato hech narsani qaytarmaydi ----
+    if (toSend.length && token) {
+      const byChat = new Map<number, typeof toSend>();
+      for (const m of toSend) byChat.set(m.chat, [...(byChat.get(m.chat) ?? []), m]);
+      const queues = [...byChat.values()];
+      let qi = 0, aborted = false, netStreak = 0;
+      const worker = async () => {
+        for (;;) {
+          const q = queues[qi++];
+          if (!q) return;
+          for (const m of q) {
+            if (aborted || Date.now() - reqStart > SEND_DEADLINE_MS) { m.res.delivery = 'skipped'; continue; }
+            let r = await sendTg(token!, m.chat, m.text);
+            if (!r?.ok && Number(r?.error_code) === 429 && Number(r?.parameters?.retry_after) <= 3) {
+              await sleep(Number(r.parameters.retry_after) * 1000 + 100);
+              r = await sendTg(token!, m.chat, m.text);
+            }
+            const c = classify(r);
+            m.res.delivery = c.code;
+            if (c.status === 'sent') { m.res.notified = true; notifiedCount++; netStreak = 0; }
+            else if (c.status === 'unknown') { if (++netStreak >= 3) aborted = true; }
+            else netStreak = 0;
+            if (c.abort) aborted = true;
+          }
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(SEND_CONCURRENCY, queues.length) }, worker));
     }
 
     const okCount = results.filter((r) => r.ok).length;
@@ -372,7 +448,11 @@ Deno.serve(async (req) => {
     return json({
       ok: true, day: dayKey, past: !isToday,
       marked: okCount, skipped: results.length - okCount,
-      notified: notifiedCount, results,
+      notified: notifiedCount,
+      // Xabar yetmaganlar: ota-ona botni bloklagan / yuborilmadi / vaqt tugadi (unknown — yetgan bo'lishi mumkin, alohida)
+      notify_failed: results.filter((r) => r.ok && ['blocked', 'no_chat', 'failed', 'skipped', 'bad_name', 'bad_note'].includes(String(r.delivery))).length,
+      notify_unknown: results.filter((r) => r.ok && r.delivery === 'unknown').length,
+      results,
     });
 
   } catch (e) {
