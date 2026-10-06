@@ -69,10 +69,10 @@
   --rose:  #e0526a;
   --red:   #d64545;
 
-  --gold-ink:   #9a6a00;
+  --gold-ink:   #8a5c00;
   --sky-ink:    #125fa8;
-  --green-ink:  #0b7a50;
-  --red-ink:    #c33434;
+  --green-ink:  #0a6e48;
+  --red-ink:    #b02a2a;
   --violet-ink: #5b2fb8;
 
   --viz-in:      #12a06c;
@@ -615,7 +615,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   color: var(--muted);
 }
 .link-state .link-ico { font-size: 2.2rem; line-height: 1; margin-bottom: 9px; }
-.link-state b { display: block; font-weight: 900; color: var(--text); margin-bottom: 5px; }
+.link-state > b { display: block; font-weight: 900; color: var(--text); margin-bottom: 5px; }
 .link-state p { font-size: .9rem; margin: 0 0 6px; }
 .link-state.ok .link-ico,
 .link-state.warn .link-ico { filter: saturate(1.2); }
@@ -740,7 +740,7 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .stat span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
 .stat span svg { width: 13px; height: 13px; opacity: .8; }
 .stat.tone-green b, .stat.tone-gold b, .stat.tone-red b, .stat.tone-violet b { color: var(--tone-ink); }
-.stat.tone-green span, .stat.tone-gold span, .stat.tone-red span, .stat.tone-violet span { color: var(--tone-ink); opacity: .9; }
+.stat.tone-green span, .stat.tone-gold span, .stat.tone-red span, .stat.tone-violet span { color: var(--tone-ink); }
 
 /* Hisobotdagi kun belgilari */
 .day-pill {
@@ -1274,4 +1274,18 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
 /* Jurnal: ism ustuni telefonda biroz kengroq — "Muhammadali" o'rtasidan bo'linmasin */
 @media (max-width: 999px) {
   .jg-name { min-width: 124px; max-width: 124px; font-size: .74rem; }
+}
+
+/* ===================== DAVOMAT 5-TO'PLAM ===================== */
+/* Sahifa sarlavhasi (h2) har doim ekran o'qigichga ochiq: h1 → h3 sakramasin (ko'rinmas, joy olmaydi) */
+.page-head h2 { display: block; position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* Tugagan qatordagi holat tugmasi: fokus halqasi sahifadan ajralib tursin (oldin deyarli ko'rinmasdi) */
+.rt-status:focus-visible { outline: 2px solid var(--gold); }
+:root[data-theme="light"] .rt-status:focus-visible { outline-color: var(--gold-ink); }
+/* Xabar vaqti */
+.tg-time { color: var(--muted); }
+/* Tor ekranda sana yozuvi qirqilmaydi — ikki qatorga o'tadi */
+@media (max-width: 400px) {
+  .daybar-label, .daybar-sub { white-space: normal; overflow: visible; text-overflow: clip; text-align: center; }
 }
