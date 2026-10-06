@@ -131,7 +131,8 @@ const STR = {
     courseClosed: 'Yopiq kurs',
     payBadDate: "Sana kelajakda bo'lishi mumkin emas",
     leaveUnsaved: "Saqlanmagan shablon o'zgarishlari yo'qoladi. Davom etilsinmi?",
-    close: 'Yopish',
+    close: 'Yopish', ariaMain: 'Asosiy menyu', ariaNav: 'Navigatsiya', ariaDialog: 'Oyna',
+    updateAvail: 'Panelning yangi versiyasi bor', updateNow: 'Yangilash',
     colorName: 'sky:Havorang,green:Yashil,teal:Firuza,violet:Binafsha,rose:Pushti,gold:Tillarang',
 
     /* --- statistika --- */
@@ -432,7 +433,8 @@ const STR = {
     courseClosed: 'Курс закрыт',
     payBadDate: 'Дата не может быть в будущем',
     leaveUnsaved: 'Несохранённые изменения шаблона пропадут. Продолжить?',
-    close: 'Закрыть',
+    close: 'Закрыть', ariaMain: 'Главное меню', ariaNav: 'Навигация', ariaDialog: 'Окно',
+    updateAvail: 'Доступна новая версия панели', updateNow: 'Обновить',
     colorName: 'sky:Голубой,green:Зелёный,teal:Бирюзовый,violet:Фиолетовый,rose:Розовый,gold:Золотой',
 
     sStudents: 'Учеников', sPending: 'Ожидается',
@@ -720,12 +722,16 @@ const $ = (id) => document.getElementById(id);
 function hideBoot() {
   $('boot')?.classList.add('hidden');
   window.__bootOk?.();
+  // 15 soniyalik "juda uzoq yuklanmoqda" kartasi: panel keyin yuklansa, ustida qolmasin
+  const be = $('bootErr');
+  if (be?.dataset.soft === '1') { be.classList.add('hidden'); delete be.dataset.soft; }
 }
 
 // davomat.html dagi tayyor matnlarni tanlangan tilga o'tkazamiz
 function applyStaticText() {
   document.documentElement.lang = currentLang();
   document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t(el.dataset.t); });
+  document.querySelectorAll('[data-t-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.tAria)); });
   document.querySelectorAll('[data-lang-pick]').forEach((b) => {
     b.textContent = LANG_NAME[b.dataset.langPick];
     b.classList.toggle('on', currentLang() === b.dataset.langPick);
@@ -774,7 +780,14 @@ function toast(msg, kind = '', action) {
   }
 
   $('toasts').appendChild(el);
-  timer = setTimeout(() => el.remove(), action ? 6500 : 4200);
+  // "Bekor qilish" bor xabar 10 soniya turadi; ustiga bosilsa/fokus tushsa to'xtaydi
+  // (klaviatura va ekran o'qigich foydalanuvchisi ulgurishi uchun)
+  const ms = action ? 10000 : kind === 'bad' ? 6000 : 4200;
+  const arm = () => { clearTimeout(timer); timer = setTimeout(() => el.remove(), ms); };
+  const hold = () => clearTimeout(timer);
+  el.addEventListener('pointerenter', hold); el.addEventListener('pointerleave', arm);
+  el.addEventListener('focusin', hold); el.addEventListener('focusout', arm);
+  arm();
 }
 
 async function edge(fn, payload, { keepalive = false } = {}) {
@@ -1037,8 +1050,11 @@ function rowsOf({ data, error }) {
   return data ?? [];
 }
 
+// Kurs rangi style="--acc:var(--<rang>)" ga tushadi — faqat ma'lum qiymatlar o'tadi
+const COURSE_COLORS = ['sky', 'green', 'teal', 'violet', 'rose', 'gold'];
 async function loadCourses() {
-  state.courses = rowsOf(await sb.from('courses').select('*').order('sort'));
+  state.courses = rowsOf(await sb.from('courses').select('*').order('sort'))
+    .map((c) => (COURSE_COLORS.includes(c.color) ? c : { ...c, color: 'sky' }));
 }
 async function loadStudents() {
   state.students = rowsOf(await sb.from('students').select('*').order('full_name'));
@@ -1234,7 +1250,11 @@ function go(view) {
   if (!visibleViews().some((v) => v.id === view)) view = 'today';
   state.view = view;
   history.replaceState(null, '', '#' + view);
-  document.querySelectorAll('[data-go]').forEach((b) => b.classList.toggle('active', b.dataset.go === view));
+  document.querySelectorAll('[data-go]').forEach((b) => {
+    const on = b.dataset.go === view;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
   // Bo'lim "Yana" ichida bo'lsa — "Yana" tugmasi faol ko'rinadi
   $('moreTab')?.classList.toggle('active', !document.querySelector(`.tabbar [data-go="${view}"]`));
   $('pageTitle').textContent = VIEWS.find((v) => v.id === view).title;
@@ -1243,12 +1263,26 @@ function go(view) {
   window.scrollTo({ top: 0 });
 }
 
+// Qayta chizishdan keyin fokus yo'qolmasin: klaviatura foydalanuvchisi belgi qo'ysa,
+// kunni almashtirsa yoki filtr bossa, fokus <body> ga tushib, qaytadan Tab bosib chiqardi
+function focusSelector(el) {
+  if (!el || el === document.body || !el.closest('#page, #tabbarInner, #sideNav')) return null;
+  if (el.id) return '#' + CSS.escape(el.id);
+  const attrs = el.getAttributeNames().filter((a) => a.startsWith('data-') && el.getAttribute(a) !== '' || a === 'data-close');
+  if (!attrs.length) return null;
+  return el.tagName.toLowerCase() + attrs.slice(0, 3).map((a) => `[${a}="${CSS.escape(el.getAttribute(a))}"]`).join('');
+}
 function render() {
+  const sel = focusSelector(document.activeElement);
+  const before = document.activeElement;
   try { renderView(); } catch (err) {
     console.error(err);
     $('page').innerHTML = `<div class="card"><div class="empty"><div class="e-ico">⚠️</div>
       <b>${t('error')}</b><p>${esc(err.message)}</p>
       <button class="btn btn-primary" data-retry type="button">${t('retry')}</button></div></div>`;
+  }
+  if (sel && before && !before.isConnected && (!document.activeElement || document.activeElement === document.body)) {
+    document.querySelector(sel)?.focus({ preventScroll: true });
   }
 }
 
@@ -1273,7 +1307,7 @@ function courseChips() {
   const list = myCourses();
   if (list.length <= 1) return '';
   const chip = (id, label, icon, color) =>
-    `<button class="chip ${state.courseFilter === id ? 'on' : ''}" style="--acc:var(--${color})" data-chip="${id}" type="button">${icon ? icon + ' ' : ''}${esc(label)}</button>`;
+    `<button class="chip ${state.courseFilter === id ? 'on' : ''}" style="--acc:var(--${color})" data-chip="${id}" aria-pressed="${state.courseFilter === id}" type="button">${icon ? icon + ' ' : ''}${esc(label)}</button>`;
   return `<div class="chips">${chip('all', t('all'), '', 'gold')}${list.map((c) => chip(c.id, c.name, cIcon(c), c.color)).join('')}</div>`;
 }
 
@@ -1489,6 +1523,7 @@ function rowToday(s, c) {
   const alt = (kind) => {
     const m = MARKS[kind];
     return `<button class="btn btn-alt btn-tone tone-${m.tone}" data-set="${kind}" data-id="${s.id}"
+      aria-label="${esc(m.label + ' — ' + s.full_name)}"
       ${away?.kind === kind ? 'disabled' : ''}${lock} type="button">${ico(m)} ${m.label}</button>`;
   };
 
@@ -1507,7 +1542,7 @@ function rowToday(s, c) {
       <div class="row-sub">
         ${marked
           ? `<button class="rt-status"${openAttr} type="button"
-              aria-label="${esc(t('marksOf', { name: s.full_name }))}">${ico(cur)}${text}${I.chev}</button>`
+              title="${esc(t('marksOf', { name: s.full_name }))}"><span class="sr-only">${esc(s.full_name)}: </span>${ico(cur)}${text}${I.chev}</button>`
           : `<span class="rt-status is-plain">${text}</span>`}
       </div>
     </div>
@@ -1515,7 +1550,7 @@ function rowToday(s, c) {
       ${alt('absent')}
       ${alt('excused')}
       ${act
-        ? `<button class="btn btn-act btn-tone tone-${act.tone}" data-mark="${act.kind}" data-id="${s.id}"${lock} type="button">${ico(act)} ${act.label}</button>`
+        ? `<button class="btn btn-act btn-tone tone-${act.tone}" data-mark="${act.kind}" data-id="${s.id}" aria-label="${esc(act.label + ' — ' + s.full_name)}"${lock} type="button">${ico(act)} ${act.label}</button>`
         : `<span class="act-done">${ico(DONE)} ${DONE.label}</span>`}
     </div>
   </div>`;
@@ -1598,8 +1633,9 @@ async function sendMark(studentId, kind, note) {
     occurred_at: new Date().toISOString(),
     _pending: true,
   };
-  const before = state.today;
+  const day = selDay();
   const gone = (r) => r.student_id === studentId && (r.kind === kind || REPLACES[kind].includes(r.kind));
+  const removed = state.today.filter(gone);          // faqat shu bosish olib tashlagan qatorlar
   state.today = [...state.today.filter((r) => !gone(r)), optimistic];
   render();
 
@@ -1608,7 +1644,7 @@ async function sendMark(studentId, kind, note) {
     try { await loadToday(); }
     catch (_) {
       // Belgi saqlandi, faqat ro'yxat yangilanmadi — server javobidan qo'yamiz
-      state.today = [...before.filter((x) => !gone(x)),
+      state.today = [...state.today.filter((x) => x.id !== optimistic.id && !gone(x)),
         { id: r.id, student_id: studentId, kind, note: r.note ?? null, occurred_at: r.occurred_at }];
     }
     render();
@@ -1618,7 +1654,12 @@ async function sendMark(studentId, kind, note) {
                            : t('markedOk', v) + (isToday() && !r.muted && !s?.telegram_chat_id ? t('tgOff') : '');
     toast(msg, 'ok', r.id ? { fn: () => undoMark(r) } : undefined);
   } catch (err) {
-    state.today = before;                       // qaytaramiz
+    // Faqat shu bosishning o'zgarishini qaytaramiz: butun ro'yxatni eski nusxaga almashtirsak,
+    // shu orada boshqa o'quvchiga qo'yilgan (muvaffaqiyatli) belgi yo'qolib, qayta belgilanardi
+    if (selDay() === day) {
+      state.today = [...state.today.filter((x) => x.id !== optimistic.id),
+        ...removed.filter((x) => !state.today.some((y) => y.id === x.id))];
+    }
     // Boshqa qurilmadan allaqachon belgilangan — ro'yxatni yangilaymiz, aks holda har urinish shu xato
     if (err.status === 409) { try { await loadToday(); } catch (_) {} }
     render();
@@ -1629,8 +1670,9 @@ async function sendMark(studentId, kind, note) {
 // Toastdagi "Bekor qilish": yangi belgini o'chiradi. Agar u boshqa belgilarni almashtirgan
 // bo'lsa (masalan, "Kelmadi" — "Keldi/Ketdi"ni), server ularni asl vaqti bilan qaytaradi.
 async function undoMark(r) {
-  const before = state.today;
+  const day = selDay();
   const ids = withDependents([r.id]);
+  const removed = state.today.filter((x) => ids.includes(x.id));
   state.today = state.today.filter((x) => !ids.includes(x.id));
   render();
   try {
@@ -1640,7 +1682,10 @@ async function undoMark(r) {
       const { error } = await sb.from('attendance').delete().in('id', ids);
       if (error) throw error;
     }
-  } catch (err) { state.today = before; render(); toast('❌ ' + err.message, 'bad'); return; }
+  } catch (err) {
+    if (selDay() === day) state.today = [...state.today, ...removed.filter((x) => !state.today.some((y) => y.id === x.id))];
+    render(); toast('❌ ' + err.message, 'bad'); return;
+  }
   try { await loadToday(); } catch (_) {}
   render();
   toast(t('undone'), 'ok');
@@ -2027,6 +2072,9 @@ function renderReport() {
           `<button class="seg-btn${k === tab ? ' on' : ''}" role="tab" aria-selected="${k === tab}" data-rep-tab="${k}" type="button">${label}</button>`).join('')}</div>
         <div class="rep-body">${tab === 'grid' ? repGrid(d) : tab === 'charts' ? repCharts(d) : repList(d)}</div>`}`;
   drawCharts();
+  // Jurnal: bitta Tab bekati (180 katak = 180 ta Tab edi); ichida strelkalar bilan yuriladi
+  const firstCell = out.querySelector('.jg-cell.is-today.is-fix, .jg-cell.is-fix') || out.querySelector('.jg-cell');
+  if (firstCell) firstCell.tabIndex = 0;
   // Jurnal joriy oyda bugungi kunga suriladi — 1-kundan boshlab varaqlash shart emas
   const wrap = out.querySelector('.jg-wrap');
   const todayTh = wrap?.querySelector('th.is-today');
@@ -2079,7 +2127,7 @@ function repGrid(d) {
 
         const cls = ['jg-cell', kind ? 'tone-' + MARKS[kind].tone : '', closed ? 'is-closed' : '',
           future ? 'is-future' : '', x.key === today ? 'is-today' : '', fixable ? 'is-fix' : ''].filter(Boolean).join(' ');
-        return `<td class="${cls}" ${fixable ? `data-jump="${x.key}"` : ''} tabindex="${kind || fixable ? 0 : -1}"
+        return `<td class="${cls}" ${fixable ? `data-jump="${x.key}"` : ''} tabindex="-1"
           data-tip-t="${esc(r.name)}" data-tip-v="${esc(dateTxt + '\n' + status)}"
           aria-label="${esc(r.name + ', ' + dateTxt + ': ' + status)}">${kind ? ico(MARKS[kind]) : ''}</td>`;
       }).join('');
@@ -2232,8 +2280,9 @@ function chartCourses(d, W) {
       <text class="viz-value" x="${L + w + 8}" y="${y + bh / 2 + 5}">${c.pct}%</text>
     </g>`;
   }).join('');
+  const alt = d.courses.map((c) => `${c.course.name}: ${c.pct}%`).join('; ');
   return `<svg class="viz viz-h" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
-    aria-label="${esc(t('chCourses'))}">${bars}</svg>`;
+    aria-label="${esc(t('chCourses') + '. ' + alt)}">${bars}</svg>`;
 }
 
 /* Diagrammalar konteyner enida chiziladi: 1 birlik = 1px. viewBox cho'zilsa
@@ -2273,7 +2322,7 @@ function repList(d) {
       <th>${t('colAtt')}</th><th>${t('colLast')}</th>
     </tr></thead><tbody>${[...d.rows].sort((a, b) => b.pct - a.pct || a.name.localeCompare(b.name)).map((r) => `
       <tr data-row="${r.id}">
-        <td><div style="font-weight:800">${esc(r.name)}${r.active ? '' : ` <span class="badge">${t('archiveShort')}</span>`}</div>
+        <td><div style="font-weight:800"><button class="row-toggle" type="button" data-row-toggle="${r.id}" aria-expanded="false" aria-controls="det-${r.id}">${esc(r.name)}</button>${r.active ? '' : ` <span class="badge">${t('archiveShort')}</span>`}</div>
             <div style="color:var(--faint);font-size:.8rem;font-weight:700">${cIcon(r.course)} ${esc(r.course.name)}</div></td>
         <td class="num">${r.count} / ${r.daysTotal}</td>
         <td class="num"><span class="${r.absent ? 'tone-red num-on' : 'num-off'}">${r.absent}</span>
@@ -2282,7 +2331,7 @@ function repList(d) {
             <span style="font-size:.78rem;font-weight:800;color:var(--muted)">${r.pct}%</span></td>
         <td style="color:var(--muted);font-weight:700;white-space:nowrap">${r.last ? dayKey(r.last).slice(8) + '.' + dayKey(r.last).slice(5, 7) : '—'}</td>
       </tr>
-      <tr class="hidden" data-detail="${r.id}"><td colspan="5"><div class="day-pills">${
+      <tr class="hidden" data-detail="${r.id}" id="det-${r.id}"><td colspan="5"><div class="day-pills">${
         // Xronologik tartibda — avval holat bo'yicha guruhlanardi
         [...r.days.map((x) => [x, 'in']), ...r.absentDays.map((x) => [x, 'absent']), ...r.excusedDays.map((x) => [x, 'excused'])]
           .sort((a, b) => a[0].localeCompare(b[0]))
@@ -2335,22 +2384,32 @@ function crossAt(svg, idx) {
   showTip(c.tip[idx].t, c.tip[idx].v, sx, box.top + (c.T / svg.viewBox.baseVal.height) * box.height);
 }
 
+// CSV: bitta joyda. "=", "+", "-", "@" bilan boshlangan matn Excelda formula bo'lib ishlaydi
+// (o'qituvchi yozgan sabab, o'quvchi ismi) — oldiga ' qo'yiladi; oddiy sonlar tegilmaydi.
+function csvCell(v) {
+  let x = String(v ?? '');
+  if (/^[=+\-@\t\r]/.test(x) && !/^-?\d+([.,]\d+)?$/.test(x)) x = "'" + x;
+  return '"' + x.replace(/"/g, '""') + '"';
+}
+function downloadCsv(filename, head, rows) {
+  const lines = [head.map(csvCell).join(';')].concat(rows.map((r) => r.map(csvCell).join(';')));
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 function exportCsv() {
   if (!repData || !repData.rows.length) { toast(t('csvFirst'), 'bad'); return; }
   const head = [t('colStudent'), t('csvCourse'), t('csvCameDays'), MARKS.absent.label, MARKS.excused.label,
                 t('csvWorkDays'), t('csvPct'), t('csvLast'),
                 t('csvCameDates'), t('csvAbsentDates'), t('csvExcusedDates')];
-  const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-  const lines = [head.map(q).join(';')].concat(repData.rows.map((r) =>
+  downloadCsv(`parvoz-davomat-${repData.ym}.csv`, head, repData.rows.map((r) =>
     [r.name, r.course.name, r.count, r.absent, r.excused, r.daysTotal, r.pct,
      r.last ? dayKey(r.last) : '', r.days.join(' '), r.absentDays.join(' '),
-     r.excusedDays.map((d) => r.notes[d] ? `${d} (${r.notes[d]})` : d).join(' ')].map(q).join(';')));
-  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `parvoz-davomat-${repData.ym}.csv`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+     r.excusedDays.map((d) => r.notes[d] ? `${d} (${r.notes[d]})` : d).join(' ')]));
   toast(t('csvDone'), 'ok');
 }
 
@@ -2441,10 +2500,35 @@ const payMaxYm = () => ymShift(currentYm(), 1);   // keyingi oy — oldindan to'
 const fmtSum = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const sumText = (n) => t('paySum', { n: fmtSum(n) });
 function parseSum(raw) {
-  const digits = String(raw ?? '').replace(/\D+/g, '');
+  // "300000.00" / "300 000,50" — kasr qismi (1-2 raqam) tiyin: so'mda yo'q, tashlab yuboriladi.
+  // Aks holda nuqta va kasr raqamlari butun songa qo'shilib, summa 10-100 baravar oshib ketardi.
+  const s = String(raw ?? '').replace(/[\s\u00a0]/g, '').replace(/[.,]\d{1,2}$/, '');
+  const digits = s.replace(/\D+/g, '');
   if (!digits) return null;
   const n = Number(digits);
   return Number.isSafeInteger(n) ? n : NaN;
+}
+
+// Summa maydoni: yozayotganda 300000 → 300 000, kursor o'z o'rnida qoladi
+// (oldin qiymat qayta yozilib, kursor oxiriga sakrardi va o'rtadan tahrirlab bo'lmasdi)
+function bindSumInput(inp, onInput) {
+  inp.addEventListener('input', () => {
+    const raw = inp.value;
+    const caret = inp.selectionStart ?? raw.length;
+    const before = raw.slice(0, caret).replace(/[.,]\d{1,2}$/, '').replace(/\D+/g, '').length;
+    const n = parseSum(raw);
+    if (n == null) inp.value = '';
+    else if (!Number.isNaN(n)) {
+      const out = fmtSum(n);
+      if (out !== raw) {
+        inp.value = out;
+        let pos = 0, seen = 0;
+        while (pos < out.length && seen < before) { if (/\d/.test(out[pos])) seen++; pos++; }
+        try { inp.setSelectionRange(pos, pos); } catch (_) {}
+      }
+    } else inp.value = raw.replace(/[^\d\s]/g, '');
+    onInput?.();
+  });
 }
 
 function viewPayShell() {
@@ -2687,11 +2771,7 @@ function paySheet(sid) {
     </form>`, () => {
     const amt = $('payAmount');
     // Yozayotganda raqamlarni guruhlaymiz: 300000 -> 300 000
-    amt.addEventListener('input', () => {
-      const n = parseSum(amt.value);
-      amt.value = n == null || Number.isNaN(n) ? amt.value.replace(/[^\d\s]/g, '') : fmtSum(n);
-      $('payErr').hidden = true;
-    });
+    bindSumInput(amt, () => { $('payErr').hidden = true; });
     document.querySelectorAll('[data-pay-quick]').forEach((b) => b.addEventListener('click', () => {
       amt.value = fmtSum(Number(b.dataset.payQuick));
       $('payErr').hidden = true;
@@ -3160,22 +3240,17 @@ function chartFinCourses(d, W) {
       <text class="viz-value" x="${L + w + 8}" y="${y + bh / 2 + 5}">${sumCompact(c.sum)}</text>
     </g>`;
   }).join('');
+  // Ekran o'qigich uchun qiymatlar matn bilan: kurs — summa (ulush)
+  const alt = d.courses.map((c) => `${c.course.name}: ${fmtSum(c.sum)}`).join('; ');
   return `<svg class="viz viz-h" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
-    aria-label="${esc(t('finCourseT'))}">${bars}</svg>`;
+    aria-label="${esc(t('finCourseT') + '. ' + alt)}">${bars}</svg>`;
 }
 
 function exportFinCsv() {
   const d = finModel();
-  const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
   const head = [t('finColMonth'), t('finColSum'), t('payPaid'), t('payUnpaid'), t('finColDebt')];
-  const lines = [head.map(q).join(';')].concat(d.months.map((x) =>
-    [ymLabel(x.m), x.sum, x.paid, x.unpaid, x.priced ? x.debt : ''].map(q).join(';')));
-  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${t('finCsvFile')}-${d.ym}.csv`;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  downloadCsv(`${t('finCsvFile')}-${d.ym}.csv`, head, d.months.map((x) =>
+    [ymLabel(x.m), x.sum, x.paid, x.unpaid, x.priced ? x.debt : '']));
 }
 
 function exportPayCsv() {
@@ -3183,17 +3258,10 @@ function exportPayCsv() {
   if (state.payMode === 'fin') return exportFinCsv();
   const d = payModel();
   const head = [t('payCsvName'), t('csvCourse'), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed'), t('payCsvRate'), t('payCsvDebt')];
-  const q = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
   const rows = [...d.items].sort((a, b) => (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name));
-  const lines = [head.map(q).join(';')].concat(rows.map(({ s, c, p, owed, rate, debt }) =>
+  downloadCsv(`parvoz-tolovlar-${d.ym}.csv`, head, rows.map(({ s, c, p, owed, rate, debt }) =>
     [s.full_name, c.name, s.parent_phone, p ? t('payPaid') : t('payUnpaid'), p?.amount ?? '', p?.paid_on ?? '', p?.note ?? '',
-     owed.map(ymShort).join(', '), rate ?? '', debt ?? ''].map(q).join(';')));
-  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `parvoz-tolovlar-${d.ym}.csv`;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+     owed.map(ymShort).join(', '), rate ?? '', debt ?? '']));
 }
 
 /* ============================================================
@@ -3476,11 +3544,14 @@ function openSheet(title, bodyHtml, onMount) {
   sheetOrigin = attr ? `[${attr}="${CSS.escape(a.getAttribute(attr))}"]` : null;
   $('sheetBody').innerHTML = `
     <div class="sheet-grab"></div>
-    <div class="sheet-head"><h3>${title}</h3><div class="spacer"></div>
+    <div class="sheet-head"><h3 id="sheetTitle">${title}</h3><div class="spacer"></div>
       <button class="btn btn-icon btn-ghost" data-close aria-label="${t('close')}" type="button">${I.x}</button></div>
     ${bodyHtml}`;
   sheetOpenedAt = Date.now();
+  dlg.setAttribute('aria-labelledby', 'sheetTitle');   // oyna o'z sarlavhasi bilan nomlanadi ("Oyna" emas)
   if (!dlg.open) dlg.showModal();
+  // Modal ochiq: bildirishnomalar ham dialog ichida bo'lishi shart — aks holda ular ostida qoladi
+  dlg.appendChild($('toasts'));
   $('sheetBody').querySelector('[data-close]').addEventListener('click', () => dlg.close());
   if (onMount) onMount(dlg);
 }
@@ -3542,11 +3613,7 @@ function studentSheet(id) {
     if (feeIn) {
       feePh();
       $('stCourse').addEventListener('change', feePh);
-      feeIn.addEventListener('input', () => {
-        const n = parseSum(feeIn.value);
-        feeIn.value = n == null || Number.isNaN(n) ? feeIn.value.replace(/[^\d\s]/g, '') : fmtSum(n);
-        $('stFeeErr').hidden = true;
-      });
+      bindSumInput(feeIn, () => { $('stFeeErr').hidden = true; });
     }
     $('stForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -3804,11 +3871,7 @@ function courseSheet(id) {
     $('cIcon').addEventListener('input', () => { $('cIconPrev').innerHTML = cIcon({ icon: $('cIcon').value.trim() }); });
     $('cColor').addEventListener('change', () => { $('cColorPrev').style.setProperty('--acc', `var(--${$('cColor').value})`); });
     const feeIn = $('cFee');
-    feeIn.addEventListener('input', () => {
-      const n = parseSum(feeIn.value);
-      feeIn.value = n == null || Number.isNaN(n) ? feeIn.value.replace(/[^\d\s]/g, '') : fmtSum(n);
-      $('cErr').hidden = true;
-    });
+    bindSumInput(feeIn, () => { $('cErr').hidden = true; });
     $('cForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fee = parseSum(feeIn.value);
@@ -3848,6 +3911,33 @@ function courseSheet(id) {
    ============================================================ */
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(); });
 
+// Jurnal katagi: strelkalar / Home / End bilan yurish, Enter yoki Probel — o'sha kunni tuzatish
+document.addEventListener('keydown', (e) => {
+  const cell = e.target.closest?.('.jg-cell');
+  if (!cell || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    if (cell.dataset.jump) { e.preventDefault(); cell.click(); }
+    return;
+  }
+  const rows = [...cell.closest('tbody').querySelectorAll('tr')].filter((tr) => tr.querySelector('.jg-cell'));
+  const tr = cell.closest('tr');
+  const cells = [...tr.querySelectorAll('.jg-cell')];
+  let ri = rows.indexOf(tr), ci = cells.indexOf(cell);
+  if (e.key === 'ArrowRight') ci++;
+  else if (e.key === 'ArrowLeft') ci--;
+  else if (e.key === 'ArrowDown') ri++;
+  else if (e.key === 'ArrowUp') ri--;
+  else if (e.key === 'Home') ci = 0;
+  else if (e.key === 'End') ci = cells.length - 1;
+  else return;
+  e.preventDefault();
+  ri = Math.max(0, Math.min(rows.length - 1, ri));
+  const rc = [...rows[ri].querySelectorAll('.jg-cell')];
+  const next = rc[Math.max(0, Math.min(rc.length - 1, ci))];
+  if (!next || next === cell) return;
+  cell.tabIndex = -1; next.tabIndex = 0; next.focus();
+});
+
 document.addEventListener('click', async (e) => {
   const el = e.target;
 
@@ -3863,11 +3953,11 @@ document.addEventListener('click', async (e) => {
   if (chip) {
     state.courseFilter = chip.dataset.chip;
     if (state.view === 'report') {
-      document.querySelectorAll('[data-chip]').forEach((b) => b.classList.toggle('on', b.dataset.chip === state.courseFilter));
+      document.querySelectorAll('[data-chip]').forEach((b) => { const on = b.dataset.chip === state.courseFilter; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
       loadReport();
     } else if (state.view === 'payments' && state.pay) {
       // Kurs filtri faqat ro'yxatni o'zgartiradi — bazaga qayta so'rov shart emas
-      document.querySelectorAll('[data-chip]').forEach((b) => b.classList.toggle('on', b.dataset.chip === state.courseFilter));
+      document.querySelectorAll('[data-chip]').forEach((b) => { const on = b.dataset.chip === state.courseFilter; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
       renderPayments();
     } else render();
     return;
@@ -3963,7 +4053,10 @@ document.addEventListener('click', async (e) => {
   const repRow = el.closest('[data-row]');
   if (repRow) {
     const d = document.querySelector(`[data-detail="${repRow.dataset.row}"]`);
-    if (d) d.classList.toggle('hidden');
+    if (d) {
+      d.classList.toggle('hidden');
+      repRow.querySelector('[data-row-toggle]')?.setAttribute('aria-expanded', String(!d.classList.contains('hidden')));
+    }
     return;
   }
 
@@ -4161,6 +4254,7 @@ $('sheet').addEventListener('click', (e) => {
   if (e.target === $('sheet') && Date.now() - sheetOpenedAt > 350) closeSheet();
 });
 $('sheet').addEventListener('close', () => {
+  document.body.appendChild($('toasts'));
   const sel = sheetOrigin;
   if (!sel) return;
   const tryFocus = () => {
@@ -4184,6 +4278,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 if ('serviceWorker' in navigator) {
+  // Yangi versiya (sw.js skipWaiting + claim) ishga tushsa — ochiq turgan sahifa hali eski kodda:
+  // bir marta "Yangilash" taklif qilamiz (saqlanmagan shablon bo'lsa sahifa o'zi qayta yuklanmaydi)
+  const hadController = !!navigator.serviceWorker.controller;
+  let updateShown = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || updateShown) return;
+    updateShown = true;
+    toast(t('updateAvail'), '', { label: t('updateNow'), fn: () => location.reload() });
+  });
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });

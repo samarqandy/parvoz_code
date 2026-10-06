@@ -1227,3 +1227,31 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
   .tb-btn, .tb-icon, .tb-avatar { min-height: 44px; }
   .chip, .btn-sm, .tpl-var { min-height: 44px; }
 }
+
+/* ===================== DAVOMAT 3-TO'PLAM ===================== */
+/* Modal ochiq: bildirishnomalar dialog ichida (top layer) — tepada, sheet tugmalarini yopmasin */
+.sheet > .toasts { position: fixed; bottom: auto; top: calc(12px + env(safe-area-inset-top)); }
+
+/* Yorug' rejimda oltin fokus halqasi (1.7:1) o'rniga to'qroq — kamida 3:1 */
+:root[data-theme="light"] :focus-visible { outline-color: var(--gold-ink); }
+:root[data-theme="light"] .jg-cell.is-fix:hover, :root[data-theme="light"] .jg-cell:focus-visible,
+:root[data-theme="light"] .viz:focus-visible, :root[data-theme="light"] .switch-row input:focus-visible + .switch { outline-color: var(--gold-ink); }
+:root[data-theme="light"] .inp:focus { border-color: var(--gold-ink); box-shadow: 0 0 0 1px var(--gold-ink); }
+
+/* Kun / oy tanlagichi ko'rinmas input ustida — fokus butun tugmada ko'rinsin */
+.daybar-mid:focus-within { outline: 2px solid var(--gold); outline-offset: 2px; }
+:root[data-theme="light"] .daybar-mid:focus-within { outline-color: var(--gold-ink); }
+
+/* Pastki menyu fokusdagi tugmani yopmasin */
+html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: calc(var(--bar-h) + 12px); }
+@media (min-width: 1000px) { html { scroll-padding-bottom: 24px; } }
+
+/* Sarlavha (h2) ekranda yashirin, lekin ekran o'qigichga ko'rinadi — h1 → h3 sakramasin */
+@media (max-width: 999px) {
+  .page-head h2 { display: block; position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+}
+
+/* Hisobot ro'yxati: o'quvchi nomi — qatorni ochadigan tugma (klaviatura uchun) */
+.row-toggle { background: none; border: 0; padding: 0; font: inherit; font-weight: 800; color: inherit; text-align: left; cursor: pointer; }
+.row-toggle:hover { text-decoration: underline; text-underline-offset: 3px; }
