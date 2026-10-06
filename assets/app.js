@@ -144,7 +144,7 @@ const STR = {
     today: 'Bugun', yesterday: 'Kecha', backToToday: 'Bugunga qaytish',
     pastDay: 'O\'tgan kun — ota-onaga xabar yuborilmaydi',
     pickDay: 'Kunni tanlash', prevDay: 'Oldingi kun', nextDay: 'Keyingi kun',
-    allArrived: 'Hammasi keldi', markGroup: 'Guruhni belgilash',
+    allArrived: 'Hammasi keldi',
     groupAsk: '{course} guruhidagi {n} o\'quvchiga «{label}» qo\'yilsinmi?',
     groupDone: '{n} ta belgilandi',
     groupDoneSkip: '{n} ta belgilandi, {k} tasi o\'tkazib yuborildi',
@@ -308,7 +308,7 @@ const STR = {
     setBot: '\u{1F916} Telegram bot',
     setBotP: 'Bot ota-onalarga farzandi kelgani va ketgani haqida avtomatik xabar yuboradi.',
     navPay: "To'lovlar", tPay: "Oylik to'lovlar", tPaySub: "Kim to'ladi, kim qarzdor",
-    payPaid: "To'ladi", payUnpaid: "To'lamadi", payMark: "To'landi",
+    payPaid: "To'ladi", payUnpaid: "To'lamadi", payMark: "To'landi", payRecord: "To'lovni yozish",
     payTabUnpaid: 'Qarzdorlar', payTabPaid: "To'laganlar", payTabAll: 'Hammasi',
     payCollected: "Yig'ildi, so'm", payDebtors2: '2+ oy qarz',
     payAmount: "Summa (so'm)", payDate: "To'langan sana", payNote: 'Izoh',
@@ -378,7 +378,7 @@ const STR = {
     tplHint: "*matn* — qalin yozuv. Qiymati bo'sh o'zgaruvchi turgan qator yuborilmaydi (masalan, sabab yozilmasa).",
     tplPrev: "Ota-ona shunday ko'radi",
     tplMuted: 'Bu xabar yuborilmaydi',
-    tplReset: 'Standart matn',
+    tplReset: 'Standart matnga qaytarish',
     tplSave: 'Saqlash',
     tplSaved: 'Shablon saqlandi',
     tplUnsaved: 'saqlanmagan',
@@ -443,15 +443,15 @@ const STR = {
     asTable: 'В виде таблицы', colDate: 'Дата', colCourse: 'Курс',
     closedDay: 'Выходной', noMark: 'Не отмечен', futureDay: 'Этот день ещё не наступил',
     gridHint: 'Нажмите на ячейку, чтобы исправить этот день',
-    tooOld: 'Дни старше 30 дней исправить нельзя',
+    tooOld: 'Нельзя исправить день старше 30 дней',
     wdShort: 'Вс,Пн,Вт,Ср,Чт,Пт,Сб',
     offline: 'Нет интернета',
     offlineRetry: 'Нет интернета. Проверьте подключение и войдите снова.',
     today: 'Сегодня', yesterday: 'Вчера', backToToday: 'Вернуться к сегодня',
     pastDay: 'Прошедший день — родителям уведомление не отправляется',
     pickDay: 'Выбрать день', prevDay: 'Предыдущий день', nextDay: 'Следующий день',
-    allArrived: 'Все пришли', markGroup: 'Отметить группу',
-    groupAsk: 'Поставить «{label}» всем {n} ученикам группы {course}?',
+    allArrived: 'Все пришли',
+    groupAsk: 'Поставить «{label}» ученикам группы {course} (всего: {n})?',
     groupDone: 'Отмечено: {n}',
     groupDoneSkip: 'Отмечено: {n}, пропущено: {k}',
     groupNone: 'Некого отмечать',
@@ -605,7 +605,7 @@ const STR = {
     setBot: '\u{1F916} Telegram-бот',
     setBotP: 'Бот автоматически сообщает родителям, когда ребёнок пришёл и ушёл.',
     navPay: 'Оплаты', tPay: 'Ежемесячные оплаты', tPaySub: 'Кто оплатил, кто должен',
-    payPaid: 'Оплатил', payUnpaid: 'Не оплатил', payMark: 'Оплачено',
+    payPaid: 'Оплатил', payUnpaid: 'Не оплатил', payMark: 'Оплачено', payRecord: 'Записать оплату',
     payTabUnpaid: 'Должники', payTabPaid: 'Оплатили', payTabAll: 'Все',
     payCollected: 'Собрано, сум', payDebtors2: 'Долг 2+ мес.',
     payAmount: 'Сумма (сум)', payDate: 'Дата оплаты', payNote: 'Комментарий',
@@ -649,7 +649,7 @@ const STR = {
     payNotifBadName: 'В имени ученика есть номер или ссылка — проверьте имя, сообщение не отправлено',
     payNotifFail: 'Сообщение родителю не доставлено — откройте оплату, чтобы отправить снова',
     tplPayTab: 'Оплата', tplPayManual: 'Это сообщение не уходит автоматически — только вручную из раздела «Оплаты».',
-    vOy: 'Месяц', vOylar: 'Долг. месяцы',
+    vOy: 'Месяц', vOylar: 'Месяцы долга',
     remBtn: 'Напомнить ({n})', remNoBot: 'Сначала подключите Telegram-бота в Настройках',
     remTitle: 'Напоминание об оплате', remBySearch: 'По поиску: {n}',
     remSumDebt: 'должников: {n}', remSumOk: 'отправим: {n}', remSumNoTg: 'не подключены к Telegram: {n}',
@@ -659,7 +659,7 @@ const STR = {
     remR_blocked: 'заблокировал бота', remR_no_chat: 'чат не найден', remR_unknown: 'доставка не подтверждена',
     remR_paid: 'оплата записана', remR_inactive: 'в архиве', remR_not_started: 'ещё не учился в этом месяце', remR_failed: 'не отправлено',
     remSend: 'Отправить напоминание (получателей: {n})',
-    remConfirm: 'Родителям {n} учеников будет отправлено сообщение в Telegram. Продолжить?',
+    remConfirm: 'Родителям будет отправлено сообщение в Telegram (учеников: {n}). Продолжить?',
     remProgress: 'Отправка: {n} / {total}…', remDone: '✅ Отправлено: {n}', remNotReached: 'Не доставлено или не отправлено ({n})',
     remAllReached: 'Отправлено всем', remClose: 'Закрыть',
     remBroke: 'Связь прервалась — часть сообщений могла уйти, список обновлён',
@@ -722,7 +722,6 @@ function t(key, vars) {
 /* ---------------- Ikonkalar ---------------- */
 const I = {
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
-  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21V12h6v9"/><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
   users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx="1"/><rect x="12" y="8" width="3" height="10" rx="1"/><rect x="17" y="4" width="3" height="14" rx="1"/></svg>',
   team: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a6 6 0 0 0-12 0"/><circle cx="12" cy="8" r="4"/><path d="m21 8-2 2-1-1"/></svg>',
@@ -732,12 +731,10 @@ const I = {
   link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
   edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>',
-  box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9M10 13h4"/></svg>',
   download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>',
   moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
   sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
-  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
   inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z"/></svg>',
   dots: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
@@ -755,6 +752,8 @@ const I = {
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
 };
+// Ikonkalar bezak: ekran o'qigich ularni "nomsiz rasm" deb o'qimasin (matn tugmaning o'zida)
+for (const k of Object.keys(I)) if (typeof I[k] === 'string') I[k] = I[k].replace(/^<svg /, '<svg aria-hidden="true" focusable="false" ');
 
 /* ---------------- Yordamchilar ---------------- */
 const $ = (id) => document.getElementById(id);
@@ -776,6 +775,7 @@ function applyStaticText() {
   document.querySelectorAll('[data-lang-pick]').forEach((b) => {
     b.textContent = LANG_NAME[b.dataset.langPick];
     b.classList.toggle('on', currentLang() === b.dataset.langPick);
+    b.setAttribute('aria-pressed', String(currentLang() === b.dataset.langPick));
   });
 }
 
@@ -806,29 +806,38 @@ function toast(msg, kind = '', action) {
   span.textContent = msg;
   el.appendChild(span);
 
-  let timer;
+  let timer, hard, gone = false;
+  // Xabar yo'qolganda (vaqt tugadi yoki o'rnini yangisi oldi) "Bekor qilish" endi mumkin emas —
+  // action.onExpire shunda ishlaydi (masalan, ota-onaga to'lov xabari aynan shundan keyin ketadi)
+  const dismiss = (why) => {
+    clearTimeout(timer); clearTimeout(hard);
+    if (gone) return;
+    gone = true;
+    el.remove();
+    if (why !== 'action' && typeof action?.onExpire === 'function') action.onExpire();
+  };
+  el._dismiss = dismiss;
   if (action && typeof action.fn === 'function') {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'toast-act';
     btn.textContent = action.label || t('undo');
-    btn.addEventListener('click', () => {
-      clearTimeout(timer);
-      el.remove();
-      action.fn();
-    });
+    btn.addEventListener('click', () => { dismiss('action'); action.fn(); });
     el.appendChild(btn);
   }
 
   // Ketma-ket belgilashda bildirishnomalar ekranning yarmini yopib qo'ymasin: eng ko'pi bilan ikkita
   const box = $('toasts');
-  while (box.children.length >= 2) box.firstElementChild.remove();
+  while (box.children.length >= 2) { const old = box.firstElementChild; if (old._dismiss) old._dismiss('cap'); else old.remove(); }
   box.appendChild(el);
   // "Bekor qilish" bor xabar 10 soniya turadi; ustiga bosilsa/fokus tushsa to'xtaydi
   // (klaviatura va ekran o'qigich foydalanuvchisi ulgurishi uchun)
   const ms = action ? 10000 : kind === 'bad' ? 6000 : 4200;
-  const arm = () => { clearTimeout(timer); timer = setTimeout(() => el.remove(), ms); };
+  const arm = () => { clearTimeout(timer); timer = setTimeout(() => dismiss('timeout'), ms); };
   const hold = () => clearTimeout(timer);
+  // Pauza cheksiz emas: sichqoncha xabar tagida qolib ketsa ham 30 soniyadan keyin yopiladi
+  // (aks holda "Bekor qilish" bilan bog'liq ota-onaga xabar cheksiz kechikardi)
+  hard = setTimeout(() => dismiss('timeout'), 30000);
   el.addEventListener('pointerenter', hold); el.addEventListener('pointerleave', arm);
   el.addEventListener('focusin', hold); el.addEventListener('focusout', arm);
   arm();
@@ -867,13 +876,58 @@ async function edge(fn, payload, { keepalive = false } = {}) {
     }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = new Error(data.error || `Xatolik (${res.status})`);
+      const err = new Error(data.error ? srvMsg(data.error) : `${t('error')} (${res.status})`);
       err.status = res.status;
       if (res.status === 401) sessionLost();
       throw err;
     }
     return data;
   }
+}
+
+// Serverning o'zbekcha xabarlari ruscha panelda ham o'zbekcha chiqmasin (ro'yxat server matnlari bilan bir xil)
+const SRV_RU = {
+  "Kelajakdagi kunni belgilab bo'lmaydi": 'Нельзя отмечать будущий день',
+  'Allaqachon belgilangan': 'Уже отмечено',
+  'Avval "Keldi" belgilanishi kerak': 'Сначала нужно отметить «Пришёл»',
+  'Bu kurs sizga biriktirilmagan': 'Этот курс вам не назначен',
+  "Arxivdagi o'quvchi": 'Ученик в архиве',
+  'Belgi topilmadi': 'Отметка не найдена',
+  'Bu amal uchun administrator huquqi kerak': 'Для этого действия нужны права администратора',
+  "Bu email allaqachon ro'yxatda": 'Этот email уже есть в списке',
+  "Email va kamida 8 belgili parol kerak": 'Нужны email и пароль не короче 8 символов',
+  "Yangi hisob uchun kamida 8 belgili parol kerak": 'Для нового аккаунта нужен пароль не короче 8 символов',
+  "Parol kamida 8 belgi bo'lishi kerak": 'Пароль должен быть не короче 8 символов',
+  "O'z rolingizni o'zgartira olmaysiz": 'Свою роль изменить нельзя',
+  "O'zingizni o'chira olmaysiz": 'Нельзя удалить самого себя',
+  "Oxirgi administratorni o'qituvchiga aylantirib bo'lmaydi": 'Последнего администратора нельзя сделать учителем',
+  'Kurs nomi kerak': 'Введите название курса',
+  'Kurs nomi juda uzun (80 belgigacha)': 'Слишком длинное название курса (до 80 символов)',
+  'Kurs topilmadi': 'Курс не найден',
+  "Oylik narx noto'g'ri": 'Неверная месячная цена',
+  "Oy formati noto'g'ri": 'Неверный формат месяца',
+  "Eslatmani joriy oy va oldingi 11 oy uchun yuborish mumkin": 'Напоминание можно отправить за текущий и предыдущие 11 месяцев',
+  "O'quvchi tanlanmagan": 'Ученики не выбраны',
+  'Avval Telegram botni ulang': 'Сначала подключите Telegram-бота',
+  'Avval bot tokenini ulang': 'Сначала подключите токен бота',
+  'Bot ulanmagan': 'Бот не подключён',
+  'Tizim allaqachon sozlangan': 'Система уже настроена',
+  'Email kerak': 'Введите email',
+  'Token kerak': 'Введите токен',
+  "Avval ota-onaning telefon raqamini kiriting — havola faqat o'sha raqam egasiga ochiladi.": 'Сначала введите телефон родителя — ссылка откроется только владельцу этого номера.',
+  unauthorized: 'Нет доступа',
+};
+const SRV_RU_RE = [
+  [/^Eng ko'p (\d+) kun orqaga tuzatish mumkin$/, (n) => `Исправлять можно не более чем за ${n} дн.`],
+  [/^Bu kursda (\d+) ta o'quvchi bor — avval ularni ko'chiring$/, (n) => `В этом курсе учеников: ${n} — сначала переведите их`],
+  [/^«(.+)» nomli kurs allaqachon bor$/, (n) => `Курс «${n}» уже существует`],
+  [/^Bir marta eng ko'p (\d+) o'quvchi$/, (n) => `За один раз — не более ${n} учеников`],
+];
+function srvMsg(msg) {
+  if (currentLang() !== 'ru') return msg;
+  if (SRV_RU[msg]) return SRV_RU[msg];
+  for (const [re, fn] of SRV_RU_RE) { const m = re.exec(msg); if (m) return fn(m[1]); }
+  return msg;
 }
 
 // Panel ochiq paytida sessiya bekor bo'ldi (boshqa tabda chiqildi, foydalanuvchi o'chirildi, parol almashdi):
@@ -1173,6 +1227,7 @@ async function loadConfig() {
 }
 
 async function refreshLinks() {
+  if (document.hidden) return;                          // fonda turgan tab so'rov yubormasin (qaytganda refreshOnResume yangilaydi)
   // Yarim tun o'tdi — "Bugun" endi boshqa kun: belgilarni qayta yuklaymiz
   // (viewToday yangi kunni o'zi yuklay boshlaydi — ensureDay)
   if (state.loadedDay && state.loadedDay !== selDay() && state.view === 'today' && !typing()) render();
@@ -1184,7 +1239,8 @@ async function refreshLinks() {
   const after = state.students.filter((s) => s.telegram_chat_id).length;
   if (after !== before) {
     if (after > before) toast(t('parentsLinkedN', { n: after - before }), 'ok');
-    if (!typing()) render();
+    // Faqat ulanish belgisi ko'rinadigan ekranlar qayta chiziladi: Sozlamalarda yozilayotgan token yoki shablon yo'qolmasin
+    if (!typing() && (state.view === 'today' || state.view === 'students')) render();
   }
 }
 
@@ -1304,7 +1360,7 @@ function renderLangBtn() {
   $('langBtn')?.setAttribute('aria-label', t('setLang'));
   const menu = $('langMenu');
   if (menu) menu.innerHTML = LANGS.map((x) =>
-    `<button class="menu-item ${x === l ? 'on' : ''}" data-lang="${x}" role="menuitem" type="button">
+    `<button class="menu-item ${x === l ? 'on' : ''}" data-lang="${x}" ${x === l ? 'aria-current="true"' : ''} type="button">
       <span>${LANG_NAME[x]}</span>${x === l ? I.check : ''}</button>`).join('');
 }
 
@@ -1322,7 +1378,7 @@ function renderUserCard() {
       <span class="menu-who"><b>${esc(name)}</b><small>${isAdmin() ? t('roleAdmin') : t('roleTeacher')}</small></span>
     </div>
     <div class="menu-mail">${esc(me.email)}</div>
-    <button class="menu-item danger" id="logoutBtn" role="menuitem" type="button">${I.out}<span>${t('logout')}</span></button>`;
+    <button class="menu-item danger" id="logoutBtn" type="button">${I.out}<span>${t('logout')}</span></button>`;
 }
 
 // Bitta vaqtda bitta menyu ochiq turadi
@@ -1366,6 +1422,15 @@ function focusSelector(el) {
   const attrs = el.getAttributeNames().filter((a) => a.startsWith('data-') && el.getAttribute(a) !== '' || a === 'data-close');
   if (!attrs.length) return null;
   return el.tagName.toLowerCase() + attrs.slice(0, 3).map((a) => `[${a}="${CSS.escape(el.getAttribute(a))}"]`).join('');
+}
+// fn() sahifani qayta chizadi; fokus o'sha tugmada qolsin (render() ham, hisobot/to'lov tablari ham)
+function keepFocus(fn) {
+  const sel = focusSelector(document.activeElement);
+  const before = document.activeElement;
+  fn();
+  if (sel && before && !before.isConnected && (!document.activeElement || document.activeElement === document.body)) {
+    document.querySelector(sel)?.focus({ preventScroll: true });
+  }
 }
 function render() {
   const sel = focusSelector(document.activeElement);
@@ -1477,13 +1542,13 @@ function dayBar() {
   const atToday = isToday();
   return `
     <div class="daybar">
-      <button class="daybar-nav" data-day-shift="-1" type="button" aria-label="${t('prevDay')}">${I.chevL || '‹'}</button>
+      <button class="daybar-nav" data-day-shift="-1" type="button" aria-label="${t('prevDay')}">${I.chevL}</button>
       <label class="daybar-mid">
         <span class="daybar-label">${esc(dayLabel(key))}</span>
         <span class="daybar-sub">${esc(weekdayOf(key))}</span>
         <input type="date" id="dayPick" value="${key}" min="${shiftDay(todayKey(), -30)}" max="${todayKey()}" aria-label="${t('pickDay')}">
       </label>
-      <button class="daybar-nav" data-day-shift="1" type="button" aria-label="${t('nextDay')}" ${atToday ? 'disabled' : ''}>${I.chevR || '›'}</button>
+      <button class="daybar-nav" data-day-shift="1" type="button" aria-label="${t('nextDay')}" ${atToday ? 'disabled' : ''}>${I.chevR}</button>
     </div>
     ${atToday ? '' : `<div class="daybar-note">${I.note}<span>${t('pastDay')}</span>
       <button class="daybar-back" id="dayToday" type="button">${t('backToToday')}</button></div>`}`;
@@ -1531,8 +1596,8 @@ function todayParts() {
       // Kelmadi/Sababli qo'yilganlar bunga kirmaydi: kasal bolaning ota-onasiga "keldi" xabari ketmasin.
       const left = busy ? 0 : arr.filter((s) => !state.today.some((r) => r.student_id === s.id)).length;
       return `<div class="group-title">
-          <span title="${esc(c.name)}">${cIcon(c)} ${esc(c.name)} · ${arr.length}</span>
-          ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}" type="button">
+          <span role="heading" aria-level="3" title="${esc(c.name)}">${cIcon(c)} ${esc(c.name)} · ${arr.length}</span>
+          ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}" aria-label="${esc(t('allArrived') + ' — ' + c.name + ' · ' + left)}" type="button">
             ${ico(MARKS.in)} ${t('allArrived')} · ${left}</button>` : ''}
         </div>
         <div class="rows">${arr.map((s) => rowToday(s, c)).join('')}</div>`;
@@ -1696,7 +1761,7 @@ function reasonSheet(s) {
   openSheet(esc(t('reasonOf', { name: s.full_name })), `
     <form id="mkForm">
     <div class="chips" style="margin-bottom:14px">
-      ${REASONS.map((r) => `<button class="chip" style="--acc:var(--violet)" data-reason="${esc(r)}" type="button">${esc(r)}</button>`).join('')}
+      ${REASONS.map((r, i) => `<button class="chip" style="--acc:var(--violet)" data-reason="${esc(STR.uz['r' + (i + 1)])}" aria-pressed="false" type="button">${esc(r)}</button>`).join('')}
     </div>
     <label class="field"><span>${t('reason')}</span>
       <input class="inp" id="mkNote" maxlength="200" placeholder="${t('reasonPh')}">
@@ -1705,7 +1770,7 @@ function reasonSheet(s) {
     </form>`, () => {
     document.querySelectorAll('[data-reason]').forEach((b) => b.addEventListener('click', () => {
       $('mkNote').value = b.dataset.reason;
-      document.querySelectorAll('[data-reason]').forEach((x) => x.classList.toggle('on', x === b));
+      document.querySelectorAll('[data-reason]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); });
     }));
     $('mkForm').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -1868,7 +1933,7 @@ function viewLeadsShell() {
   const counts = { all: state.leads.length };
   Object.keys(LEAD_STATUS).forEach((k) => { counts[k] = state.leads.filter((l) => l.status === k).length; });
   const chip = (id, label) =>
-    `<button class="chip ${state.leadFilter === id ? 'on' : ''}" style="--acc:var(--gold)" data-lead-filter="${id}" type="button">${label} ${counts[id] ? `· ${counts[id]}` : ''}</button>`;
+    `<button class="chip ${state.leadFilter === id ? 'on' : ''}" style="--acc:var(--gold)" data-lead-filter="${id}" aria-pressed="${state.leadFilter === id}" type="button">${label} ${counts[id] ? `· ${counts[id]}` : ''}</button>`;
   return `
     <div class="page-head">
       <div><h2>${t('tLeads')}</h2><p>${t('leadsSub')}</p></div>
@@ -2634,6 +2699,7 @@ function bindSumInput(inp, onInput) {
         try { inp.setSelectionRange(pos, pos); } catch (_) {}
       }
     } else inp.value = raw.replace(/[^\d\s]/g, '');
+    inp.removeAttribute('aria-invalid');
     onInput?.();
   });
 }
@@ -2827,7 +2893,7 @@ function payRow({ s, c, p, owed, rem, debt }) {
     <div class="pay-state">${state_}</div>
     <div class="row-actions">
       ${p ? `<button class="btn btn-sm" data-pay-open="${s.id}" type="button" aria-label="${t('edit')}: ${esc(s.full_name)}">${I.edit}</button>`
-          : `<button class="btn btn-sm btn-green" data-pay-open="${s.id}" type="button">${I.check} ${t('payMark')}</button>`}
+          : `<button class="btn btn-sm btn-green" data-pay-open="${s.id}" aria-label="${esc(t('payRecord') + ' — ' + s.full_name)}" type="button">${I.check} ${t('payRecord')}</button>`}
     </div>
   </div>`;
 }
@@ -2860,7 +2926,7 @@ function paySheet(sid) {
     ${pastOwed.length ? `<p class="pay-owed-list">${I.alert}<span>${t('payArrearsList')}: ${pastOwed.map((m) => esc(ymShort(m))).join(', ')}</span></p>` : ''}
     <form id="payForm" novalidate>
       <label class="field"><span>${t('payAmount')}</span>
-        <input class="inp pay-amount" id="payAmount" inputmode="numeric" autocomplete="off" placeholder="0"
+        <input class="inp pay-amount" id="payAmount" inputmode="numeric" autocomplete="off" aria-describedby="payErr" placeholder="0"
           value="${prefill != null ? fmtSum(prefill) : ''}"></label>
       ${quick.length ? `<div class="chips pay-quick" aria-label="${t('payQuick')}">${quick.map((n) =>
         `<button class="chip" style="--acc:var(--green)" data-pay-quick="${n}" type="button"${chipTag(n) ? ` title="${chipTag(n)}"` : ''}>${fmtSum(n)}${chipTag(n) ? ` <small>· ${chipTag(n).toLowerCase()}</small>` : ''}</button>`).join('')}</div>` : ''}
@@ -2888,7 +2954,7 @@ function paySheet(sid) {
       const amount = parseSum(amt.value);
       const paidOn = $('payDate').value || todayKey();
       const bad = Number.isNaN(amount) || (amount != null && (amount < 0 || amount > PAY_MAX));
-      if (bad) { const er = $('payErr'); er.textContent = t('payBadAmount'); er.hidden = false; amt.focus(); return; }
+      if (bad) { const er = $('payErr'); er.textContent = t('payBadAmount'); er.hidden = false; amt.setAttribute('aria-invalid', 'true'); amt.focus(); return; }
       if (paidOn > todayKey()) { const er = $('payErr'); er.textContent = t('payBadDate'); er.hidden = false; $('payDate').focus(); return; }
       const row = { amount, paid_on: paidOn, note: $('payNote').value.trim() || null };
       const tell = !!$('payTell')?.checked;
@@ -2907,12 +2973,17 @@ function paySheet(sid) {
       // Xabar "Bekor qilish" oynasi tugagach ketadi — adashib belgilangan to'lov ota-onaga yetmasin
       const later = !p && newId && tell;
       if (later) payNotifyLater(newId);
-      toast(t('paySaved', { name: s.full_name }) + (later ? t('payNotifSoon') : ''), 'ok', !p && newId ? { fn: async () => {
-        payNotifyCancel(newId);
-        const { error } = await sb.from('payments').delete().eq('id', newId);
-        if (error) toast('❌ ' + error.message, 'bad'); else toast(t('payRemoved'), 'ok');
-        loadPayments();
-      } } : undefined);
+      toast(t('paySaved', { name: s.full_name }) + (later ? t('payNotifSoon') : ''), 'ok', !p && newId ? {
+        fn: async () => {
+          payNotifyCancel(newId);
+          const { error } = await sb.from('payments').delete().eq('id', newId);
+          if (error) toast('❌ ' + error.message, 'bad'); else toast(t('payRemoved'), 'ok');
+          loadPayments();
+        },
+        // Xabar "Bekor qilish" tugmasi yo'qolgandan keyin ketadi (tugma 10 s turadi va sichqoncha ustida
+        // to'xtaydi — qat'iy 7 soniyalik taymer ota-onaga xabar ketib bo'lgach ham "Bekor qilish" ko'rsatardi)
+        onExpire: later ? () => payNotifyExpired(newId) : undefined,
+      } : undefined);
       loadPayments();
     });
     if (p) $('payNotify')?.addEventListener('click', async () => {
@@ -3106,25 +3177,19 @@ async function payNotify(paymentId, keepalive = false) {
 const payNotifyMsgs = { no_tg: 'payNotifNoTg', muted: 'payNotifMuted', no_bot: 'remNoBot', bad_name: 'payNotifBadName' };
 const payNotifMsg = (code) => t(payNotifyMsgs[code] || 'payNotifFail');
 
-// Yangi to'lov xabari toast'dagi "Bekor qilish" tugmasi yo'qolgach yuboriladi
-const PAY_NOTIFY_DELAY = 7000;   // toast (6,5 s) yopilgandan keyin — "Bekor qilish" bosilmay qolgan bo'lsa
-const payPending = new Map();   // to'lov id -> taymer
-function payNotifyLater(id) {
-  payNotifyCancel(id);
-  payPending.set(id, setTimeout(async () => {
-    payPending.delete(id);
-    const code = await payNotify(id);
-    if (code === 'sent' || code === 'already') { if (state.view === 'payments') loadPayments(); }
-    else if (code !== 'muted' && code !== 'no_bot') toast(payNotifMsg(code), 'bad');
-  }, PAY_NOTIFY_DELAY));
-}
-function payNotifyCancel(id) {
-  clearTimeout(payPending.get(id));
-  payPending.delete(id);
+// Yangi to'lov xabari toast'dagi "Bekor qilish" tugmasi yo'qolgach yuboriladi (toast onExpire)
+const payPending = new Set();   // "Bekor qilish" hali mumkin bo'lgan to'lovlar
+function payNotifyLater(id) { payPending.add(id); }
+function payNotifyCancel(id) { payPending.delete(id); }
+async function payNotifyExpired(id) {
+  if (!payPending.delete(id)) return;                 // bekor qilingan
+  const code = await payNotify(id);
+  if (code === 'sent' || code === 'already') { if (state.view === 'payments') loadPayments(); }
+  else if (code !== 'muted' && code !== 'no_bot') toast(payNotifMsg(code), 'bad');
 }
 // Sahifa muddat tugamasdan yopilsa — kutayotgan xabarlarni darhol jo'natamiz
 addEventListener('pagehide', () => {
-  for (const id of [...payPending.keys()]) { payNotifyCancel(id); payNotify(id, true); }
+  for (const id of [...payPending]) { payPending.delete(id); payNotify(id, true); }
 });
 
 function setPayYm(ym) {
@@ -3647,8 +3712,9 @@ let sheetOpenedAt = 0;
 function openSheet(title, bodyHtml, onMount) {
   const dlg = $('sheet');
   const a = document.activeElement;
+  // To'liq selektor (teg + barcha data-atributlar): "Sababli" tugmasi birinchi qatordagi emas, aynan shu o'quvchiniki
   const attr = a && ORIGIN_ATTRS.find((x) => a.hasAttribute?.(x));
-  sheetOrigin = attr ? `[${attr}="${CSS.escape(a.getAttribute(attr))}"]` : null;
+  sheetOrigin = attr ? focusSelector(a) || `[${attr}="${CSS.escape(a.getAttribute(attr))}"]` : null;
   $('sheetBody').innerHTML = `
     <div class="sheet-grab"></div>
     <div class="sheet-head"><h3 id="sheetTitle">${title}</h3><div class="spacer"></div>
@@ -3702,7 +3768,7 @@ function studentSheet(id) {
         <small class="f-hint">${t('fPhoneHint')}</small></label>
       <p class="tpl-err" id="stPhoneErr" role="alert" hidden></p>
       ${isAdmin() ? `<label class="field"><span>${t('fStFee')}</span>
-        <input class="inp" id="stFee" inputmode="numeric" autocomplete="off"
+        <input class="inp" id="stFee" inputmode="numeric" autocomplete="off" aria-describedby="stFeeErr"
           value="${s && Number.isInteger(state.fees.get(s.id)) ? fmtSum(state.fees.get(s.id)) : ''}">
         <small class="f-hint">${t('fStFeeHint')}</small></label>
       <p class="tpl-err" id="stFeeErr" role="alert" hidden></p>` : ''}
@@ -3965,7 +4031,7 @@ function courseSheet(id) {
           `<option value="${x}" ${c?.color === x ? 'selected' : ''}>${esc(colorNames[x] || x)}</option>`).join('')}</select>
           <span class="ic-prev color-prev" id="cColorPrev" aria-hidden="true" style="--acc:var(--${c?.color ?? 'sky'})"></span></span></label>
       <label class="field"><span>${t('fFee')}</span>
-        <input class="inp" id="cFee" inputmode="numeric" autocomplete="off" placeholder="${t('fFeePh')}"
+        <input class="inp" id="cFee" inputmode="numeric" autocomplete="off" aria-describedby="cErr" placeholder="${t('fFeePh')}"
           value="${Number.isInteger(c?.monthly_fee) ? fmtSum(c.monthly_fee) : ''}">
         <small class="f-hint">${t('fFeeHint')}</small></label>
       <p class="tpl-err" id="cErr" role="alert" hidden></p>
@@ -4016,7 +4082,13 @@ function courseSheet(id) {
 /* ============================================================
    HODISALAR
    ============================================================ */
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  hideTip();                                              // diagramma/jurnal maslahati Esc bilan yopiladi
+  const open = document.querySelector('.menu:not([hidden])');
+  closeMenus();
+  if (open) open.previousElementSibling?.focus();         // fokus tugmaga qaytadi (<body> ga emas)
+});
 
 // Jurnal katagi: strelkalar / Home / End bilan yurish, Enter yoki Probel — o'sha kunni tuzatish
 document.addEventListener('keydown', (e) => {
@@ -4076,7 +4148,7 @@ document.addEventListener('click', async (e) => {
     state.repTab = repTab.dataset.repTab;
     try { localStorage.setItem('parvoz-rep-tab', state.repTab); } catch (_) {}
     hideTip();
-    return renderReport();
+    return keepFocus(renderReport);
   }
 
   // Jurnal katagi: o'sha kunni Davomat ekranida ochamiz (tuzatish uchun)
@@ -4221,7 +4293,7 @@ document.addEventListener('click', async (e) => {
   if (payTab) {
     state.payTab = payTab.dataset.payTab;
     try { localStorage.setItem('parvoz-pay-tab', state.payTab); } catch (_) {}
-    return renderPayments();
+    return keepFocus(renderPayments);
   }
   if (el.closest('#remOpen')) return remindSheet();
   const payOpen = el.closest('[data-pay-open]');
@@ -4379,7 +4451,7 @@ $('sheet').addEventListener('close', () => {
     const a = document.activeElement;
     if (a && a !== document.body && document.contains(a)) return true;
     const el = document.querySelector(sel);
-    if (el) { el.focus({ preventScroll: true }); return true; }
+    if (el) { el.focus({ preventScroll: true }); return document.activeElement === el; }
     return false;
   };
   // Saqlashdan keyin ro'yxat biroz kechikib qayta chiziladi — bir necha urinish
