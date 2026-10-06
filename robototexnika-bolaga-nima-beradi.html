@@ -161,7 +161,7 @@ try { if (localStorage.getItem('parvoz-lang') === 'ru') localStorage.setItem('pa
 }
 </script>
 </head>
-<body class="js">
+<body>
 
 <a class="skip-link" href="#main">Asosiy kontentga o'tish</a>
 
@@ -248,20 +248,20 @@ try { if (localStorage.getItem('parvoz-lang') === 'ru') localStorage.setItem('pa
     <h2>Tez-tez so&#x27;raladigan savollar</h2>
     <div class="faq-list">
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Necha yoshdan qabul qilasiz?<span class="faq-ico" aria-hidden="true">+</span></button>
-        <div class="faq-a"><p>6 yoshdan. Kichik yoshdagilar uchun konstruksiya qismi ko&#x27;proq, dasturlash qismi soddaroq bo&#x27;ladi — guruhlar yosh bo&#x27;yicha ajratilgan.</p></div>
+        <button class="faq-q" type="button" aria-expanded="false"><span>Necha yoshdan qabul qilasiz?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">6 yoshdan. Kichik yoshdagilar uchun konstruksiya qismi ko&#x27;proq, dasturlash qismi soddaroq bo&#x27;ladi — guruhlar yosh bo&#x27;yicha ajratilgan.</div></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Qiz bolalar uchun mos keladimi?<span class="faq-ico" aria-hidden="true">+</span></button>
-        <div class="faq-a"><p>Ha. Robototexnikada konstruksiya, dizayn va dasturlash birga keladi — bu yo&#x27;nalish qiz bolalarda ham juda yaxshi ketadi.</p></div>
+        <button class="faq-q" type="button" aria-expanded="false"><span>Qiz bolalar uchun mos keladimi?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Ha. Robototexnikada konstruksiya, dizayn va dasturlash birga keladi — bu yo&#x27;nalish qiz bolalarda ham juda yaxshi ketadi.</div></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Dasturlash bilan birga olsa bo&#x27;ladimi?<span class="faq-ico" aria-hidden="true">+</span></button>
-        <div class="faq-a"><p>Ha, jadval to&#x27;qnashmasa bo&#x27;ladi. Ikkalasi bir-birini to&#x27;ldiradi: robototexnikada o&#x27;rganilgan mantiq dasturlashda, dasturlashdagi ko&#x27;nikma robotni boshqarishda asqotadi.</p></div>
+        <button class="faq-q" type="button" aria-expanded="false"><span>Dasturlash bilan birga olsa bo&#x27;ladimi?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Ha, jadval to&#x27;qnashmasa bo&#x27;ladi. Ikkalasi bir-birini to&#x27;ldiradi: robototexnikada o&#x27;rganilgan mantiq dasturlashda, dasturlashdagi ko&#x27;nikma robotni boshqarishda asqotadi.</div></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Musobaqalarda qatnashish imkoni bormi?<span class="faq-ico" aria-hidden="true">+</span></button>
-        <div class="faq-a"><p>Ha. Tayyor bo&#x27;lgan o&#x27;quvchilarni robototexnika musobaqalariga tayyorlaymiz — bu bolalar uchun kuchli turtki bo&#x27;ladi.</p></div>
+        <button class="faq-q" type="button" aria-expanded="false"><span>Musobaqalarda qatnashish imkoni bormi?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Ha. Tayyor bo&#x27;lgan o&#x27;quvchilarni robototexnika musobaqalariga tayyorlaymiz — bu bolalar uchun kuchli turtki bo&#x27;ladi.</div></div>
       </div>
     </div>
 
@@ -324,30 +324,44 @@ function syncLabel() {
   var m = document.getElementById('themeBtnMobile');
   if (m) m.textContent = THEME_LABEL[next];
 }
-function setTheme(t) {
+function setTheme(t, save) {
   document.documentElement.setAttribute('data-theme', t);
-  try { localStorage.setItem('parvoz-theme', t); } catch (e) {}
+  if (save) try { localStorage.setItem('parvoz-theme', t); } catch (e) {}
   var meta = document.getElementById('themeColorMeta');
   if (meta) meta.setAttribute('content', t === 'light' ? '#f4f7fd' : '#071029');
   syncLabel();
 }
 ['themeBtn','themeBtnMobile'].forEach(function (id) {
   var el = document.getElementById(id);
-  if (el) el.addEventListener('click', function () { setTheme(curTheme() === 'dark' ? 'light' : 'dark'); });
+  if (el) el.addEventListener('click', function () { setTheme(curTheme() === 'dark' ? 'light' : 'dark', true); });
 });
 setTheme(curTheme());
+try {
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function (e) {
+    var saved = null; try { saved = localStorage.getItem('parvoz-theme'); } catch (_) {}
+    if (saved !== 'light' && saved !== 'dark') setTheme(e.matches ? 'light' : 'dark');
+  });
+} catch (e) {}
+var prefersReduced = function () { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
 
 /* Navbar + menyu */
 var nav = document.getElementById('nav');
 window.addEventListener('scroll', function () { nav.classList.toggle('scrolled', window.scrollY > 10); }, { passive: true });
 nav.classList.toggle('scrolled', window.scrollY > 10);
 var burger = document.getElementById('burger'), mm = document.getElementById('mobileMenu');
-burger.addEventListener('click', function () {
-  var open = mm.classList.toggle('open');
+var MENU_LABEL = { uz: ['Menyuni ochish', 'Menyuni yopish'], ru: ['\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e', '\u0417\u0430\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e'] };
+function setMenu(open, focusBurger) {
+  mm.classList.toggle('open', open);
   burger.setAttribute('aria-expanded', open);
-});
-mm.querySelectorAll('a').forEach(function (a) {
-  a.addEventListener('click', function () { mm.classList.remove('open'); burger.setAttribute('aria-expanded','false'); });
+  burger.setAttribute('aria-label', (MENU_LABEL[document.documentElement.lang] || MENU_LABEL.uz)[open ? 1 : 0]);
+  if (!open && focusBurger) burger.focus();
+}
+burger.addEventListener('click', function () { setMenu(!mm.classList.contains('open')); });
+mm.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { setMenu(false); }); });
+// Esc va menyudan tashqariga bosish yopadi
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && mm.classList.contains('open')) setMenu(false, true); });
+document.addEventListener('pointerdown', function (e) {
+  if (mm.classList.contains('open') && !mm.contains(e.target) && !burger.contains(e.target)) setMenu(false);
 });
 
 /* Reveal */
@@ -362,25 +376,33 @@ if ('IntersectionObserver' in window) {
 }
 
 /* FAQ */
-document.querySelectorAll('.faq-item').forEach(function (item) {
+// Ochilgach balandlik cheklanmaydi (ekran burilsa matn kesilmaydi); yopishda yana px
+document.querySelectorAll('.faq-item').forEach(function (item, i) {
   var btn = item.querySelector('.faq-q'), panel = item.querySelector('.faq-a');
+  if (!panel.id) panel.id = 'faq-a-' + (i + 1);
+  btn.setAttribute('aria-controls', panel.id);
+  panel.addEventListener('transitionend', function (e) {
+    if (e.propertyName === 'max-height' && item.classList.contains('open')) panel.style.maxHeight = 'none';
+  });
   btn.addEventListener('click', function () {
     var isOpen = item.classList.contains('open');
     document.querySelectorAll('.faq-item.open').forEach(function (o) {
+      var p = o.querySelector('.faq-a');
+      if (p.style.maxHeight === 'none') { p.style.maxHeight = p.scrollHeight + 'px'; void p.offsetHeight; }
       o.classList.remove('open');
       o.querySelector('.faq-q').setAttribute('aria-expanded','false');
-      o.querySelector('.faq-a').style.maxHeight = null;
+      p.style.maxHeight = null;
     });
     if (!isOpen) {
       item.classList.add('open');
       btn.setAttribute('aria-expanded','true');
-      panel.style.maxHeight = panel.scrollHeight + 'px';
+      panel.style.maxHeight = prefersReduced() ? 'none' : panel.scrollHeight + 'px';
     }
   });
 });
 
 /* Yulduzlar */
-if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+if (!prefersReduced()) {
   var se = document.getElementById('stars');
   for (var i = 0; i < 45; i++) {
     var s = document.createElement('div');

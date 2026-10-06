@@ -73,7 +73,7 @@
   --border-2:rgba(13,27,62,.2);
   --text:    #0c1a38;
   --muted:   #4a5c7e;
-  --faint:   #6c7d9c;
+  --faint:   #56688a;
 
   --sky:     #1a7fd4;
   --teal:    #0d9aae;
@@ -125,7 +125,7 @@
 :root[data-theme="light"] .early { border-color:rgba(255,179,0,.45); }
 :root[data-theme="light"] .price-card,
 :root[data-theme="light"] .cta-banner { border-color:rgba(26,127,212,.28); }
-":root[data-theme="light"] .logo-card { background:rgba(255,255,255,.85); }
+:root[data-theme="light"] .logo-card { background:rgba(255,255,255,.85); }
 :root[data-theme="light"] .stats,
 :root[data-theme="light"] .course-card,
 :root[data-theme="light"] .feat,
@@ -304,7 +304,7 @@ a.lang-btn { text-decoration:none; display:flex; align-items:center; }
   display:none; border:1px solid var(--border); background:var(--soft-1);
   width:44px; height:44px; border-radius:12px; cursor:pointer;
   flex-direction:column; align-items:center; justify-content:center; gap:5px;
-  margin-left:auto;
+  margin-left:auto; flex-shrink:0;
 }
 .nav-burger span {
   width:20px; height:2px; background:var(--text); border-radius:2px;
@@ -321,6 +321,7 @@ a.lang-btn { text-decoration:none; display:flex; align-items:center; }
   border-bottom:1px solid var(--border);
   padding:12px 20px 24px;
   display:none; flex-direction:column; gap:4px;
+  max-height:calc(100dvh - var(--nav-h)); overflow-y:auto; overscroll-behavior:contain;
 }
 .mobile-menu.open { display:flex; }
 .mobile-menu a {
@@ -574,7 +575,7 @@ section { padding:56px 0; }
    FEATURES
    ============================================================ */
 .features-grid {
-  display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));
   gap:18px;
 }
 .feat {
@@ -673,8 +674,8 @@ section { padding:56px 0; }
   border-radius:var(--r-lg); padding:30px 32px;
 }
 .early-ico { font-size:2.6rem; flex-shrink:0; }
-.early-body { flex:1; min-width:260px; }
-.early-body strong { display:block; font-size:1.2rem; font-weight:900; margin-bottom:6px; }
+.early-body { flex:1; min-width:min(260px,100%); }
+.early-body > strong { display:block; font-size:1.2rem; font-weight:900; margin-bottom:6px; }
 .early-body p { color:var(--muted); font-size:.96rem; }
 .early-badge {
   background:var(--grad-gold); color:var(--on-gold); font-weight:900; font-size:.85rem;
@@ -736,7 +737,7 @@ section { padding:56px 0; }
 .res-card p { color:var(--muted); font-size:.93rem; }
 
 .testi-grid {
-  display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));
   gap:20px;
 }
 .testi {
@@ -857,9 +858,10 @@ section { padding:56px 0; }
 }
 .faq-item.open .faq-plus { transform:rotate(45deg); background:rgba(255,179,0,.12); }
 .faq-a {
-  max-height:0; overflow:hidden;
-  transition:max-height .35s ease;
+  max-height:0; overflow:hidden; visibility:hidden;
+  transition:max-height .35s ease, visibility 0s linear .35s;
 }
+.faq-item.open .faq-a { visibility:visible; transition:max-height .35s ease, visibility 0s; }
 .faq-a-inner { padding:0 22px 20px; color:var(--muted); font-size:.97rem; }
 
 /* ============================================================
@@ -998,7 +1000,8 @@ span[data-lang].show { display:inline; }
   .nav-links { display:none; }
   .nav .lang-btns { margin-left:auto; }
   .nav .nav-cta, .nav .theme-btn { display:none; }
-  .nav-burger { display:flex; margin-left:0; }
+  .nav-burger { display:flex; }
+  .nav .lang-btns ~ .nav-burger { margin-left:0; }
 }
 @media (min-width:1241px){
   .mm-theme { display:none; }
@@ -1109,6 +1112,7 @@ main :is(h1, h2, h3, strong) { overflow-wrap:break-word; hyphens:auto; }
 .other-card .oc-ico { font-size:1.3rem; display:flex; align-items:center; }
 a.course-card { display:block; text-decoration:none; color:inherit; }
 .cc-more { margin-top:14px; font-weight:900; font-size:.9rem; color:var(--acc); }
+:root[data-theme="light"] .cc-more { color:color-mix(in srgb, var(--acc) 52%, var(--text)); }
 
 /* ============================================================
    REVIEWS HUB
@@ -1178,6 +1182,7 @@ select.f-inp option { background: var(--bg2); color: var(--text); }
 .f-consent a { color: var(--sky-ink); }
 .f-msg { min-height: 1.3em; font-weight: 700; font-size: .9rem; margin-top: 10px; text-align: center; }
 .f-msg.bad { color: #fca5a5; }
+:root[data-theme="light"] .f-msg.bad { color: #b91c1c; }
 .f-done {
   text-align: center; padding: 30px 16px;
 }
@@ -1264,3 +1269,55 @@ select.f-inp option { background: var(--bg2); color: var(--text); }
 
 /* Maqolada til almashtirish havolasi */
 .art-lang { color: var(--gold-ink); font-weight: 800; white-space: nowrap; }
+
+/* ============================================================
+   QA 3-TO'PLAM
+   ============================================================ */
+/* Maqola / hub: breadcrumb .doc ichida — yuqori bo'shliq ikki marta qo'shilmasin */
+.doc .crumbs { padding-top:0; }
+
+/* Maxfiylik: yuqorida ruscha qisqacha bayonga havola */
+.doc-jump { margin:-16px 0 24px; font-weight:800; font-size:.92rem; }
+
+/* Maqola FAQ (generator .faq-plus / .faq-a-inner bilan chiqaradi) */
+.faq-a > p { padding:0 22px 20px; margin:0; color:var(--muted); font-size:.97rem; }
+
+/* Tor telefon: logotip + UZ/RU/EN + menyu tugmasi 320px ga sig'sin */
+@media (max-width:360px){
+  .nav-inner { gap:8px; padding:0 12px; }
+  .nav-brand { gap:7px; font-size:1.15rem; }
+  .nav-brand .brand-logo { width:32px; }
+  .lang-btn { padding:5px 7px; }
+}
+
+/* Pastki "Bepul dars" paneli oxirgi qatorni va fokusdagi maydonni yopmasin */
+@media (max-width:760px){
+  body:has(.sticky-cta) { padding-bottom:calc(72px + env(safe-area-inset-bottom)); }
+  html:has(.sticky-cta) { scroll-padding-bottom:96px; }
+}
+/* "Pastga" belgisi ishonch belgilarining ustiga tushmasin */
+@media (min-width:761px){
+  .hero:has(.scroll-hint) { padding-bottom:104px; }
+}
+
+/* Chop etish: yashirin (reveal) bloklar ko'rinadi, bezaklar va yopishqoq panellar yo'q,
+   matn qog'ozda o'qiladigan rangda (qorong'i rejimda ham) */
+@media print {
+  :root, :root[data-theme] {
+    --bg:#fff; --bg2:#fff; --card:#fff; --card-2:#fff;
+    --border:rgba(13,27,62,.18); --border-2:rgba(13,27,62,.3);
+    --text:#0c1a38; --muted:#3f5072; --faint:#56688a;
+    --gold-ink:#7a5400; --gold2-ink:#7a5400; --sky-ink:#125fa8; --green-ink:#0b7a50; --violet-ink:#6428c4;
+    --soft-05:transparent; --soft-1:transparent; --soft-2:transparent;
+    --logo-url:url(logo.webp);
+  }
+  body { background:#fff !important; color:#0c1a38; }
+  .js [data-reveal] { opacity:1 !important; transform:none !important; }
+  .nav, .mobile-menu, .sticky-cta, .to-top, .scroll-hint, .skip-link,
+  .bg-glow, .bg-pattern, .stars, .floaters, .lightbox { display:none !important; }
+  .hero { min-height:0; padding-top:24px; }
+  .grad, .stat-n { background:none !important; -webkit-text-fill-color:currentColor; color:inherit !important; }
+  .faq-a { max-height:none !important; visibility:visible !important; }
+  .crumbs { padding-top:0; }
+  a { color:inherit; }
+}
