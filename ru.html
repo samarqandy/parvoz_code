@@ -1118,7 +1118,7 @@ try { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}
           <input type="checkbox" required>
           <span>
 
-            <span>Согласен(на) на обработку данных согласно <a href="maxfiylik.html">политике конфиденциальности</a>.</span>
+            <span>Согласен(на) на обработку данных согласно <a href="maxfiylik.html#ru">политике конфиденциальности</a>.</span>
 
           </span>
         </label>
@@ -1126,7 +1126,7 @@ try { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}
         <button class="btn btn-primary btn-block" id="leadBtn" type="submit">
           <span>Отправить заявку</span>
         </button>
-        <div class="f-msg" id="leadMsg"></div>
+        <div class="f-msg" id="leadMsg" role="alert"></div>
       </form>
     </div>
   </section>
@@ -1241,7 +1241,7 @@ try { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}
           <li><a href="#faq">FAQ</a></li>
           <li><a href="maqolalar.html" lang="uz">Ota-onalar uchun maqolalar</a></li>
           <li><a href="stati.html" lang="ru">Статьи для родителей</a></li>
-          <li><a href="maxfiylik.html"><span>Политика конфиденциальности</span></a></li>
+          <li><a href="maxfiylik.html#ru"><span>Политика конфиденциальности</span></a></li>
         </ul>
       </div>
       <div class="f-col">
@@ -1291,18 +1291,26 @@ function syncThemeLabels() {
   const dBtn = document.getElementById('themeBtn');
   if (dBtn) dBtn.setAttribute('aria-label', label);
 }
-function setTheme(theme) {
+function setTheme(theme, save) {
   document.documentElement.setAttribute('data-theme', theme);
-  try { localStorage.setItem('parvoz-theme', theme); } catch (e) {}
+  // Faqat foydalanuvchi o'zi tanlaganda saqlanadi — aks holda sayt tizim rejimiga ergashadi
+  if (save) try { localStorage.setItem('parvoz-theme', theme); } catch (e) {}
   const meta = document.getElementById('themeColorMeta');
   if (meta) meta.setAttribute('content', THEME_COLOR[theme]);
   syncThemeLabels();
 }
 ['themeBtn','themeBtnMobile'].forEach(id => {
   const el = document.getElementById(id);
-  if (el) el.addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
+  if (el) el.addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark', true));
 });
 setTheme(currentTheme());
+try {
+  const osLight = window.matchMedia('(prefers-color-scheme: light)');
+  osLight.addEventListener('change', e => {
+    let saved = null; try { saved = localStorage.getItem('parvoz-theme'); } catch (_) {}
+    if (saved !== 'light' && saved !== 'dark') setTheme(e.matches ? 'light' : 'dark');
+  });
+} catch (e) {}
 
 /* ============ LANGUAGE ============ */
 // Ruscha bosh sahifa — alohida fayl: ru.html (tools/gen_home_ru.py shu fayldan yaratadi).
@@ -1326,6 +1334,7 @@ function setLang(lang) {
     a.setAttribute('href', lang === 'ru' ? a.dataset.hrefRu : a.dataset.hrefUz);
   });
   syncThemeLabels();
+  if (typeof syncMenuLabel === 'function') syncMenuLabel();
   // ru.html ga o'tilayotgan bo'lsa (langRoute) tanlovni buzmaymiz
   if (!window.__toRu) try { localStorage.setItem('parvoz-lang', lang); } catch(e) {}
 }
@@ -1348,6 +1357,7 @@ setLang(PAGE_LANG !== 'uz' ? PAGE_LANG : (savedLang === 'en' ? 'en' : 'uz'));
 window.addEventListener('pageshow', e => { if (e.persisted) setLang(currentLang); });
 
 /* ============ NAVBAR ============ */
+const prefersReduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const nav = document.getElementById('nav');
 const toTop = document.getElementById('toTop');
 const stickyCta = document.getElementById('stickyCta');
@@ -1362,20 +1372,32 @@ function onScroll() {
 window.addEventListener('scroll', onScroll, { passive:true });
 onScroll();
 
-toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
+toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior: prefersReduced() ? 'auto' : 'smooth' }));
 
 /* Mobile menu */
 const burger = document.getElementById('burger');
 const mobileMenu = document.getElementById('mobileMenu');
-burger.addEventListener('click', () => {
-  const open = mobileMenu.classList.toggle('open');
+// setLang() buni sahifa yuklanishida ham chaqiradi — o'zgaruvchilar hali e'lon qilinmagan bo'ladi
+function syncMenuLabel() {
+  const b = document.getElementById('burger'), m = document.getElementById('mobileMenu');
+  if (!b || !m) return;
+  const labels = { uz: ['Menyuni ochish', 'Menyuni yopish'], ru: ['Открыть меню', 'Закрыть меню'], en: ['Open menu', 'Close menu'] };
+  b.setAttribute('aria-label', (labels[document.documentElement.lang] || labels.uz)[m.classList.contains('open') ? 1 : 0]);
+}
+function setMenu(open, focusBurger) {
+  mobileMenu.classList.toggle('open', open);
   burger.setAttribute('aria-expanded', open);
+  syncMenuLabel();
+  if (!open && focusBurger) burger.focus();
+}
+burger.addEventListener('click', () => setMenu(!mobileMenu.classList.contains('open')));
+mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+// Esc va menyudan tashqariga bosish yopadi
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && mobileMenu.classList.contains('open')) setMenu(false, true);
 });
-mobileMenu.querySelectorAll('a').forEach(a => {
-  a.addEventListener('click', () => {
-    mobileMenu.classList.remove('open');
-    burger.setAttribute('aria-expanded', 'false');
-  });
+document.addEventListener('pointerdown', e => {
+  if (mobileMenu.classList.contains('open') && !mobileMenu.contains(e.target) && !burger.contains(e.target)) setMenu(false);
 });
 
 /* ============ SCROLL REVEAL ============ */
@@ -1403,7 +1425,7 @@ function animateCount(el, target, suffix, duration) {
   requestAnimationFrame(step);
 }
 const statEls = document.querySelectorAll('[data-count]');
-if (statEls.length && 'IntersectionObserver' in window) {
+if (statEls.length && 'IntersectionObserver' in window && !prefersReduced()) {
   const statIo = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) {
@@ -1421,20 +1443,29 @@ if (statEls.length && 'IntersectionObserver' in window) {
 }
 
 /* ============ FAQ ============ */
-document.querySelectorAll('.faq-item').forEach(item => {
+// Ochiq javob ochilib bo'lgach balandligi cheklanmaydi — ekran burilsa / kengligi o'zgarsa
+// matn kesilib qolmaydi. Yopishdan oldin yana px ga qaytariladi (animatsiya uchun).
+document.querySelectorAll('.faq-item').forEach((item, i) => {
   const btn = item.querySelector('.faq-q');
   const panel = item.querySelector('.faq-a');
+  if (!panel.id) panel.id = 'faq-a-' + (i + 1);
+  btn.setAttribute('aria-controls', panel.id);
+  panel.addEventListener('transitionend', e => {
+    if (e.propertyName === 'max-height' && item.classList.contains('open')) panel.style.maxHeight = 'none';
+  });
   btn.addEventListener('click', () => {
     const isOpen = item.classList.contains('open');
     document.querySelectorAll('.faq-item.open').forEach(o => {
+      const p = o.querySelector('.faq-a');
+      if (p.style.maxHeight === 'none') { p.style.maxHeight = p.scrollHeight + 'px'; void p.offsetHeight; }
       o.classList.remove('open');
       o.querySelector('.faq-q').setAttribute('aria-expanded','false');
-      o.querySelector('.faq-a').style.maxHeight = null;
+      p.style.maxHeight = null;
     });
     if (!isOpen) {
       item.classList.add('open');
       btn.setAttribute('aria-expanded','true');
-      panel.style.maxHeight = panel.scrollHeight + 'px';
+      panel.style.maxHeight = prefersReduced() ? 'none' : panel.scrollHeight + 'px';
     }
   });
 });

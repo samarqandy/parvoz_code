@@ -140,7 +140,7 @@ try { if (localStorage.getItem('parvoz-lang') === 'ru') localStorage.setItem('pa
 }
 </script>
 </head>
-<body class="js">
+<body>
 
 <a class="skip-link" href="#main">Asosiy kontentga o'tish</a>
 
@@ -298,30 +298,44 @@ function syncLabel() {
   var m = document.getElementById('themeBtnMobile');
   if (m) m.textContent = THEME_LABEL[next];
 }
-function setTheme(t) {
+function setTheme(t, save) {
   document.documentElement.setAttribute('data-theme', t);
-  try { localStorage.setItem('parvoz-theme', t); } catch (e) {}
+  if (save) try { localStorage.setItem('parvoz-theme', t); } catch (e) {}
   var meta = document.getElementById('themeColorMeta');
   if (meta) meta.setAttribute('content', t === 'light' ? '#f4f7fd' : '#071029');
   syncLabel();
 }
 ['themeBtn','themeBtnMobile'].forEach(function (id) {
   var el = document.getElementById(id);
-  if (el) el.addEventListener('click', function () { setTheme(curTheme() === 'dark' ? 'light' : 'dark'); });
+  if (el) el.addEventListener('click', function () { setTheme(curTheme() === 'dark' ? 'light' : 'dark', true); });
 });
 setTheme(curTheme());
+try {
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function (e) {
+    var saved = null; try { saved = localStorage.getItem('parvoz-theme'); } catch (_) {}
+    if (saved !== 'light' && saved !== 'dark') setTheme(e.matches ? 'light' : 'dark');
+  });
+} catch (e) {}
+var prefersReduced = function () { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
 
 /* Navbar + menyu */
 var nav = document.getElementById('nav');
 window.addEventListener('scroll', function () { nav.classList.toggle('scrolled', window.scrollY > 10); }, { passive: true });
 nav.classList.toggle('scrolled', window.scrollY > 10);
 var burger = document.getElementById('burger'), mm = document.getElementById('mobileMenu');
-burger.addEventListener('click', function () {
-  var open = mm.classList.toggle('open');
+var MENU_LABEL = { uz: ['Menyuni ochish', 'Menyuni yopish'], ru: ['\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e', '\u0417\u0430\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e'] };
+function setMenu(open, focusBurger) {
+  mm.classList.toggle('open', open);
   burger.setAttribute('aria-expanded', open);
-});
-mm.querySelectorAll('a').forEach(function (a) {
-  a.addEventListener('click', function () { mm.classList.remove('open'); burger.setAttribute('aria-expanded','false'); });
+  burger.setAttribute('aria-label', (MENU_LABEL[document.documentElement.lang] || MENU_LABEL.uz)[open ? 1 : 0]);
+  if (!open && focusBurger) burger.focus();
+}
+burger.addEventListener('click', function () { setMenu(!mm.classList.contains('open')); });
+mm.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { setMenu(false); }); });
+// Esc va menyudan tashqariga bosish yopadi
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && mm.classList.contains('open')) setMenu(false, true); });
+document.addEventListener('pointerdown', function (e) {
+  if (mm.classList.contains('open') && !mm.contains(e.target) && !burger.contains(e.target)) setMenu(false);
 });
 
 /* Reveal */
@@ -336,25 +350,33 @@ if ('IntersectionObserver' in window) {
 }
 
 /* FAQ */
-document.querySelectorAll('.faq-item').forEach(function (item) {
+// Ochilgach balandlik cheklanmaydi (ekran burilsa matn kesilmaydi); yopishda yana px
+document.querySelectorAll('.faq-item').forEach(function (item, i) {
   var btn = item.querySelector('.faq-q'), panel = item.querySelector('.faq-a');
+  if (!panel.id) panel.id = 'faq-a-' + (i + 1);
+  btn.setAttribute('aria-controls', panel.id);
+  panel.addEventListener('transitionend', function (e) {
+    if (e.propertyName === 'max-height' && item.classList.contains('open')) panel.style.maxHeight = 'none';
+  });
   btn.addEventListener('click', function () {
     var isOpen = item.classList.contains('open');
     document.querySelectorAll('.faq-item.open').forEach(function (o) {
+      var p = o.querySelector('.faq-a');
+      if (p.style.maxHeight === 'none') { p.style.maxHeight = p.scrollHeight + 'px'; void p.offsetHeight; }
       o.classList.remove('open');
       o.querySelector('.faq-q').setAttribute('aria-expanded','false');
-      o.querySelector('.faq-a').style.maxHeight = null;
+      p.style.maxHeight = null;
     });
     if (!isOpen) {
       item.classList.add('open');
       btn.setAttribute('aria-expanded','true');
-      panel.style.maxHeight = panel.scrollHeight + 'px';
+      panel.style.maxHeight = prefersReduced() ? 'none' : panel.scrollHeight + 'px';
     }
   });
 });
 
 /* Yulduzlar */
-if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+if (!prefersReduced()) {
   var se = document.getElementById('stars');
   for (var i = 0; i < 45; i++) {
     var s = document.createElement('div');

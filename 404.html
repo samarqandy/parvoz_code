@@ -20,6 +20,8 @@
     t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   }
   document.documentElement.setAttribute('data-theme', t);
+  var m = document.getElementById('themeColorMeta');
+  if (m && t === 'light') m.setAttribute('content', '#f4f7fd');
 })();
 </script>
 

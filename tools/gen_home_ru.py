@@ -208,6 +208,8 @@ def main():
     i = src.index('<body>')
     head, body = src[:i], src[i:]
     page = ru_head(head, body) + ru_body(body)
+    # Maxfiylik havolalari ruscha qisqacha bayonga olib boradi
+    page = page.replace('href="maxfiylik.html"', 'href="maxfiylik.html#ru"')
     check(page)
     (ROOT / 'ru.html').write_text(page)
     sync_sitemap()

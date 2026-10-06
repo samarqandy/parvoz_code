@@ -20,7 +20,7 @@ from articles_ru import ARTICLES_RU      # noqa: E402  (ruscha)
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = (ROOT / 'dasturlash-kurslari.html').read_text()
 
-TOP = SRC[SRC.index('<body class="js">'):SRC.index('<main id="main">')]
+TOP = SRC[SRC.index('<body>'):SRC.index('<main id="main">')]
 BOTTOM = SRC[SRC.index('<footer>'):]
 
 # Yandex Metrika hisoblagichi ham o'sha sahifadan olinadi — ID bir joyda turadi.
@@ -64,6 +64,8 @@ CHROME_RU = [
     ('"\\u2600\\ufe0f Yorug\' rejim"', '"\\u2600\\ufe0f \\u0421\\u0432\\u0435\\u0442\\u043b\\u0430\\u044f \\u0442\\u0435\\u043c\\u0430"'),
     ('"\\ud83c\\udf19 Qorong\'i rejim"', '"\\ud83c\\udf19 \\u0422\\u0451\\u043c\\u043d\\u0430\\u044f \\u0442\\u0435\\u043c\\u0430"'),
     ('maqolalar.html', 'stati.html'),
+    # Maxfiylik: ruscha sahifadan to'g'ridan-to'g'ri ruscha qisqacha bayonga
+    ('href="maxfiylik.html"', 'href="maxfiylik.html#ru"'),
     # Kurs sahifalariga havolalar — ruscha sahifalardan ruscha kurs sahifalariga
     ('href="dasturlash-kurslari.html"', 'href="kursy-programmirovaniya.html"'),
     ('href="robototexnika-kurslari.html"', 'href="robototehnika.html"'),
@@ -264,8 +266,8 @@ def build(a, lang, alt_slug, date):
     faq_html = ''.join(
         f'''
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">{esc(q)}<span class="faq-ico" aria-hidden="true">+</span></button>
-        <div class="faq-a"><p>{esc(ans)}</p></div>
+        <button class="faq-q" type="button" aria-expanded="false"><span>{esc(q)}</span><span class="faq-plus" aria-hidden="true">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">{esc(ans)}</div></div>
       </div>''' for q, ans in a['faq'])
 
     body_html = ''.join(
