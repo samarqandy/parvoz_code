@@ -31,7 +31,8 @@
 //
 // Yuborish ikki bosqichda: avval hamma belgilar yoziladi, keyin xabarlar ketadi (5 ta chat parallel,
 // bitta chatga ketma-ket, umumiy vaqt chegarasi bilan) — 60 o'quvchilik guruh bitta sekin Telegramda
-// so'rovni to'xtatib qo'ymaydi. Javobda har bir o'quvchi uchun `delivery` — xabar yetdimi:
+// so'rovni to'xtatib qo'ymaydi. O'quvchining ikki ota-onasi (ona va ota) bo'lsa, xabar ikkalasiga ketadi
+// (parent_chats); bittasiga yetsa ham `delivery: 'sent'`. Javobda har bir o'quvchi uchun `delivery` — xabar yetdimi:
 //   sent | blocked | no_chat | failed | unknown (javob kelmadi, yetgan bo'lishi mumkin) | skipped (vaqt tugadi)
 //   | muted (admin o'chirgan) | no_tg (ota-ona ulanmagan) | bad_name / bad_note (xavfsizlik) | null (o'tgan kun)
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -295,7 +296,7 @@ Deno.serve(async (req) => {
 
     const { data: rows } = await admin
       .from('students')
-      .select('id, full_name, telegram_chat_id, course_id, active, courses(name)')
+      .select('id, full_name, telegram_chat_id, course_id, active, courses(name), parent_chats(chat_id)')
       .in('id', ids);
     const students = rows ?? [];
     if (!students.length) return json({ error: 'student not found' }, 404);
@@ -324,6 +325,11 @@ Deno.serve(async (req) => {
 
     const results: Record<string, unknown>[] = [];
     const toSend: { chat: number; text: string; res: Record<string, unknown> }[] = [];
+    // O'quvchining Telegram chatlari: ulangan ota-onalar (parent_chats) + students dagi birinchi ota-ona nusxasi
+    const chatsOf = (st: any): number[] => [...new Set([
+      ...((st.parent_chats ?? []) as any[]).map((c) => Number(c.chat_id)),
+      st.telegram_chat_id ? Number(st.telegram_chat_id) : 0,
+    ].filter(Boolean))];
     let notifiedCount = 0;
 
     // Bot tokeni va shablonlar — faqat bugungi belgilashda, bitta so'rovda
@@ -376,7 +382,7 @@ Deno.serve(async (req) => {
       let text: string | null = null;
       if (isToday) {
         if (!tpls[kind].on) delivery = 'muted';                    // admin bu turdagi xabarni o'chirib qo'ygan — belgi yoziladi, xabar ketmaydi
-        else if (!student.telegram_chat_id) delivery = 'no_tg';
+        else if (!chatsOf(student).length) delivery = 'no_tg';
         else if (!token) delivery = 'no_bot';
         else if (badName(normName(student.full_name))) delivery = 'bad_name';
         else if (note && badNote(note)) delivery = 'bad_note';
@@ -403,7 +409,12 @@ Deno.serve(async (req) => {
         replaced: dropRows.map((r) => ({ kind: r.kind, occurred_at: r.occurred_at, note: r.note })),
       };
       results.push(res);
-      if (text) toSend.push({ chat: Number(student.telegram_chat_id), text, res });
+      if (text) {
+        const chats = chatsOf(student);
+        res._out = [] as string[];
+        res.chats = { sent: 0, total: chats.length };
+        for (const chat of chats) toSend.push({ chat, text, res });
+      }
     }
 
     // ---- 2-bosqich: xabarlar. Telegram ishlamasa ham belgilar saqlangan — xato hech narsani qaytarmaydi ----
@@ -417,15 +428,15 @@ Deno.serve(async (req) => {
           const q = queues[qi++];
           if (!q) return;
           for (const m of q) {
-            if (aborted || Date.now() - reqStart > SEND_DEADLINE_MS) { m.res.delivery = 'skipped'; continue; }
+            if (aborted || Date.now() - reqStart > SEND_DEADLINE_MS) { (m.res._out as string[]).push('skipped'); continue; }
             let r = await sendTg(token!, m.chat, m.text);
             if (!r?.ok && Number(r?.error_code) === 429 && Number(r?.parameters?.retry_after) <= 3) {
               await sleep(Number(r.parameters.retry_after) * 1000 + 100);
               r = await sendTg(token!, m.chat, m.text);
             }
             const c = classify(r);
-            m.res.delivery = c.code;
-            if (c.status === 'sent') { m.res.notified = true; notifiedCount++; netStreak = 0; }
+            (m.res._out as string[]).push(c.code);
+            if (c.status === 'sent') { netStreak = 0; }
             else if (c.status === 'unknown') { if (++netStreak >= 3) aborted = true; }
             else netStreak = 0;
             if (c.abort) aborted = true;
@@ -433,6 +444,17 @@ Deno.serve(async (req) => {
         }
       };
       await Promise.all(Array.from({ length: Math.min(SEND_CONCURRENCY, queues.length) }, worker));
+    }
+    // Har bir o'quvchi bo'yicha natija: kamida bitta ota-onaga yetgan bo'lsa — yetdi
+    for (const res of results) {
+      const out = res._out as string[] | undefined;
+      if (!out) continue;
+      delete res._out;
+      const sent = out.filter((x) => x === 'sent').length;
+      (res.chats as { sent: number; total: number }).sent = sent;
+      if (sent) { res.delivery = 'sent'; res.notified = true; notifiedCount++; continue; }
+      const bad = out.filter((x) => x !== 'sent');
+      res.delivery = bad.length && bad.every((x) => x === bad[0]) ? bad[0] : 'failed';
     }
 
     const okCount = results.filter((r) => r.ok).length;

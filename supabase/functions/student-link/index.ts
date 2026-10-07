@@ -1,6 +1,8 @@
 // student-link — o'qituvchi uchun ota-ona havolasini yaratadi.
 // Havola: muddatli (48 soat), bir martalik va faqat o'quvchining ro'yxatdagi
 // ota-ona raqami egasi Telegramda tasdiqlay oladi (telegram-webhook tekshiradi).
+// O'quvchida ikkita ota-ona raqami bo'lishi mumkin (parent_phone, parent_phone2): har bir ota-ona o'z Telegramidan ulanadi.
+// Ulanishlar parent_chats jadvalida; "uzish" hamma ota-onani yoki bitta raqamni uzadi.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const admin = createClient(
@@ -71,7 +73,7 @@ Deno.serve(async (req) => {
 
     const { data: student } = await admin
       .from('students')
-      .select('id, full_name, course_id, parent_phone, telegram_chat_id')
+      .select('id, full_name, course_id, parent_phone, parent_phone2, parent_chats(phone)')
       .eq('id', studentId)
       .maybeSingle();
     if (!student) return json({ error: 'student not found' }, 404);
@@ -84,21 +86,35 @@ Deno.serve(async (req) => {
       if (!link) return json({ error: 'Bu kurs sizga biriktirilmagan' }, 403);
     }
 
-    // Ulanishni uzish
+    // Ulanishni uzish: hamma ota-ona yoki (phone berilsa) faqat shu raqamdagi ota-ona
     if (action === 'unlink') {
+      const only = body.phone ? normPhone(String(body.phone)) : null;
+      let del = admin.from('parent_chats').delete().eq('student_id', student.id);
+      if (only) del = del.eq('phone', only);
+      const { error: derr } = await del;
+      if (derr) return json({ error: derr.message }, 500);
       await admin.from('students').update({
-        telegram_chat_id: null, linked_at: null, linked_phone: null,
         link_expires_at: null, link_attempts: 0, pending_chat_id: null, pending_at: null,
       }).eq('id', student.id);
+      // Jadvalda yozuvi bo'lmagan eski ulanish qoldig'i (trigger faqat jadval o'zgarishida ishlaydi)
+      if (!only) {
+        await admin.from('students').update({ telegram_chat_id: null, linked_at: null, linked_phone: null }).eq('id', student.id);
+      }
       return json({ ok: true, unlinked: true });
     }
 
-    const phone = normPhone(student.parent_phone);
-    if (!phone) {
+    const registered = [...new Set([normPhone(student.parent_phone), normPhone(student.parent_phone2)].filter(Boolean) as string[])];
+    if (!registered.length) {
       return json({
         error: "Avval ota-onaning telefon raqamini kiriting — havola faqat o'sha raqam egasiga ochiladi.",
         code: 'no_phone',
       }, 400);
+    }
+    // Havola hali ulanmagan ota-onalar uchun: ikkalasi ham ulangan bo'lsa yangi havola kerak emas
+    const linkedPhones = new Set(((student as any).parent_chats ?? []).map((c: any) => normPhone(c.phone)).filter(Boolean));
+    const remaining = registered.filter((p) => !linkedPhones.has(p));
+    if (!remaining.length) {
+      return json({ error: "Ro'yxatdagi barcha ota-onalar allaqachon ulangan.", code: 'all_linked' }, 400);
     }
 
     const { data: cfg } = await admin
@@ -121,7 +137,7 @@ Deno.serve(async (req) => {
       url: `https://t.me/${botUsername}?start=${code}`,
       expires_at: expiresAt,
       ttl_hours: LINK_TTL_HOURS,
-      phone_hint: maskPhone(phone),
+      phone_hint: remaining.map(maskPhone).join(' / '),
       student_name: student.full_name,
     });
   } catch (e) {

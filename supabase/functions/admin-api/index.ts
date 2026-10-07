@@ -128,6 +128,13 @@ const sanaOf = (key: string) => `${Number(key.slice(8, 10))}-${OYLAR[Number(key.
 const normName = (n: unknown) => String(n ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
 const badName = (n: string) => /https?:\/\/|www\.|t\.me\/|@/i.test(n) || /\d{7,}/.test(n.replace(/[\s().-]/g, ''));
 
+// O'quvchining Telegram chatlari: ulangan ota-onalar (parent_chats) + students dagi birinchi ota-ona nusxasi.
+// Ona va ota ikkalasi ulangan bo'lsa, xabar ikkalasiga ketadi.
+const chatsOf = (st: any): number[] => [...new Set([
+  ...((st?.parent_chats ?? []) as any[]).map((c) => Number(c.chat_id)),
+  st?.telegram_chat_id ? Number(st.telegram_chat_id) : 0,
+].filter(Boolean))];
+
 // Auth foydalanuvchisini email bo'yicha topamiz. listUsers() bir sahifada 50 tani qaytaradi — sahifalab o'qiymiz,
 // aks holda ro'yxat oxiridagi foydalanuvchi "topilmadi" bo'lib, parol o'zgarmay / o'chmay qolardi.
 async function findAuthUser(email: string) {
@@ -445,7 +452,7 @@ Deno.serve(async (req) => {
       } catch { /* standart matn */ }
 
       const [{ data: studs }, { data: pays }, { data: recent }] = await Promise.all([
-        admin.from('students').select('id, full_name, active, telegram_chat_id, created_at, courses(name)').in('id', ids),
+        admin.from('students').select('id, full_name, active, telegram_chat_id, created_at, courses(name), parent_chats(chat_id)').in('id', ids),
         admin.from('payments').select('student_id, month').in('student_id', ids).gte('month', from + '-01').lte('month', cur + '-01'),
         admin.from('payment_reminders').select('student_id').in('student_id', ids).neq('status', 'failed')
           .gte('sent_at', new Date(Date.now() - REMIND_COOLDOWN_DAYS * 86400_000).toISOString()),
@@ -484,7 +491,8 @@ Deno.serve(async (req) => {
           if (s.active === false) { skip(s, id, 'inactive'); continue; }
           if (start > month) { skip(s, id, 'not_started'); continue; }
           if (pm.has(month)) { skip(s, id, 'paid'); continue; }
-          if (!s.telegram_chat_id) { skip(s, id, 'no_tg'); continue; }
+          const chatList = chatsOf(s);
+          if (!chatList.length) { skip(s, id, 'no_tg'); continue; }
           if (badName(ism)) { skip(s, id, 'bad_name'); continue; }
           if (recentSet.has(id)) { skip(s, id, 'recent'); continue; }
           if (aborted || Date.now() - t0 > REMIND_BUDGET_MS) { notSent.push(id); continue; }
@@ -505,26 +513,33 @@ Deno.serve(async (req) => {
             .select('id').single();
           if (insErr) { skip(s, id, insErr.code === '23505' ? 'recent' : 'db'); continue; }
 
-          // Bir chatga sekundiga bittadan ko'p emas (aka-uka bitta ota-onada)
-          const chat = Number(s.telegram_chat_id);
-          const waitChat = 1100 - (Date.now() - (lastByChat.get(chat) ?? 0));
-          const waitAll = 40 - (Date.now() - lastSend);
-          if (Math.max(waitChat, waitAll) > 0) await sleep(Math.max(waitChat, waitAll));
+          // Har bir ota-onaga (ona va ota) alohida; bir chatga sekundiga bittadan ko'p emas (aka-uka bitta ota-onada).
+          // Kamida bittasiga yetsa — o'quvchi uchun "yuborildi"
+          let anySent = false, firstFail: { c: ReturnType<typeof classify>; r: any } | null = null;
+          for (const chat of chatList) {
+            const waitChat = 1100 - (Date.now() - (lastByChat.get(chat) ?? 0));
+            const waitAll = 40 - (Date.now() - lastSend);
+            if (Math.max(waitChat, waitAll) > 0) await sleep(Math.max(waitChat, waitAll));
 
-          const payload = {
-            chat_id: chat, text, parse_mode: 'HTML',
-            link_preview_options: { is_disabled: true }, disable_notification: quiet,
-          };
-          let r: any = await tg(token, 'sendMessage', payload);
-          if (!r?.ok && Number(r?.error_code) === 429 && !retried429 && Number(r?.parameters?.retry_after) <= 5) {
-            retried429 = true;
-            await sleep(Number(r.parameters.retry_after) * 1000 + 100);
-            r = await tg(token, 'sendMessage', payload);
+            const payload = {
+              chat_id: chat, text, parse_mode: 'HTML',
+              link_preview_options: { is_disabled: true }, disable_notification: quiet,
+            };
+            let r: any = await tg(token, 'sendMessage', payload);
+            if (!r?.ok && Number(r?.error_code) === 429 && !retried429 && Number(r?.parameters?.retry_after) <= 5) {
+              retried429 = true;
+              await sleep(Number(r.parameters.retry_after) * 1000 + 100);
+              r = await tg(token, 'sendMessage', payload);
+            }
+            lastSend = Date.now();
+            lastByChat.set(chat, lastSend);
+            const cc = classify(r);
+            if (cc.status === 'sent') anySent = true;
+            else if (!firstFail) firstFail = { c: cc, r };
+            if (cc.abort) { aborted = cc.abort; break; }
           }
-          lastSend = Date.now();
-          lastByChat.set(chat, lastSend);
-
-          const c = classify(r);
+          const c = anySent ? { status: 'sent' as const, code: 'sent' } : firstFail!.c;
+          const r = anySent ? { ok: true } : firstFail!.r;
           const errText = c.status === 'sent' ? null : redact(String(r?.description ?? '')).slice(0, 200) || null;
           await admin.from('payment_reminders').update({ status: c.status, code: c.code, error: errText }).eq('id', row.id);
 
@@ -551,12 +566,13 @@ Deno.serve(async (req) => {
       const pid = String(body.payment_id ?? '');
       if (!UUID_RE.test(pid)) return json({ error: 'payment_id kerak' }, 400);
       const { data: pay } = await admin.from('payments')
-        .select('id, month, amount, paid_on, notified_at, students(full_name, telegram_chat_id, courses(name))')
+        .select('id, month, amount, paid_on, notified_at, students(full_name, telegram_chat_id, courses(name), parent_chats(chat_id))')
         .eq('id', pid).maybeSingle();
       if (!pay) return json({ error: 'payment not found' }, 404);
       const st: any = (pay as any).students;
       if (pay.notified_at) return json({ ok: true, sent: false, code: 'already' });
-      if (!st?.telegram_chat_id) return json({ ok: true, sent: false, code: 'no_tg' });
+      const payChats = chatsOf(st);
+      if (!payChats.length) return json({ ok: true, sent: false, code: 'no_tg' });
       // Eslatmadagidek: ismda karta raqami / havola bo'lsa, bot orqali ota-onaga yubormaymiz
       const ism = normName(st.full_name);
       if (badName(ism)) return json({ ok: true, sent: false, code: 'bad_name' });
@@ -584,14 +600,19 @@ Deno.serve(async (req) => {
         summa: pay.amount == null ? '' : fmtSum(Number(pay.amount)),
         sana: sanaOf(String(pay.paid_on)),
       });
-      const r = await tg(token, 'sendMessage', {
-        chat_id: Number(st.telegram_chat_id), text, parse_mode: 'HTML', link_preview_options: { is_disabled: true },
-      });
-      const c = classify(r);
-      if (c.status !== 'sent') {
+      // Ona va ota ikkalasiga; kamida bittasiga yetsa — yuborildi
+      let paySent = false, payFail: ReturnType<typeof classify> | null = null;
+      for (const chat of payChats) {
+        const r = await tg(token, 'sendMessage', {
+          chat_id: chat, text, parse_mode: 'HTML', link_preview_options: { is_disabled: true },
+        });
+        const c = classify(r);
+        if (c.status === 'sent') paySent = true; else if (!payFail) payFail = c;
+      }
+      if (!paySent) {
         // Yetmadi — bandni bo'shatamiz, admin qayta yuborishi mumkin
         await admin.from('payments').update({ notified_at: null }).eq('id', pid);
-        return json({ ok: true, sent: false, code: c.code });
+        return json({ ok: true, sent: false, code: payFail?.code ?? 'failed' });
       }
       return json({ ok: true, sent: true });
     }

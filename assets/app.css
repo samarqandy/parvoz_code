@@ -1369,3 +1369,21 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
 .st-family { color: var(--muted); font-weight: 600; }
 
 .st-fam-hint { margin: -6px 0 12px; color: var(--muted); font-weight: 600; }
+
+/* ===================== ONA VA OTA: IKKINCHI OTA-ONA ===================== */
+.st-p2 { margin: 0 0 14px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
+.st-p2 > summary { display: flex; align-items: center; min-height: 48px; padding: 8px 14px; cursor: pointer; font-weight: 800; list-style: none; }
+.st-p2 > summary::-webkit-details-marker { display: none; }
+.st-p2 > summary::after { content: ""; width: 8px; height: 8px; margin-left: auto; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .15s; }
+.st-p2[open] > summary::after { transform: rotate(-135deg); }
+.st-p2 > .field, .st-p2 > .tpl-err { margin-left: 14px; margin-right: 14px; }
+.st-p2[open] > summary { border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.lp-list { list-style: none; margin: 8px 0 6px; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; text-align: left; }
+.lp-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 10px; min-width: 0; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
+.lp-list li > div { flex: 1 1 130px; min-width: 0; }
+.lp-list b { display: block; color: var(--text); font-weight: 800; overflow-wrap: anywhere; }
+.lp-list .lp-ph { display: block; color: var(--muted); font-size: .86rem; font-weight: 700; white-space: nowrap; }
+.lp-list small { display: block; color: var(--muted); font-size: .76rem; }
+.lp-list .btn { flex: none; min-height: 44px; }
+.lp-missing { padding-top: 10px; }
+.lp-missing .link-ico { font-size: 1.6rem; }

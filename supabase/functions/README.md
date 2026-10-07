@@ -45,6 +45,28 @@ faqat edge funksiyalar (service_role) yoza oladi.
 Raqamlar oxirgi 9 raqam bo'yicha solishtiriladi (`+998 90 …`, `998…`, `90 …` bir xil). Farzandlar bitta oila bo'lishi
 uchun ota-ona raqami bir xil kiritilishi shart — panel yangi o'quvchi formasida buni ko'rsatib turadi.
 
+**Ona va ota (bitta farzandga ikkita ota-ona).** O'quvchida ikkita ota-ona raqami bo'lishi mumkin
+(`parent_phone`, `parent_phone2`); ikkalasi ham alohida Telegramdan ulanadi va bir xil xabarlarni oladi.
+Ulanishlar `public.parent_chats (student_id, chat_id, phone, linked_at)` jadvalida — manba shu; kalit
+`(student_id, chat_id)`, shuning uchun bir chat bir nechta farzandga, bir farzand bir nechta chatga ulanishi mumkin.
+Jadvalga faqat edge funksiyalar (service_role) yozadi; panel o'qiydi (RLS: admin yoki shu kursning o'qituvchisi).
+
+- `students.telegram_chat_id / linked_phone / linked_at` endi «birinchi ulangan ota-ona»ning nusxasi: trigger
+  `private.sync_student_chat` ularni jadvaldan yangilab turadi. Eski kod va panelning «ulangan» belgisi shu sababli
+  o'zgarishsiz ishlaydi; ulanish uzilsa nusxa keyingi ota-onaga o'tadi yoki bo'shaydi.
+- Bot: Telegram tasdiqlagan raqam **ikkala** raqamdan biriga mos kelsa ulanadi (`regPhones`); shu chat boshqa
+  ota-onaga (ya'ni boshqa chatga) ulangan farzandni ham taklif qiladi. `/stop` faqat shu chatni uzadi — ikkinchi
+  ota-ona ulanib qoladi.
+- `student-link` → `create`: faqat hali ulanmagan ro'yxatdagi raqamlar uchun havola beradi (`phone_hint` shularni
+  ko'rsatadi); hammasi ulangan bo'lsa `all_linked` (400). `unlink` ixtiyoriy `phone` oladi — faqat shu raqamdagi
+  ota-ona uziladi, usiz hammasi.
+- `mark-attendance`, `send_reminders`, `notify_payment`: xabar farzandning **hamma** chatlariga yuboriladi
+  (`parent_chats` + eski nusxa). Kamida bittasiga yetsa — «yuborildi» (`delivery: 'sent'`); `chats: { sent, total }`
+  qaysi biriga yetmaganini ko'rsatadi. Hammasiga yetmasa avvalgi kodlar (`blocked`, `failed`, …) qaytadi.
+  To'lov kvitansiyasi band qilingan belgi faqat birortasiga ham yetmasa bo'shatiladi.
+- Migratsiya: `20261007193236_parent_chats.sql` (qo'shimcha; mavjud ustun va jadvallarga tegilmaydi, hozirgi ulanishlar
+  jadvalga ko'chiriladi).
+
 Raqamni tasdiqlash kutilayotganda (`pending_at` 15 daqiqadan yangi) ota-ona raqamni tugma o'rniga
 yozib yuborsa yoki boshqa matn yozsa, bot tugmani qayta ko'rsatadi: yozilgan raqam tekshirilmaydi,
 faqat Telegram o'zi tasdiqlagan kontakt (tugma) qabul qilinadi. 12 xonali yozilgan raqam kod deb
