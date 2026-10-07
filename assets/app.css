@@ -1387,3 +1387,10 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
 .lp-list .btn { flex: none; min-height: 44px; }
 .lp-missing { padding-top: 10px; }
 .lp-missing .link-ico { font-size: 1.6rem; }
+
+/* ===================== OILA: BIRLASHTIRILGAN TO'LOV ESLATMASI ===================== */
+.rem-fam { margin: 8px 0 0; font-size: .86rem; font-weight: 700; color: var(--gold-ink); }
+/* 7 ta shablon tabi: telefonda 3 ustunli to'r — oxirgi yolg'iz tab butun qatorni egallaydi */
+@media (max-width: 599px) {
+  .seg-tpl .seg-btn:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+}

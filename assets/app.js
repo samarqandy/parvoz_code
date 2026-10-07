@@ -408,6 +408,10 @@ const STR = {
     payNotifMuted: "Bu xabar Sozlamalarda o'chirilgan",
     payNotifBadName: "O'quvchi ismida raqam yoki havola bor — ismni tekshiring, xabar yuborilmadi",
     payNotifFail: "Ota-onaga xabar yetmadi — to'lovni ochib, qayta yuborishingiz mumkin",
+    tplFamTab: 'Oila', tplFamManual: "Bir ota-onaga bir nechta farzand uchun qarz eslatmasi shu matn bilan, bitta xabarda ketadi (qo'lda, To'lovlar bo'limidan).",
+    vBolalar: "Farzandlar ro'yxati", tplErrBolalar: "Xabarda {bolalar} bo'lishi shart \u2014 farzandlar ro'yxati shu yerga tushadi", tplSampleName2: 'Vali Valiyev',
+    remConfirmFam: "{n} ta o'quvchi bo'yicha ota-onalarga Telegram xabari yuboriladi. Bir ota-onaning farzandlari bitta xabarga birlashtiriladi \u2014 jami {m} ta xabar. Davom etasizmi?",
+    remFamNote: "\u{1F46A} {f} ta oila: bir ota-onaning farzandlari bitta xabarda yuboriladi", remPrevFam: 'Oila xabari namunasi',
     tplPayTab: "To'lov", tplPayManual: "Bu xabar avtomatik ketmaydi — faqat To'lovlar bo'limidan qo'lda yuboriladi.",
     vOy: 'Oy', vOylar: 'Qarz oylar',
     remBtn: 'Eslatma yuborish ({n})', remNoBot: 'Avval Sozlamalarda Telegram botni ulang',
@@ -748,6 +752,10 @@ const STR = {
     payNotifMuted: 'Это сообщение выключено в Настройках',
     payNotifBadName: 'В имени ученика есть номер или ссылка — проверьте имя, сообщение не отправлено',
     payNotifFail: 'Сообщение родителю не доставлено — откройте оплату, чтобы отправить снова',
+    tplFamTab: 'Семья', tplFamManual: 'Напоминание о долге сразу за нескольких детей одного родителя уходит этим текстом, одним сообщением (вручную, из раздела «Оплаты»).',
+    vBolalar: 'Список детей', tplErrBolalar: 'В сообщении должно быть {bolalar} — сюда подставится список детей', tplSampleName2: 'Вали Валиев',
+    remConfirmFam: 'Родителям будет отправлено сообщение в Telegram (учеников: {n}). Дети одного родителя объединяются в одно сообщение — всего сообщений: {m}. Продолжить?',
+    remFamNote: '\u{1F46A} Семей: {f} — дети одного родителя получат одно сообщение', remPrevFam: 'Пример семейного сообщения',
     tplPayTab: 'Оплата', tplPayManual: 'Это сообщение не уходит автоматически — только вручную из раздела «Оплаты».',
     vOy: 'Месяц', vOylar: 'Месяцы долга',
     remBtn: 'Напомнить ({n})', remNoBot: 'Сначала подключите Telegram-бота в Настройках',
@@ -3583,6 +3591,34 @@ function remVars(it, ym) {
   };
 }
 
+// Bir ota-onaga (chatga) tushadigan farzandlar bitta xabarga birlashadi (admin-api send_reminders shunday guruhlaydi).
+// Shu sababli bir oilaning farzandlari bitta so'rovga tushishi shart: to'plamlarga bo'lamiz
+const chatIdsOf = (s) => parentsOf(s).map((p) => String(p.chat_id));
+function famComponents(ids) {
+  const comps = [];
+  for (const id of ids) {
+    const st = state.students.find((x) => x.id === id);
+    const merged = { ids: [id], chats: new Set(st ? chatIdsOf(st) : []) };
+    for (const c of comps.filter((c) => [...merged.chats].some((x) => c.chats.has(x)))) {
+      merged.ids.push(...c.ids); c.chats.forEach((x) => merged.chats.add(x)); comps.splice(comps.indexOf(c), 1);
+    }
+    merged.ids.sort((a, b) => ids.indexOf(a) - ids.indexOf(b));
+    comps.push(merged);
+  }
+  return comps.sort((a, b) => ids.indexOf(a.ids[0]) - ids.indexOf(b.ids[0])).map((c) => c.ids);
+}
+const FAM_MAX = 10;   // admin-api bilan bir xil
+function famVars(items, ym) {
+  const oy = (m) => DATE_NAMES.uz.m[Number(m.slice(5, 7)) - 1];
+  return {
+    oy: oy(ym),
+    bolalar: [
+      ...items.slice(0, FAM_MAX).map((it) => `\u2022 ${remName(it.s.full_name)}${it.c?.name ? ` (${it.c.name})` : ''} \u2014 ${it.owedNow.map(oy).join(', ')}`),
+      ...(items.length > FAM_MAX ? [`\u2026 +${items.length - FAM_MAX}`] : []),
+    ].join('\n'),
+  };
+}
+
 function remindSheet() {
   const d = payModel();
   const cands = payFilter(d.unpaid);
@@ -3593,7 +3629,7 @@ function remindSheet() {
   const summary = [t('remSumDebt', { n: cands.length }), t('remSumOk', { n: ok.length }),
     cnt('no_tg') && t('remSumNoTg', { n: cnt('no_tg') }), cnt('recent') && t('remSumRecent', { n: cnt('recent') }),
     cnt('bad_name') && t('remSumBad', { n: cnt('bad_name') })].filter(Boolean).join(' · ');
-  const tplText = tplSaved('pay').text;
+  const tplText = tplSaved('pay').text, famText = tplSaved('payfam').text;
   // Bu oy hali birorta to'lov yozilmagan bo'lsa, "to'lov qayd etilmagan" xabari hammaga ketadi — ehtimol hali kiritilmagan, to'lov emas
   const noPay = d.items.length > 0 && !d.paid.length;
 
@@ -3604,6 +3640,11 @@ function remindSheet() {
       <p class="rem-summary">${summary}</p>
       <div class="tpl-prev-head"><span>${t('tplPrev')}</span></div>
       <div class="tg-chat"><div class="tg-bubble"><div class="tg-text" id="remPrev"></div></div></div>
+      <div id="remPrevFamBox" hidden>
+        <div class="tpl-prev-head"><span>${t('remPrevFam')}</span></div>
+        <div class="tg-chat"><div class="tg-bubble"><div class="tg-text" id="remPrevFam"></div></div></div>
+      </div>
+      <p class="rem-fam" id="remFam" role="status" hidden></p>
       <div class="rem-list-head"><b id="remCount">${t('remWillGet', { n: ok.length })}</b>
         <button class="btn btn-sm btn-ghost" id="remToggle" type="button">${t('remNone')}</button></div>
       <div class="check-list rem-list">${ok.map(({ it }) => `
@@ -3626,6 +3667,12 @@ function remindSheet() {
       const first = byId.get(ids[0]) || ok[0]?.it;
       // Namuna — ro'yxatdagi birinchi belgilangan o'quvchi uchun, server ishlatadigan shablon bilan
       $('remPrev').innerHTML = first ? renderTpl(tplText, remVars(first, d.ym)) : '';
+      // Bir ota-onaning bir nechta farzandi tanlangan bo'lsa — ular bitta xabarda ketadi: namunasi
+      const fam = famComponents(ids).filter((c) => c.length > 1);
+      $('remFam').hidden = !fam.length;
+      $('remFam').textContent = fam.length ? t('remFamNote', { f: fam.length }) : '';
+      $('remPrevFamBox').hidden = !fam.length;
+      if (fam.length) $('remPrevFam').innerHTML = renderTpl(famText, famVars(fam[0].map((id) => byId.get(id)).filter(Boolean), d.ym));
     };
     document.querySelectorAll('.remPick').forEach((x) => x.addEventListener('change', refresh));
     $('remToggle').addEventListener('click', () => {
@@ -3639,23 +3686,29 @@ function remindSheet() {
 }
 
 async function remindSend(ids, ym, noPay = false) {
-  if (!ids.length || !confirm(t('remConfirm', { n: ids.length }) + (noPay ? `\n\n${t('remConfirmNoPay')}` : ''))) return;
+  if (!ids.length) return;
+  // Xabarlar soni: har bir ota-onaga (chatga) bittadan — bir oilaning farzandlari birlashadi
+  const chats = new Set(ids.flatMap((id) => { const st = state.students.find((x) => x.id === id); return st ? chatIdsOf(st) : []; }));
+  const merged = famComponents(ids).some((c) => c.length > 1);
+  if (!confirm((merged ? t('remConfirmFam', { n: ids.length, m: chats.size }) : t('remConfirm', { n: ids.length })) + (noPay ? `\n\n${t('remConfirmNoPay')}` : ''))) return;
   const btn = $('remSend');
   btn.disabled = true;
   const label = btn.querySelector('span');
-  const queue = [...ids];
+  const queue = famComponents(ids);      // oila to'plamlari: bir oila bir so'rovda ketadi
   const results = new Map();
   let aborted = null, broke = false, done = 0;
   try {
     while (queue.length) {
       label.textContent = t('remProgress', { n: done, total: ids.length });
-      const chunk = queue.splice(0, REMIND_CHUNK);
+      const chunk = [];
+      while (queue.length && (!chunk.length || chunk.length + queue[0].length <= REMIND_CHUNK)) chunk.push(...queue.shift());
+      if (chunk.length > REMIND_CHUNK) queue.unshift(chunk.splice(REMIND_CHUNK));   // 50 tadan katta to'plam (amalda bo'lmaydi)
       const r = await edge('admin-api', { action: 'send_reminders', month: ym, student_ids: chunk });
       (r.results || []).forEach((x) => results.set(x.student_id, x));
       done += (r.results || []).length;
       if (r.aborted) { aborted = r.aborted; break; }
       // Vaqt chegarasiga yetib qolganlar — keyingi so'rovda birinchi bo'lib
-      if (r.not_sent?.length) queue.unshift(...r.not_sent);
+      if (r.not_sent?.length) queue.unshift(...famComponents(r.not_sent));
       if (!(r.results || []).length) break;          // oldinga siljish yo'q — to'xtaymiz
     }
   } catch (_e) {
@@ -3969,7 +4022,7 @@ function exportPayCsv() {
    renderTpl u yerdagi bilan AYNAN bir xil — namuna ota-ona oladigan xabarning
    o'zi bo'lishi uchun (edge testida ikkalasi bir xil natija berishi tekshiriladi).
    ============================================================ */
-const TPL_KINDS = ['in', 'out', 'absent', 'excused', 'pay', 'paid'];
+const TPL_KINDS = ['in', 'out', 'absent', 'excused', 'pay', 'payfam', 'paid'];
 const TPL_DEFAULT = {
   in:      "✅ *{ism}* soat *{vaqt}* da Parvoz O'quv Markaziga *keldi*.\n📚 {kurs}",
   out:     "🏠 *{ism}* soat *{vaqt}* da markazdan *ketdi*.\n📚 {kurs}",
@@ -3977,6 +4030,8 @@ const TPL_DEFAULT = {
   excused: "📝 *{ism}* bugun *sababli* qoldi.\n💬 {sabab}\n📚 {kurs}",
   // admin-api → DEFAULT_PAY bilan aynan bir xil
   pay:     "💳 Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi bizda hali qayd etilmagan.\n🗓 Qayd etilmagan oylar: {oylar}\n📚 {kurs}\n\nAgar to'lovni qilgan bo'lsangiz, iltimos, o'qituvchiga yoki markaz ma'muriyatiga ayting — tekshirib, belgilab qo'yamiz. Rahmat!",
+  // admin-api → DEFAULT_PAYFAM bilan aynan bir xil
+  payfam:  "💳 Hurmatli ota-ona! Farzandlaringiz uchun *{oy}* oyi to'lovi bizda hali qayd etilmagan:\n{bolalar}\n\nAgar to'lovni qilgan bo'lsangiz, iltimos, o'qituvchiga yoki markaz ma'muriyatiga ayting — tekshirib, belgilab qo'yamiz. Rahmat!",
   // admin-api → DEFAULT_PAID bilan aynan bir xil
   paid:    "✅ Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi qabul qilindi.\n💵 {summa} so'm\n📚 {kurs}\n📅 {sana}\n\nRahmat!",
 };
@@ -3986,11 +4041,13 @@ const TPL_VARS = {
   absent:  ['ism', 'kurs', 'sana'],
   excused: ['ism', 'sabab', 'kurs', 'sana'],
   pay:     ['ism', 'kurs', 'oy', 'oylar'],
+  payfam:  ['bolalar', 'oy'],
   paid:    ['ism', 'kurs', 'oy', 'summa', 'sana'],
 };
-const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', sana: 'vSana', sabab: 'vSabab', oy: 'vOy', oylar: 'vOylar', summa: 'vSumma' };
+const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', sana: 'vSana', sabab: 'vSabab', oy: 'vOy', oylar: 'vOylar', summa: 'vSumma', bolalar: 'vBolalar' };
 // Tab uchun nom va belgi: holatlar MARKS dan, to'lov xabarlari alohida
 const tplMeta = (k) => k === 'pay' ? { label: t('tplPayTab'), icon: 'wallet', tone: 'gold' }
+  : k === 'payfam' ? { label: t('tplFamTab'), icon: 'users', tone: 'gold' }
   : k === 'paid' ? { label: t('tplPaidTab'), icon: 'checks', tone: 'green' } : MARKS[k];
 const TPL_MAX = 1000;
 
@@ -4029,6 +4086,7 @@ function tplIssue(kind, text) {
   if (text.length > TPL_MAX) return t('tplErrLen', { n: TPL_MAX });
   const unknown = [...new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))].filter((n) => !TPL_VARS[kind].includes(n));
   if (unknown.length) return t('tplErrVar', { v: unknown.map((n) => `{${n}}`).join(', ') });
+  if (kind === 'payfam') return text.trim() && !text.includes('{bolalar}') ? t('tplErrBolalar') : '';
   if (text.trim() && !text.includes('{ism}')) return t('tplErrIsm');
   return '';
 }
@@ -4048,6 +4106,12 @@ function tplSample() {
     oy: DATE_NAMES.uz.m[Number(key.slice(5, 7)) - 1],
     oylar: [ymShift(key.slice(0, 7), -1), key.slice(0, 7)].map((m) => DATE_NAMES.uz.m[Number(m.slice(5, 7)) - 1]).join(', '),
     summa: fmtSum(300000),
+    bolalar: (() => {
+      const oylar = [ymShift(key.slice(0, 7), -1), key.slice(0, 7)].map((m) => DATE_NAMES.uz.m[Number(m.slice(5, 7)) - 1]).join(', ');
+      const second = state.students.find((x) => x.active && x !== st);
+      return [[st?.full_name || t('tplSampleName'), course?.name], [second?.full_name || t('tplSampleName2'), second ? courseById(second.course_id)?.name : course?.name]]
+        .map(([n, c]) => `• ${n}${c ? ` (${c})` : ''} — ${oylar}`).join('\n');
+    })(),
   };
 }
 
@@ -4066,7 +4130,7 @@ function tplBody() {
   const k = state.tplKind;
   const cur = tplCurrent(k);
   return `
-    ${k === 'pay' ? `<p class="tpl-manual">${I.wallet}<span>${t('tplPayManual')}</span></p>` : `
+    ${k === 'pay' || k === 'payfam' ? `<p class="tpl-manual">${I.wallet}<span>${t(k === 'pay' ? 'tplPayManual' : 'tplFamManual')}</span></p>` : `
     <label class="switch-row">
       <input type="checkbox" role="switch" id="tplOn" ${cur.on ? 'checked' : ''}>
       <span class="switch" aria-hidden="true"></span>

@@ -80,6 +80,7 @@ const TPL_VARS: Record<string, string[]> = {
   absent:  ['ism', 'kurs', 'sana'],
   excused: ['ism', 'sabab', 'kurs', 'sana'],
   pay:     ['ism', 'kurs', 'oy', 'oylar'],     // to'lov eslatmasi — faqat qo'lda yuboriladi
+  payfam:  ['bolalar', 'oy'],                  // to'lov eslatmasi, bir oilaning bir nechta farzandi — bitta xabar
   paid:    ['ism', 'kurs', 'oy', 'summa', 'sana'], // to'lov qabul qilindi — to'lov yozilganda
 };
 const TPL_MAX = 1000;
@@ -87,6 +88,10 @@ const TPL_MAX = 1000;
 // To'lov eslatmasining standart matni. Panelda (assets/app.js → TPL_DEFAULT.pay) aynan
 // shu matn — namuna ota-ona oladigan xabar bilan bir xil bo'lishi uchun.
 const DEFAULT_PAY = "💳 Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi bizda hali qayd etilmagan.\n🗓 Qayd etilmagan oylar: {oylar}\n📚 {kurs}\n\nAgar to'lovni qilgan bo'lsangiz, iltimos, o'qituvchiga yoki markaz ma'muriyatiga ayting — tekshirib, belgilab qo'yamiz. Rahmat!";
+
+// Bir ota-onaga bir nechta farzand uchun eslatma: {bolalar} — "• Ism (kurs) — qarz oylar" qatorlari. Panelda TPL_DEFAULT.payfam bilan bir xil.
+const DEFAULT_PAYFAM = "💳 Hurmatli ota-ona! Farzandlaringiz uchun *{oy}* oyi to'lovi bizda hali qayd etilmagan:\n{bolalar}\n\nAgar to'lovni qilgan bo'lsangiz, iltimos, o'qituvchiga yoki markaz ma'muriyatiga ayting — tekshirib, belgilab qo'yamiz. Rahmat!";
+const FAM_MAX = 10;   // bir xabarda ko'pi bilan nechta farzand (qolgani "… +N")
 
 // "To'lov qabul qilindi" — to'lov yozilganda ota-onaga. Panelda TPL_DEFAULT.paid bilan bir xil.
 const DEFAULT_PAID = "✅ Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi qabul qilindi.\n💵 {summa} so'm\n📚 {kurs}\n📅 {sana}\n\nRahmat!";
@@ -172,6 +177,7 @@ function checkTemplate(kind: string, text: string): string | null {
     .filter((n) => !TPL_VARS[kind].includes(n));
   if (unknown.length) return `Bu xabarda ishlatib bo'lmaydi: ${unknown.map((n) => `{${n}}`).join(', ')}`;
   // Oilada bir nechta farzand o'qishi mumkin — ota-ona kim haqida ekanini bilishi shart
+  if (kind === 'payfam') return text.includes('{bolalar}') ? null : "Xabarda {bolalar} bo'lishi shart";
   if (!text.includes('{ism}')) return "Xabarda {ism} bo'lishi shart";
   return null;
 }
@@ -445,10 +451,11 @@ Deno.serve(async (req) => {
 
       const token = await getCfg('bot_token');
       if (!token) return json({ error: 'Avval Telegram botni ulang' }, 400);
-      let tplText = DEFAULT_PAY;
+      let tplText = DEFAULT_PAY, famTplText = DEFAULT_PAYFAM;
       try {
         const all = JSON.parse((await getCfg('msg_templates')) ?? '{}');
         if (typeof all?.pay?.text === 'string' && all.pay.text.trim()) tplText = all.pay.text;
+        if (typeof all?.payfam?.text === 'string' && all.payfam.text.trim()) famTplText = all.payfam.text;
       } catch { /* standart matn */ }
 
       const [{ data: studs }, { data: pays }, { data: recent }] = await Promise.all([
@@ -469,18 +476,25 @@ Deno.serve(async (req) => {
       const hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: TZ }).format(new Date()));
       const quiet = hour < 8 || hour >= 21;
 
-      const results: Record<string, unknown>[] = [];
       const skipped: Record<string, number> = {};
       const notSent: string[] = [];
+      const outcome = new Map<string, Record<string, unknown>>();   // o'quvchi -> natija (javobda so'rov tartibida chiqadi)
       let sent = 0, failed = 0, unknown = 0, netStreak = 0, retried429 = false;
       let aborted: string | null = null;
       const lastByChat = new Map<number, number>();
       let lastSend = 0;
       const skip = (s: any, id: string, code: string) => {
         skipped[code] = (skipped[code] ?? 0) + 1;
-        results.push({ student_id: id, name: s ? normName(s.full_name) : null, status: 'skipped', code });
+        outcome.set(id, { student_id: id, name: s ? normName(s.full_name) : null, status: 'skipped', code });
       };
 
+      // 1) Kimga yuboriladi: har bir o'quvchi uchun qoidalar (o'tkazib yuborilganlar skip bilan belgilanadi)
+      type Res = { c: ReturnType<typeof classify>; r: any };
+      type Cand = {
+        id: string; s: any; ism: string; kurs: string; chats: number[]; owed: string[];
+        row?: string; tried: boolean; sent: boolean; unk: Res | null; fail: Res | null;
+      };
+      const cands = new Map<string, Cand>();
       for (const id of ids) {
         const s: any = byId.get(id);
         try {
@@ -495,68 +509,108 @@ Deno.serve(async (req) => {
           if (!chatList.length) { skip(s, id, 'no_tg'); continue; }
           if (badName(ism)) { skip(s, id, 'bad_name'); continue; }
           if (recentSet.has(id)) { skip(s, id, 'recent'); continue; }
-          if (aborted || Date.now() - t0 > REMIND_BUDGET_MS) { notSent.push(id); continue; }
-
           // Joriy oygacha qarz oylari (tanlangan oy emas) — ota-ona to'liq qarzni ko'rsin
           const owed: string[] = [];
           for (let m = from; m <= cur; m = ymShift(m, 1)) if (m >= start && !pm.has(m)) owed.push(m);
-          const text = renderTpl(tplText, {
-            ism,
-            kurs: String(s.courses?.name ?? ''),
-            oy: oyName(month),
-            oylar: owed.length === 1 && owed[0] === month ? '' : owed.map(oyName).join(', '),
-          });
-
-          // Avval jurnalga "pending" — jarayon yiqilsa ham qayta yuborilmaydi
-          const { data: row, error: insErr } = await admin.from('payment_reminders')
-            .insert({ student_id: id, month: month + '-01', sent_by_email: actor.email, status: 'pending' })
-            .select('id').single();
-          if (insErr) { skip(s, id, insErr.code === '23505' ? 'recent' : 'db'); continue; }
-
-          // Har bir ota-onaga (ona va ota) alohida; bir chatga sekundiga bittadan ko'p emas (aka-uka bitta ota-onada).
-          // Kamida bittasiga yetsa — o'quvchi uchun "yuborildi"
-          let anySent = false, firstFail: { c: ReturnType<typeof classify>; r: any } | null = null;
-          for (const chat of chatList) {
-            const waitChat = 1100 - (Date.now() - (lastByChat.get(chat) ?? 0));
-            const waitAll = 40 - (Date.now() - lastSend);
-            if (Math.max(waitChat, waitAll) > 0) await sleep(Math.max(waitChat, waitAll));
-
-            const payload = {
-              chat_id: chat, text, parse_mode: 'HTML',
-              link_preview_options: { is_disabled: true }, disable_notification: quiet,
-            };
-            let r: any = await tg(token, 'sendMessage', payload);
-            if (!r?.ok && Number(r?.error_code) === 429 && !retried429 && Number(r?.parameters?.retry_after) <= 5) {
-              retried429 = true;
-              await sleep(Number(r.parameters.retry_after) * 1000 + 100);
-              r = await tg(token, 'sendMessage', payload);
-            }
-            lastSend = Date.now();
-            lastByChat.set(chat, lastSend);
-            const cc = classify(r);
-            if (cc.status === 'sent') anySent = true;
-            else if (!firstFail) firstFail = { c: cc, r };
-            if (cc.abort) { aborted = cc.abort; break; }
-          }
-          const c = anySent ? { status: 'sent' as const, code: 'sent' } : firstFail!.c;
-          const r = anySent ? { ok: true } : firstFail!.r;
-          const errText = c.status === 'sent' ? null : redact(String(r?.description ?? '')).slice(0, 200) || null;
-          await admin.from('payment_reminders').update({ status: c.status, code: c.code, error: errText }).eq('id', row.id);
-
-          if (c.status === 'sent') { sent++; netStreak = 0; }
-          else if (c.status === 'unknown') { unknown++; netStreak++; }
-          else { failed++; netStreak = 0; }
-          results.push({ student_id: id, name: ism, status: c.status, code: c.code });
-          if (c.abort) aborted = c.abort;
-          else if (netStreak >= 3) aborted = 'network';
+          cands.set(id, { id, s, ism, kurs: String(s.courses?.name ?? ''), chats: chatList, owed, tried: false, sent: false, unk: null, fail: null });
         } catch (_e) {
           // Bitta o'quvchidagi kutilmagan xato butun ro'yxatni to'xtatmasin
           skip(s, id, 'db');
         }
       }
 
+      // 2) Chat bo'yicha guruhlaymiz: bir ota-onaga (chatga) tushadigan farzandlar BITTA xabarda.
+      // Ona va ota ikkalasi ulangan bo'lsa — har biriga o'z xabari (ikkalasi ham to'liq ro'yxatni ko'radi)
+      const groups = new Map<number, Cand[]>();
+      for (const id of ids) {
+        const c = cands.get(id);
+        if (!c) continue;
+        for (const chat of c.chats) { const g = groups.get(chat); if (g) g.push(c); else groups.set(chat, [c]); }
+      }
+      let messages = 0, familyMsgs = 0;
+      for (const [chat, members] of groups) {
+        if (aborted || Date.now() - t0 > REMIND_BUDGET_MS) break;      // yetmaganlar not_sent bo'lib qoladi (panel qayta yuboradi)
+
+        // Avval jurnalga "pending" — jarayon yiqilsa ham qayta yuborilmaydi
+        for (const m of members) {
+          if (m.row || outcome.has(m.id)) continue;
+          const { data: row, error: insErr } = await admin.from('payment_reminders')
+            .insert({ student_id: m.id, month: month + '-01', sent_by_email: actor.email, status: 'pending' })
+            .select('id').single();
+          if (insErr) { skip(m.s, m.id, insErr.code === '23505' ? 'recent' : 'db'); continue; }
+          m.row = row.id;
+        }
+        const live = members.filter((m) => m.row);
+        if (!live.length) continue;
+
+        const text = live.length === 1
+          ? renderTpl(tplText, {
+            ism: live[0].ism,
+            kurs: live[0].kurs,
+            oy: oyName(month),
+            oylar: live[0].owed.length === 1 && live[0].owed[0] === month ? '' : live[0].owed.map(oyName).join(', '),
+          })
+          : renderTpl(famTplText, {
+            oy: oyName(month),
+            bolalar: [
+              ...live.slice(0, FAM_MAX).map((m) => `• ${m.ism}${m.kurs ? ` (${m.kurs})` : ''} — ${m.owed.map(oyName).join(', ')}`),
+              ...(live.length > FAM_MAX ? [`… +${live.length - FAM_MAX}`] : []),
+            ].join('\n'),
+          });
+
+        // Bir chatga sekundiga bittadan ko'p emas (Telegram chegarasi)
+        const waitChat = 1100 - (Date.now() - (lastByChat.get(chat) ?? 0));
+        const waitAll = 40 - (Date.now() - lastSend);
+        if (Math.max(waitChat, waitAll) > 0) await sleep(Math.max(waitChat, waitAll));
+
+        const payload = {
+          chat_id: chat, text, parse_mode: 'HTML',
+          link_preview_options: { is_disabled: true }, disable_notification: quiet,
+        };
+        let r: any = await tg(token, 'sendMessage', payload);
+        if (!r?.ok && Number(r?.error_code) === 429 && !retried429 && Number(r?.parameters?.retry_after) <= 5) {
+          retried429 = true;
+          await sleep(Number(r.parameters.retry_after) * 1000 + 100);
+          r = await tg(token, 'sendMessage', payload);
+        }
+        lastSend = Date.now();
+        lastByChat.set(chat, lastSend);
+        const cc = classify(r);
+        messages++;
+        if (live.length > 1) familyMsgs++;
+        for (const m of live) {
+          m.tried = true;
+          if (cc.status === 'sent') m.sent = true;
+          else if (cc.status === 'unknown') m.unk ??= { c: cc, r };
+          else m.fail ??= { c: cc, r };
+        }
+        netStreak = cc.status === 'unknown' ? netStreak + 1 : 0;
+        if (cc.abort) aborted = cc.abort;
+        else if (netStreak >= 3) aborted = 'network';
+      }
+
+      // 3) Natija: o'quvchi uchun "yuborildi" — kamida bitta ota-onaga (xabarga) yetgan bo'lsa; yetmagan bo'lsa
+      // "noma'lum" (javob kelmadi — yetgan bo'lishi mumkin) xatodan ustun
+      for (const id of ids) {
+        if (outcome.has(id)) continue;
+        const m = cands.get(id);
+        if (!m) continue;
+        if (!m.tried) { notSent.push(id); continue; }
+        const bad = m.unk ?? m.fail;
+        const c = m.sent ? { status: 'sent' as const, code: 'sent' } : bad!.c;
+        const r = m.sent ? { ok: true } : bad!.r;
+        const errText = c.status === 'sent' ? null : redact(String(r?.description ?? '')).slice(0, 200) || null;
+        await admin.from('payment_reminders').update({ status: c.status, code: c.code, error: errText }).eq('id', m.row!);
+        if (c.status === 'sent') sent++;
+        else if (c.status === 'unknown') unknown++;
+        else failed++;
+        outcome.set(id, { student_id: id, name: m.ism, status: c.status, code: c.code });
+      }
+      const results = ids.map((id) => outcome.get(id)).filter(Boolean) as Record<string, unknown>[];
+
       return json({
         ok: true, month, sent, failed, unknown, skipped, results, not_sent: notSent,
+        messages, family: familyMsgs,
         ...(aborted ? { aborted } : {}),
       });
     }
