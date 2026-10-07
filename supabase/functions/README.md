@@ -138,6 +138,14 @@ yuboradi. So'rov: `{ action: 'send_reminders', month: 'YYYY-MM', student_ids: [.
   (o'quvchi + Samarqand kuni, `failed` dan tashqari) ikki admin yoki qayta urinish bir kunda
   ikki marta yuborishiga yo'l qo'ymaydi. Natija: `sent` / `failed` / `unknown`.
 - 7 kunlik chegara o'quvchi bo'yicha, oy tanlovidan qat'i nazar (`failed` hisobga olinmaydi).
+- **Oila: bitta xabar.** Bir ota-onaga (chatga) tushadigan farzandlar bitta xabarga birlashadi — shablon `payfam`
+  (`{bolalar}` — «• Ism (kurs) — qarz oylar» qatorlari, `{oy}`; panelda Sozlamalar → Xabarlar → «Oila», faqat qo'lda
+  yuboriladi). Tekshiruvlar (to'lagan, 7 kun, ism va h.k.) o'quvchi bo'yicha qoladi: xabarga faqat yuboriladiganlar kiradi;
+  bitta farzand qolsa — oddiy `pay` matni. Ona va ota ikkalasi ulangan bo'lsa, har biriga o'z xabari (ikkalasida ham
+  to'liq ro'yxat); bir farzand ikki xabarga tushishi mumkin — kamida bittasi yetsa «yuborildi», yetmagan bo'lsa
+  `unknown` (javob kelmadi) `failed` dan ustun. Ro'yxat 10 farzandgacha, qolgani «… +N». Jurnal (`payment_reminders`)
+  baribir har bir farzandga bitta qator. Javobda `messages` (yuborilgan xabarlar) va `family` (shundan oilaviylari).
+  Panel bir oilani bitta so'rovga solib yuboradi (bo'laklar oilani bo'lmaydi), chunki birlashtirish bitta so'rov ichida.
 - `{oylar}` — joriy oygacha barcha qarz oylari; faqat tanlangan oy qarz bo'lsa qator tushadi.
 - Telegram xatolari: 403 → `blocked`; 400 "chat not found" → `no_chat`; 401/404 → `token`
   (to'xtatadi); 429 → bir marta qayta urinadi, keyin `rate_limited` (to'xtatadi); shablon
