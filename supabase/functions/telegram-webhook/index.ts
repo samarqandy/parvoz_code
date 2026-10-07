@@ -7,6 +7,10 @@
 //                       bilan solishtiriladi. Mos kelsa — ulanadi.
 // Shu sababli havola boshqa odamning qo'liga tushsa ham u hech narsa ko'rmaydi.
 //
+// Ikki ota-ona (ona va ota): o'quvchida ikkita ota-ona raqami bo'lishi mumkin (parent_phone, parent_phone2) va har bir
+// ota-ona o'z Telegramidan ulanadi — ikkalasi ham xabar oladi. Ulanishlar parent_chats jadvalida (o'quvchi + chat);
+// students.telegram_chat_id / linked_phone / linked_at — birinchi ulangan ota-onaning nusxasi (trigger yuritadi).
+//
 // Oila (bitta ota-onada 2-3 farzand): har bir farzandning o'z havolasi bor, lekin raqam bir marta tasdiqlanadi.
 //   - Raqam tasdiqlangach, shu raqamga ro'yxatdan o'tgan boshqa farzandlar taklif qilinadi — "Ha" bosilsa hammasi ulanadi.
 //   - Shu chat raqamni allaqachon tasdiqlagan bo'lsa, boshqa farzandning havolasini ochish uni darhol ulaydi
@@ -88,27 +92,36 @@ const YES_ALL = '✅ Ha, hammasini ulash';
 const NO_FAMILY = "Yo'q, hozir emas";
 const FAMILY_KB = { keyboard: [[{ text: YES_ALL }], [{ text: NO_FAMILY }]], resize_keyboard: true, one_time_keyboard: true };
 
-// Telegram o'zi tasdiqlagan raqamlar: shu chatga ulangan o'quvchilarning linked_phone qiymatlari
+// O'quvchiga yozilgan ota-ona raqamlari (birinchi va ikkinchi ota-ona), 998901234567 ko'rinishida
+const regPhones = (s: any): string[] => [...new Set([normPhone(s.parent_phone), normPhone(s.parent_phone2)].filter(Boolean) as string[])];
+
+// Telegram o'zi tasdiqlagan raqamlar: shu chat ulangan har bir o'quvchi uchun tasdiqlangan raqam
 async function verifiedPhones(chatId: number | string): Promise<Set<string>> {
-  const { data } = await admin.from('students').select('linked_phone').eq('telegram_chat_id', chatId);
-  return new Set((data ?? []).map((r: any) => normPhone(r.linked_phone)).filter(Boolean) as string[]);
+  const { data } = await admin.from('parent_chats').select('phone').eq('chat_id', chatId);
+  return new Set((data ?? []).map((r: any) => normPhone(r.phone)).filter(Boolean) as string[]);
 }
 async function namesOn(chatId: number | string): Promise<string[]> {
-  const { data } = await admin.from('students').select('full_name').eq('telegram_chat_id', chatId);
-  return (data ?? []).map((r: any) => String(r.full_name ?? '')).filter(Boolean);
+  const { data } = await admin.from('parent_chats').select('students(full_name)').eq('chat_id', chatId);
+  return (data ?? []).map((r: any) => String(r.students?.full_name ?? '')).filter(Boolean);
 }
-// Shu raqamga ro'yxatdan o'tgan, hali hech qaysi chatga ulanmagan faol o'quvchilar
-async function unlinkedSiblings(phones: Set<string>, exceptId?: string): Promise<any[]> {
+// Shu raqamlardan biriga ro'yxatdan o'tgan, hali SHU chatga ulanmagan faol o'quvchilar (boshqa ota-onaga ulangan bo'lsa ham:
+// ona va ota ikkalasi ham olishi kerak)
+async function pendingFamily(phones: Set<string>, chatId: number | string, exceptId?: string): Promise<any[]> {
   if (!phones.size) return [];
-  const { data } = await admin.from('students').select('id, full_name, parent_phone, courses(name)')
-    .eq('active', true).is('telegram_chat_id', null).limit(2000);
-  return (data ?? []).filter((s: any) => s.id !== exceptId && phones.has(normPhone(s.parent_phone) ?? ''));
+  const { data } = await admin.from('students')
+    .select('id, full_name, parent_phone, parent_phone2, courses(name), parent_chats(chat_id)')
+    .eq('active', true).limit(2000);
+  return (data ?? [])
+    .filter((s: any) => s.id !== exceptId && !(s.parent_chats ?? []).some((c: any) => c.chat_id === chatId) && regPhones(s).some((p) => phones.has(p)))
+    .map((s: any) => ({ ...s, phone: regPhones(s).find((p) => phones.has(p)) }));
 }
 async function linkTo(studentId: string, chatId: number | string, phone: string) {
+  await admin.from('parent_chats').upsert(
+    { student_id: studentId, chat_id: chatId, phone, linked_at: new Date().toISOString() },
+    { onConflict: 'student_id,chat_id', ignoreDuplicates: true },
+  );
+  // Havola yopiladi; students.telegram_chat_id ni trigger parent_chats dan yangilaydi
   await admin.from('students').update({
-    telegram_chat_id: chatId,
-    linked_at: new Date().toISOString(),
-    linked_phone: phone,
     link_code: crypto.randomUUID().replace(/-/g, '').slice(0, 12),
     link_expires_at: null,
     link_attempts: 0,
@@ -183,12 +196,12 @@ Deno.serve(async (req) => {
         await say(`ℹ️ Avval farzandingizning havolasini oching va raqamingizni tasdiqlang.`, { reply_markup: HIDE_KEYBOARD });
         return new Response('ok');
       }
-      const sibs = await unlinkedSiblings(phones);
+      const sibs = await pendingFamily(phones, chatId);
       if (!sibs.length) {
         await say(`ℹ️ Ulanadigan boshqa farzand topilmadi.\n\nHozir ulangan: ${esc((await namesOn(chatId)).join(', '))}`, { reply_markup: HIDE_KEYBOARD });
         return new Response('ok');
       }
-      for (const sb of sibs) await linkTo(sb.id, chatId, normPhone(sb.parent_phone)!);
+      for (const sb of sibs) await linkTo(sb.id, chatId, sb.phone);
       await say(`✅ Ulandi:\n${listOf(sibs)}\n\nEndi ${esc((await namesOn(chatId)).join(', '))} haqidagi xabarlar shu yerga keladi.\n\nXabarlarni to'xtatish uchun /stop yuboring.`,
         { reply_markup: HIDE_KEYBOARD });
       return new Response('ok');
@@ -212,7 +225,7 @@ Deno.serve(async (req) => {
       const cutoff = new Date(Date.now() - PENDING_TTL_MIN * 60_000).toISOString();
       const { data: pend } = await admin
         .from('students')
-        .select('id, full_name, parent_phone, link_attempts, courses(name)')
+        .select('id, full_name, parent_phone, parent_phone2, link_attempts, courses(name)')
         .eq('pending_chat_id', chatId)
         .gte('pending_at', cutoff)
         .order('pending_at', { ascending: false })
@@ -225,10 +238,10 @@ Deno.serve(async (req) => {
         return new Response('ok');
       }
 
-      const want = normPhone(pend.parent_phone);
+      const wantAll = regPhones(pend);
       const gave = normPhone(contact.phone_number);
 
-      if (!want || !gave || want !== gave) {
+      if (!gave || !wantAll.includes(gave)) {
         const tries = (pend.link_attempts ?? 0) + 1;
         if (tries >= MAX_ATTEMPTS) {
           await admin.from('students').update({
@@ -248,7 +261,7 @@ Deno.serve(async (req) => {
       await linkTo(pend.id, chatId, gave);
 
       const courseName = (pend as any).courses?.name ?? '';
-      const sibs = await unlinkedSiblings(new Set([gave]), pend.id);
+      const sibs = await pendingFamily(new Set([gave]), chatId, pend.id);
       await say(
         `✅ <b>${esc(pend.full_name)}</b> uchun davomat xabarlari ulandi!` +
         (courseName ? `\n📚 ${esc(courseName)}` : '') +
@@ -268,7 +281,7 @@ Deno.serve(async (req) => {
     if (code) {
       const { data: student } = await admin
         .from('students')
-        .select('id, full_name, parent_phone, link_expires_at, active, courses(name)')
+        .select('id, full_name, parent_phone, parent_phone2, link_expires_at, active, courses(name)')
         .eq('link_code', code)
         .maybeSingle();
 
@@ -287,7 +300,7 @@ Deno.serve(async (req) => {
         return new Response('ok');
       }
 
-      if (!normPhone(student!.parent_phone)) {
+      if (!regPhones(student).length) {
         await say(`⚠️ Bu o'quvchi uchun ota-ona raqami kiritilmagan.\n\nO'qituvchiga murojaat qiling.`,
           { reply_markup: HIDE_KEYBOARD });
         return new Response('ok');
@@ -295,12 +308,12 @@ Deno.serve(async (req) => {
 
       // Bu chat shu raqamni allaqachon tasdiqlagan (boshqa farzand orqali): raqam qayta so'ralmaydi — farzand darhol ulanadi.
       // Xavfsizlik oldingisi bilan teng: tasdiqlangan raqam == shu farzandga yozilgan ota-ona raqami, havola esa faqat xodimda.
-      const want = normPhone(student!.parent_phone)!;
       const phones = await verifiedPhones(chatId);
-      if (phones.has(want)) {
+      const want = regPhones(student).find((p) => phones.has(p));
+      if (want) {
         await admin.from('students').update({ pending_chat_id: null, pending_at: null }).eq('pending_chat_id', chatId);
         await linkTo(student!.id, chatId, want);
-        const sibs = await unlinkedSiblings(phones, student!.id);
+        const sibs = await pendingFamily(phones, chatId, student!.id);
         const course = (student as any).courses?.name;
         await say(
           `✅ <b>${esc(student!.full_name)}</b> ham ulandi!` + (course ? `\n📚 ${esc(course)}` : '') +
@@ -330,6 +343,8 @@ Deno.serve(async (req) => {
 
     if (/^\/stop/i.test(text)) {
       const names = await namesOn(chatId);
+      await admin.from('parent_chats').delete().eq('chat_id', chatId);     // boshqa ota-onaning ulanishi qoladi
+      // Jadvalda yozuvi bo'lmagan eski ulanish qoldig'i bo'lsa — tozalaymiz (trigger ularni allaqachon yangilagan)
       await admin.from('students')
         .update({ telegram_chat_id: null, linked_at: null, linked_phone: null })
         .eq('telegram_chat_id', chatId);

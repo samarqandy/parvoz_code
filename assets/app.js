@@ -46,6 +46,7 @@ const state = {
   me: null,            // { email, role, full_name, course_ids }
   courses: [],
   students: [],
+  pc: new Map(),      // student_id -> ulangan ota-onalar (parent_chats): ona va ota alohida
   today: [],          // tanlangan kundagi yozuvlar
   day: null,          // YYYY-MM-DD — null bo'lsa bugun
   loadedDay: null,    // state.today qaysi kun uchun yuklangan (yarim tundan keyin yangilash uchun)
@@ -254,6 +255,12 @@ const STR = {
     lsFix: 'Raqamni tuzatish', lsLink: 'Havola', lsStopNote: 'Ota-ona to\'xtatgan bo\'lishi mumkin \u2014 yuborishdan oldin so\'rang.',
     parentsUnlinkedN: '{n} ta ota-ona ulanishi o\'chdi',
     stFamHint: 'Shu raqamda: {names} \u2014 bitta oila sifatida ulanadi.', stFamHintOn: '{name} allaqachon ulangan, shuning uchun ota-ona yangi havolani ochsa, raqam so\'ralmaydi.',
+    tgLinkedN: 'Telegram \u2713 {n}/{m}', lsLinkMore: 'Ota-onani ulash', lsSecondHint: '{who} hali ulanmagan \u2014 u ham xabar olishi uchun alohida havola bering.',
+    fParent2: 'Ikkinchi ota-ona ismi', fPhone2: 'Ikkinchi ota-ona telefoni', addParent2: 'Ikkinchi ota-ona (ona va ota ikkalasi xabar olsin)',
+    fParent2Hint: 'Har biri o\'z Telegramidan ulanadi va bir xil xabarlarni oladi.', phone2NeedFirst: 'Avval birinchi ota-onaning raqamini kiriting.',
+    phone2Need: 'Ikkinchi ota-onaning telefon raqamini yozing.', phone2Same: 'Ikkinchi raqam birinchisi bilan bir xil.',
+    lpBoth: 'Xabarlar ikkala ota-onaga boradi:', lpUnlinkOne: 'Uzish', lpUnlinkOneAria: 'Uzish: {who}', lpUnlinkAsk: '{who} uchun {name} xabarlari to\'xtatiladi (boshqa ota-ona ulanib qoladi). Davom etasizmi?',
+    lpNotLinked: 'Hali ulanmagan: {who}', lpAdd: 'Havola berish', lpParent: 'Ota-ona', lpParent2: 'Ikkinchi ota-ona', parent2LinkedN: 'Yana {n} ta ota-ona ulandi',
     family: 'Oila', lsFamilyHint: 'Oiladagi {name} ulangan \u2014 ota-ona bu havolani ochsa, raqam qayta so\'ralmasdan ulanadi.',
     lsFamilyNote: 'Ota-ona allaqachon Telegramda ({name} orqali). Bu havolani ochsa, {child} raqam so\'ralmasdan darhol ulanadi.',
     lsFamilyLinked: 'Shu ota-ona orqali ulangan: {names}', lsFamilyUnlinkNote: 'Faqat shu o\'quvchi uziladi; boshqa farzandlar ulanib qoladi.',
@@ -592,6 +599,12 @@ const STR = {
     lsFix: 'Исправить номер', lsLink: 'Ссылка', lsStopNote: 'Родитель мог отключить рассылку \u2014 сначала уточните.',
     parentsUnlinkedN: 'Отключилось родителей: {n}',
     stFamHint: 'С этим номером: {names} \u2014 будут подключены как одна семья.', stFamHintOn: '{name} уже подключён, поэтому по новой ссылке номер запрашиваться не будет.',
+    tgLinkedN: 'Telegram \u2713 {n}/{m}', lsLinkMore: 'Ещё родитель', lsSecondHint: '{who} ещё не подключён \u2014 выдайте отдельную ссылку, чтобы он тоже получал сообщения.',
+    fParent2: 'Имя второго родителя', fPhone2: 'Телефон второго родителя', addParent2: 'Второй родитель (чтобы мама и папа получали сообщения)',
+    fParent2Hint: 'Каждый подключается из своего Telegram и получает одинаковые сообщения.', phone2NeedFirst: 'Сначала укажите номер первого родителя.',
+    phone2Need: 'Укажите номер телефона второго родителя.', phone2Same: 'Второй номер совпадает с первым.',
+    lpBoth: 'Сообщения приходят обоим родителям:', lpUnlinkOne: 'Отключить', lpUnlinkOneAria: 'Отключить: {who}', lpUnlinkAsk: 'Сообщения о {name} для {who} прекратятся (второй родитель останется подключён). Продолжить?',
+    lpNotLinked: 'Ещё не подключён: {who}', lpAdd: 'Выдать ссылку', lpParent: 'Родитель', lpParent2: 'Второй родитель', parent2LinkedN: 'Подключилось ещё родителей: {n}',
     family: 'Семья', lsFamilyHint: 'Ребёнок из семьи ({name}) подключён \u2014 если родитель откроет эту ссылку, подключится без повторного запроса номера.',
     lsFamilyNote: 'Родитель уже в Telegram (через {name}). Если он откроет эту ссылку, {child} подключится сразу, без запроса номера.',
     lsFamilyLinked: 'Подключены через этого родителя: {names}', lsFamilyUnlinkNote: 'Отключится только этот ученик; остальные дети останутся подключены.',
@@ -1280,7 +1293,16 @@ async function loadCourses() {
     .map((c) => (COURSE_COLORS.includes(c.color) ? c : { ...c, color: 'sky' }));
 }
 async function loadStudents() {
-  state.students = rowsOf(await sb.from('students').select('*').order('full_name'));
+  // Ona va ota: har bir ulangan ota-ona parent_chats da alohida qator. Jadval yo'q yoki o'qilmasa
+  // eski ustunlar (telegram_chat_id) bo'yicha bitta ota-ona deb hisoblanadi — panel buzilmaydi
+  const [stq, pcq] = await Promise.all([
+    sb.from('students').select('*').order('full_name'),
+    sb.from('parent_chats').select('student_id,chat_id,phone,linked_at').order('linked_at'),
+  ]);
+  state.students = rowsOf(stq);
+  const m = new Map();
+  if (!pcq?.error) for (const r of pcq?.data ?? []) { const a = m.get(r.student_id); if (a) a.push(r); else m.set(r.student_id, [r]); }
+  state.pc = m;
 }
 // Shaxsiy narxlar — faqat admin (RLS o'qituvchiga bo'sh qaytaradi)
 async function loadFees() {
@@ -1320,14 +1342,17 @@ async function refreshLinks() {
   if (state.loadedDay && state.loadedDay !== selDay() && state.view === 'today' && !typing()) render();
   refreshLeadsQuiet(true);
   refreshTodayQuiet();
-  const sig = () => state.students.map((s) => `${s.id}:${linkState(s).k}`).join();
-  const before = state.students.filter((s) => s.telegram_chat_id).length, sigBefore = sig();
+  const sig = () => state.students.map((s) => `${s.id}:${linkState(s).k}:${parentsOf(s).length}`).join();
+  const nParents = () => state.students.reduce((n, s) => n + parentsOf(s).length, 0);
+  const before = state.students.filter((s) => s.telegram_chat_id).length, sigBefore = sig(), pBefore = nParents();
   try { await loadStudents(); } catch (_) { return; }   // internet yo'q — eski ro'yxat qoladi
   state.err.students = false;
   const after = state.students.filter((s) => s.telegram_chat_id).length;
   if (after !== before) {
     if (after > before) toast(t('parentsLinkedN', { n: after - before }), 'ok');
     else toast(t('parentsUnlinkedN', { n: before - after }));
+  } else if (nParents() > pBefore) {
+    toast(t('parent2LinkedN', { n: nParents() - pBefore }), 'ok');   // ikkinchi ota-ona ulandi — ulangan o'quvchilar soni o'zgarmaydi
   }
   // Faqat ulanish belgisi ko'rinadigan ekranlar qayta chiziladi: Sozlamalarda yozilayotgan token yoki shablon yo'qolmasin.
   // Ulanish holati o'zgarsa ham (havola ochildi, raqam mos kelmadi...) ro'yxat yangilanadi — faqat son o'zgarganda emas
@@ -2157,7 +2182,7 @@ function leadDup(l) {
   const tail = phoneTail(l.phone);
   if (tail.length < 9 || (l.status !== 'new' && l.status !== 'contacted')) return { students: [], leads: 0 };
   return {
-    students: state.students.filter((s) => s.active && phoneTail(s.parent_phone) === tail),
+    students: state.students.filter((s) => s.active && (phoneTail(s.parent_phone) === tail || phoneTail(s.parent_phone2) === tail)),
     leads: state.leads.filter((x) => x.id !== l.id && phoneTail(x.phone) === tail).length,
   };
 }
@@ -2297,7 +2322,10 @@ function durText(ms) {
 }
 const agoText = (ms) => { const d = durText(ms); return d ? t('agoFmt', { d }) : t('justNow'); };
 function linkState(s) {
-  if (s.telegram_chat_id) return { k: 'linked' };
+  if (s.telegram_chat_id) {
+    const n = Math.max(1, parentSlots(s).filter((x) => x.linked).length);
+    return { k: 'linked', n, of: Math.max(parentSlots(s).length, n) };
+  }
   if (!s.parent_phone) return { k: 'nophone' };
   const now = Date.now() + clockOffset;
   const tries = s.link_attempts || 0;
@@ -2321,7 +2349,7 @@ function linkLabel(ls) {
 const linkTitle = (s) => { const l = linkLabel(linkState(s)); return l ? `${t('noTg')} \u00b7 ${l}` : t('noTg'); };
 function linkBadge(s) {
   const ls = linkState(s);
-  if (ls.k === 'linked') return `<span class="badge badge-ok">${t('tgLinked')}</span>`;
+  if (ls.k === 'linked') return `<span class="badge badge-ok">${ls.of > 1 ? t('tgLinkedN', { n: ls.n, m: ls.of }) : t('tgLinked')}</span>`;
   if (ls.k === 'nophone') return `<span class="badge badge-warn">${t('tgNoPhone')}</span>`;
   if (ls.k === 'none') return `<span class="badge badge-warn">${t('tgNotLinked')}</span>`;
   const cls = ls.k === 'cancelled' ? 'badge badge-bad' : ls.k === 'waiting' || ls.k === 'pending' ? 'badge' : 'badge badge-warn';
@@ -2329,15 +2357,28 @@ function linkBadge(s) {
 }
 // Oila: bitta ota-ona raqamiga yozilgan o'quvchilar (oxirgi 9 raqam bo'yicha — raqam yozilishi har xil bo'lishi mumkin)
 const phoneKey = (v) => String(v || '').replace(/\D+/g, '').slice(-9);
-function siblingsOf(s) {
-  const k = phoneKey(s.parent_phone);
-  return k.length < 9 ? [] : state.students.filter((x) => x.id !== s.id && x.active && phoneKey(x.parent_phone) === k);
+// Ona va ota: o'quvchiga ikkita ota-ona raqami yozilishi mumkin; har biri o'z Telegramidan alohida ulanadi
+const phoneKeysOf = (s) => [...new Set([s.parent_phone, s.parent_phone2].map(phoneKey).filter((k) => k.length >= 9))];
+function parentsOf(s) {
+  const rows = state.pc.get(s.id);
+  if (rows?.length) return rows;
+  return s.telegram_chat_id ? [{ chat_id: s.telegram_chat_id, phone: s.linked_phone || s.parent_phone || '', linked_at: s.linked_at || null }] : [];
 }
+// Ro'yxatdagi ota-onalar va ularning har biri ulanganmi
+function parentSlots(s) {
+  const got = new Set(parentsOf(s).map((p) => phoneKey(p.phone)));
+  const seen = new Set();
+  return [[s.parent_name, s.parent_phone], [s.parent_name2, s.parent_phone2]]
+    .map(([name, phone]) => ({ name: name || '', phone, key: phoneKey(phone) }))
+    .filter((x) => x.key.length >= 9 && !seen.has(x.key) && seen.add(x.key))
+    .map((x) => ({ ...x, linked: got.has(x.key) }));
+}
+const sharingPhone = (keys, exceptId) => keys.length
+  ? state.students.filter((x) => x.id !== exceptId && x.active && phoneKeysOf(x).some((k) => keys.includes(k))) : [];
+const verifiedBy = (x, keys) => parentsOf(x).some((p) => keys.includes(phoneKey(p.phone)));
+const siblingsOf = (s) => sharingPhone(phoneKeysOf(s), s.id);
 // Shu raqamni Telegram orqali tasdiqlagan aka-uka: ota-ona bu farzandning havolasini ochsa, raqam qayta so'ralmaydi
-const linkedSibling = (s) => {
-  const k = phoneKey(s.parent_phone);
-  return k.length < 9 ? null : siblingsOf(s).find((x) => x.telegram_chat_id && phoneKey(x.linked_phone) === k) || null;
-};
+const linkedSibling = (s) => { const ks = phoneKeysOf(s); return siblingsOf(s).find((x) => verifiedBy(x, ks)) || null; };
 const stLinkF = () => (state.stLink === 'unlinked' || state.stLink === 'linked' ? state.stLink : 'all');
 function linkStats() {
   const allowed = new Set((isAdmin() ? state.courses : myCourses()).map((c) => c.id));
@@ -2392,6 +2433,9 @@ function studentActions(s) {
   if (ls.k === 'cancelled') {
     return `<button class="btn btn-sm btn-primary" data-edit-student="${s.id}" data-focus-phone aria-label="${esc(t('lsFix') + ': ' + s.full_name)}" type="button">${I.edit} ${t('lsFix')}</button>${iconLink}`;
   }
+  if (ls.k === 'linked' && ls.n < ls.of) {
+    return `<button class="btn btn-sm" data-link="${s.id}" title="${t('parentLink')}" aria-label="${esc(t('lsLinkMore') + ': ' + s.full_name)}" type="button">${I.link} ${t('lsLinkMore')}</button>${edit}`;
+  }
   if (ls.k === 'linked' || ls.k === 'nophone') return iconLink + edit;
   return `<button class="btn btn-sm" data-link="${s.id}" title="${t('parentLink')}" aria-label="${lbl}" type="button">${I.link} ${t('lsLink')}</button>${edit}`;
 }
@@ -2400,6 +2444,10 @@ function linkHint(s) {
   const k = linkState(s).k;
   if (k === 'cancelled') return `<div class="st-hint">${t('lsCancelledHint')}</div>`;
   if (k === 'stalled') return `<div class="st-hint st-hint-soft">${t('lsStalledHint')}</div>`;
+  if (k === 'linked') {
+    const miss = parentSlots(s).find((x) => !x.linked);
+    return miss ? `<div class="st-hint st-hint-soft">${t('lsSecondHint', { who: esc(miss.name || maskPhone(miss.phone) || miss.phone) })}</div>` : '';
+  }
   const sib = ['none', 'waiting', 'expired', 'pending'].includes(k) ? linkedSibling(s) : null;
   return sib ? `<div class="st-hint st-hint-soft">${t('lsFamilyHint', { name: esc(sib.full_name) })}</div>` : '';
 }
@@ -2425,6 +2473,10 @@ function rowStudent(s) {
         ${s.parent_phone ? `<a class="tel-link" href="${esc(telHref(s.parent_phone))}">📞 ${esc(s.parent_phone)}</a>` : ''}
         ${isAdmin() && Number.isInteger(state.fees.get(s.id)) ? `<span class="st-fee">💰 ${t('perMonth', { n: fmtSum(state.fees.get(s.id)) })}</span>` : ''}
       </div>
+      ${s.parent_phone2 ? `<div class="row-sub">
+        ${s.parent_name2 ? `<span>👤 ${esc(s.parent_name2)}</span>` : ''}
+        <a class="tel-link" href="${esc(telHref(s.parent_phone2))}">📞 ${esc(s.parent_phone2)}</a>
+      </div>` : ''}
       ${familyLine(s)}
     </div>
     <div class="row-actions">${studentActions(s)}</div>
@@ -3264,8 +3316,8 @@ function payFilter(list) {
   const qd = q.replace(/\D+/g, '');
   if (!q) return list;
   return list.filter(({ s }) => fold(s.full_name).includes(q) ||
-    (qd.length >= 3 && String(s.parent_phone || '').replace(/\D+/g, '').includes(qd)) ||
-    fold(s.parent_name).includes(q));
+    (qd.length >= 3 && [s.parent_phone, s.parent_phone2].some((v) => String(v || '').replace(/\D+/g, '').includes(qd))) ||
+    fold(s.parent_name).includes(q) || fold(s.parent_name2).includes(q));
 }
 
 /* ---- Oy tekshiruvi: pul raqamlari jimgina noto'g'ri bo'lib qolmasin ----
@@ -4248,6 +4300,15 @@ function studentSheet(id, { focusPhone = false, lead = null } = {}) {
         <small class="f-hint">${t('fPhoneHint')}</small>${lead ? `<small class="f-hint">${t('leadPhoneFilled')}</small>` : ''}</label>
       <p class="f-hint st-fam-hint" id="stFamHint" role="status" hidden></p>
       <p class="tpl-err" id="stPhoneErr" role="alert" hidden></p>
+      <details class="st-p2"${s?.parent_phone2 || s?.parent_name2 ? ' open' : ''}>
+        <summary>${t('addParent2')}</summary>
+        <label class="field"><span>${t('fParent2')}</span>
+          <input class="inp" id="stParent2" value="${esc(s?.parent_name2 ?? '')}"></label>
+        <label class="field"><span>${t('fPhone2')}</span>
+          <input class="inp" id="stPhone2" inputmode="tel" placeholder="+998 90 123 45 67" value="${esc(s?.parent_phone2 ?? '')}" aria-describedby="stPhone2Err">
+          <small class="f-hint">${t('fParent2Hint')}</small></label>
+        <p class="tpl-err" id="stPhone2Err" role="alert" hidden></p>
+      </details>
       ${isAdmin() ? `<label class="field"><span>${t('fStFee')}</span>
         <input class="inp" id="stFee" inputmode="numeric" autocomplete="off" aria-describedby="stFeeErr"
           value="${s && Number.isInteger(state.fees.get(s.id)) ? fmtSum(state.fees.get(s.id)) : ''}">
@@ -4261,15 +4322,15 @@ function studentSheet(id, { focusPhone = false, lead = null } = {}) {
     if (focusPhone) { const ph = $('stPhone'); ph.focus(); ph.select(); }
     // Bitta ota-onaning bir nechta farzandi: raqam bir xil yozilsa oila bo'lib ulanadi — kiritayotganda ko'rsatamiz
     const famHint = () => {
-      const k = phoneKey($('stPhone').value);
-      const sibs = k.length >= 9 ? state.students.filter((x) => x.id !== s?.id && x.active && phoneKey(x.parent_phone) === k) : [];
+      const ks = [...new Set([$('stPhone').value, $('stPhone2').value].map(phoneKey).filter((k) => k.length >= 9))];
+      const sibs = sharingPhone(ks, s?.id);
       const el = $('stFamHint');
       el.hidden = !sibs.length;
       if (!sibs.length) return;
-      const on = sibs.find((x) => x.telegram_chat_id && phoneKey(x.linked_phone) === k);
+      const on = sibs.find((x) => verifiedBy(x, ks));
       el.textContent = t('stFamHint', { names: sibs.map((x) => x.full_name).join(', ') }) + (on ? ' ' + t('stFamHintOn', { name: on.full_name }) : '');
     };
-    $('stPhone').addEventListener('input', famHint); famHint();
+    $('stPhone').addEventListener('input', famHint); $('stPhone2').addEventListener('input', famHint); famHint();
     $('stLeadName')?.addEventListener('click', () => {
       $('stName').value = lead.full_name; $('stParent').value = '';
       $('stLeadNote').hidden = true; $('stName').focus();
@@ -4300,12 +4361,22 @@ function studentSheet(id, { focusPhone = false, lead = null } = {}) {
       const phone = parentPhone($('stPhone').value);
       showErr('stPhoneErr', phone.ok ? '' : t('badPhone'), 'stPhone');
       if (!phone.ok) return;
+      // Ikkinchi ota-ona (ixtiyoriy): raqam to'g'ri, birinchisidan farqli va birinchisi bo'sh bo'lmasligi shart
+      const phone2 = parentPhone($('stPhone2').value), name2 = $('stParent2').value.trim();
+      const err2 = !phone2.ok ? t('badPhone')
+        : !phone2.value ? (name2 ? t('phone2Need') : '')
+        : !phone.value ? t('phone2NeedFirst')
+        : phoneKey(phone2.value) === phoneKey(phone.value) ? t('phone2Same') : '';
+      if (err2) { $('stForm').querySelector('.st-p2').open = true; showErr('stPhone2Err', err2, 'stPhone2'); return; }
+      showErr('stPhone2Err', '', 'stPhone2');
       const row = {
         full_name: name,
         course_id: $('stCourse').value,
         parent_name: $('stParent').value.trim() || null,
         parent_phone: phone.value,
       };
+      // Eski bazada ustunlar bo'lmasligi mumkin — faqat ikkinchi ota-ona yozilgan yoki avval bo'lgan bo'lsa yuboramiz
+      if (phone2.value || s?.parent_phone2 || s?.parent_name2) { row.parent_name2 = phone2.value ? name2 || null : null; row.parent_phone2 = phone2.value; }
       if (s) row.active = $('stActive').checked;
       if (!row.course_id) return;
       // Xuddi shu kursda xuddi shu ism — ehtimol takror qo'shilyapti
@@ -4357,32 +4428,52 @@ function maskPhone(norm) {
   return `+${d.slice(0, 3)} ** *** ${tail.slice(0, 2)} ${tail.slice(2)}`;
 }
 
-function parentLinkSheet(id) {
+function parentLinkSheet(id, { add = false } = {}) {
   const s = state.students.find((x) => x.id === id);
   if (!s) return;
 
-  // Allaqachon ulangan
-  if (s.telegram_chat_id) {
-    const famOn = state.students.filter((x) => x.id !== s.id && x.telegram_chat_id && x.telegram_chat_id === s.telegram_chat_id);
+  // Allaqachon ulangan (add — ikkinchi ota-onaga havola berish uchun to'g'ridan-to'g'ri keyingi bosqichga o'tiladi)
+  if (s.telegram_chat_id && !add) {
+    const rows = parentsOf(s), slots = parentSlots(s);
+    const mine = new Set(rows.map((r) => String(r.chat_id)));
+    const famOn = state.students.filter((x) => x.id !== s.id && parentsOf(x).some((r) => mine.has(String(r.chat_id))));
+    const missing = slots.find((x) => !x.linked);
+    const nameOf = (r) => slots.find((x) => x.key === phoneKey(r.phone))?.name || '';
+    const who = (r) => (nameOf(r) ? nameOf(r) + ' \u00b7 ' : '') + (maskPhone(r.phone) || r.phone || '');
+    const many = rows.length > 1;
+    const head = many
+      ? `<p>${t('lpBoth')}</p>
+         <ul class="lp-list">${rows.map((r, i) => `<li><div><b>${esc(nameOf(r) || t('lpParent'))}</b><span class="lp-ph">${esc(maskPhone(r.phone) || r.phone || '')}</span>${r.linked_at ? `<small>${t('linkedOn', { date: uzDate(r.linked_at) })}</small>` : ''}</div>
+           <button class="btn btn-sm btn-danger" data-lp-unlink="${i}" aria-label="${esc(t('lpUnlinkOneAria', { who: who(r) }))}" type="button">${I.x} ${t('lpUnlinkOne')}</button></li>`).join('')}</ul>`
+      : `<p>${t('goesTo', { phone: esc(maskPhone(rows[0]?.phone) || s.parent_phone || '') })}</p>
+         ${rows[0]?.linked_at ? `<p class="link-dim">${t('linkedOn', { date: uzDate(rows[0].linked_at) })}</p>` : ''}`;
     openSheet(t('tgLink'), `
       <div class="link-state ok">
         <div class="link-ico">✅</div>
         <b>${esc(t('linkedTo', { name: s.full_name }))}</b>
-        <p>${t('goesTo', { phone: esc(maskPhone(s.linked_phone) || s.parent_phone || '') })}</p>
-        ${s.linked_at ? `<p class="link-dim">${t('linkedOn', { date: uzDate(s.linked_at) })}</p>` : ''}
+        ${head}
         ${famOn.length ? `<p class="link-dim">${t('lsFamilyLinked', { names: esc(famOn.map((x) => x.full_name).join(', ')) })}</p>` : ''}
       </div>
-      <button class="btn btn-danger btn-block" id="lnUnlink" type="button">${I.x} ${t('unlink')}</button>
+      ${missing ? `<div class="link-state warn lp-missing"><div class="link-ico">⏳</div>
+        <p>${t('lpNotLinked', { who: esc(missing.name ? missing.name + ' \u00b7 ' + maskPhone(missing.phone) : maskPhone(missing.phone)) })}</p></div>
+        <button class="btn btn-primary btn-block" id="lnAdd" type="button">${I.link} ${t('lpAdd')}</button>` : ''}
+      ${many ? '' : `<button class="btn btn-danger btn-block" id="lnUnlink" style="margin-top:${missing ? 9 : 0}px" type="button">${I.x} ${t('unlink')}</button>`}
       <p class="link-dim" style="margin-top:10px">${t('unlinkHint')}${famOn.length ? ' ' + t('lsFamilyUnlinkNote') : ''}</p>`,
       () => {
-        $('lnUnlink').addEventListener('click', async () => {
-          if (!confirm(t('unlinkAsk', { name: s.full_name }))) return;
+        const unlink = async (phone, ask) => {
+          if (!confirm(ask)) return;
           try {
-            await edge('student-link', { student_id: s.id, action: 'unlink' });
+            await edge('student-link', phone ? { student_id: s.id, action: 'unlink', phone } : { student_id: s.id, action: 'unlink' });
             closeSheet(); toast(t('unlinked'), 'ok');
             await loadStudents(); render();
           } catch (e) { toast('❌ ' + e.message, 'bad'); }
-        });
+        };
+        $('lnUnlink')?.addEventListener('click', () => unlink(null, t('unlinkAsk', { name: s.full_name })));
+        $('lnAdd')?.addEventListener('click', () => { closeSheet(); parentLinkSheet(s.id, { add: true }); });
+        $('sheetBody').querySelectorAll('[data-lp-unlink]').forEach((b) => b.addEventListener('click', () => {
+          const r = rows[+b.dataset.lpUnlink];
+          unlink(r.phone, t('lpUnlinkAsk', { who: who(r), name: s.full_name }));
+        }));
       });
     return;
   }
@@ -4405,7 +4496,11 @@ function parentLinkSheet(id) {
   const now = Date.now() + clockOffset;
   if (live > now && !confirm(t('lsRotate', { ago: agoText(Math.max(0, now - (live - LINK_TTL_H * 3600000))) }))) return;
 
-  const famSib = linkedSibling(s);
+  // Ikkinchi ota-onaga havola: oiladagi tasdiqlash faqat shu (ulanmagan) raqamga qarab aniqlanadi
+  const famSib = add ? (() => {
+    const m = parentSlots(s).find((x) => !x.linked);
+    return m ? sharingPhone([m.key], s.id).find((x) => verifiedBy(x, [m.key])) || null : null;
+  })() : linkedSibling(s);
 
   // Yangi havola so'raymiz
   openSheet(t('parentLinkT'),
