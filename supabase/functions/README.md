@@ -30,6 +30,21 @@ Shu sababli havola boshqa odamga tarqalsa ham u hech narsa ko'ra olmaydi.
 o'zgartirilmaydi: `authenticated` rolida ular uchun `UPDATE` huquqi yo'q,
 faqat edge funksiyalar (service_role) yoza oladi.
 
+**Oila (bitta ota-onada 2-3 farzand).** Har bir farzandning o'z havolasi bor, lekin raqam bir marta tasdiqlanadi
+(bazada migratsiya kerak emas: `telegram_chat_id` bir nechta o'quvchida bir xil bo'lishi mumkin):
+
+1. Raqam tasdiqlangach bot shu raqamga ro'yxatdan o'tgan, hali ulanmagan faol farzandlarni sanab beradi va
+   «✅ Ha, hammasini ulash» / «Yo'q, hozir emas» tugmalarini beradi (oddiy matnli javob tugmalari, `callback_query` kerak emas).
+2. Shu chat raqamni allaqachon tasdiqlagan bo'lsa (`linked_phone`), boshqa farzandning havolasini ochish uni
+   raqam so'ramasdan darhol ulaydi. Xavfsizlik oldingisi bilan teng: tasdiqlangan raqam == farzandga yozilgan ota-ona
+   raqami, havola esa faqat xodimda.
+3. «Ha» faqat shu chat tasdiqlagan raqamga yozilgan o'quvchilarni ulaydi; tasdiqlamagan chatga hech narsa ko'rsatilmaydi.
+4. Boshqa raqam yozilgan, boshqa chatga ulangan yoki arxivdagi farzand taklif qilinmaydi.
+5. `/stop` shu chatdagi hamma farzandni uzadi va ismlarini aytadi. Panelda bitta farzandni uzish boshqalarga tegmaydi.
+
+Raqamlar oxirgi 9 raqam bo'yicha solishtiriladi (`+998 90 …`, `998…`, `90 …` bir xil). Farzandlar bitta oila bo'lishi
+uchun ota-ona raqami bir xil kiritilishi shart — panel yangi o'quvchi formasida buni ko'rsatib turadi.
+
 Raqamni tasdiqlash kutilayotganda (`pending_at` 15 daqiqadan yangi) ota-ona raqamni tugma o'rniga
 yozib yuborsa yoki boshqa matn yozsa, bot tugmani qayta ko'rsatadi: yozilgan raqam tekshirilmaydi,
 faqat Telegram o'zi tasdiqlagan kontakt (tugma) qabul qilinadi. 12 xonali yozilgan raqam kod deb
