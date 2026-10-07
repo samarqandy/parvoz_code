@@ -246,13 +246,17 @@ const STR = {
     noStudentsT: "O'quvchi yo'q",
     addFirstOne: "Birinchi o'quvchini qo'shing.",
     tgLinked: 'Telegram \u2713', tgNotLinked: 'Ulanmagan', tgNoPhone: 'Raqam kiritilmagan',
-    stLinkSummary: '{a} / {b} ota-ona Telegramga ulangan', stLinkAria: 'Telegram ulanishi bo\'yicha saralash',
+    stLinkSummary: '{a} / {b} o\'quvchi Telegramga ulangan', stLinkAria: 'Telegram ulanishi bo\'yicha saralash',
     stLinkNo: 'Ulanmagan', stLinkYes: 'Ulangan', stLinkAllDone: 'Hammasi ulangan', stLinkNoneYet: 'Hali birorta ota-ona ulanmagan',
     lsWaiting: 'Havola yaratilgan \u00b7 {h} soat qoldi', lsPending: 'Ota-ona ochdi, raqamni tasdiqlayapti',
     lsMismatch: 'Raqam mos kelmadi ({n}/3)', lsCancelled: 'Havola bekor: raqam 3 marta mos kelmadi',
     lsCancelledHint: 'Raqamni tekshiring \u2014 eski havola ishlamaydi', lsExpired: 'Havola eskirgan',
     lsFix: 'Raqamni tuzatish', lsLink: 'Havola', lsStopNote: 'Ota-ona to\'xtatgan bo\'lishi mumkin \u2014 yuborishdan oldin so\'rang.',
     parentsUnlinkedN: '{n} ta ota-ona ulanishi o\'chdi',
+    stFamHint: 'Shu raqamda: {names} \u2014 bitta oila sifatida ulanadi.', stFamHintOn: '{name} allaqachon ulangan, shuning uchun ota-ona yangi havolani ochsa, raqam so\'ralmaydi.',
+    family: 'Oila', lsFamilyHint: 'Oiladagi {name} ulangan \u2014 ota-ona bu havolani ochsa, raqam qayta so\'ralmasdan ulanadi.',
+    lsFamilyNote: 'Ota-ona allaqachon Telegramda ({name} orqali). Bu havolani ochsa, {child} raqam so\'ralmasdan darhol ulanadi.',
+    lsFamilyLinked: 'Shu ota-ona orqali ulangan: {names}', lsFamilyUnlinkNote: 'Faqat shu o\'quvchi uziladi; boshqa farzandlar ulanib qoladi.',
     dvBlocked: 'ota-ona botni bloklagan \u2014 xabar yetmadi', dvFailed: 'ota-onaga xabar yuborilmadi', dvUnknown: 'xabar yetib bordimi \u2014 noma\'lum',
     dvBad: 'ism yoki izohda havola/raqam bor \u2014 xabar yuborilmadi', markedWarn: '\u2714\uFE0F {name}: {label} \u2014 {why}',
     groupNotifyFail: '{k} ta ota-onaga xabar yetmadi', groupNotifyUnknown: '{k} tasida xabar holati noma\'lum',
@@ -580,13 +584,17 @@ const STR = {
     noStudentsT: 'Учеников нет',
     addFirstOne: 'Добавьте первого ученика.',
     tgLinked: 'Telegram \u2713', tgNotLinked: 'Не подключён', tgNoPhone: 'Номер не указан',
-    stLinkSummary: 'Подключено родителей: {a} из {b}', stLinkAria: 'Фильтр по подключению Telegram',
+    stLinkSummary: 'Подключено учеников: {a} из {b}', stLinkAria: 'Фильтр по подключению Telegram',
     stLinkNo: 'Не подключены', stLinkYes: 'Подключены', stLinkAllDone: 'Все подключены', stLinkNoneYet: 'Пока ни один родитель не подключён',
     lsWaiting: 'Ссылка создана \u00b7 осталось {h} ч', lsPending: 'Родитель открыл, подтверждает номер',
     lsMismatch: 'Номер не совпал ({n}/3)', lsCancelled: 'Ссылка отменена: номер не совпал 3 раза',
     lsCancelledHint: 'Проверьте номер \u2014 прежняя ссылка не работает', lsExpired: 'Ссылка устарела',
     lsFix: 'Исправить номер', lsLink: 'Ссылка', lsStopNote: 'Родитель мог отключить рассылку \u2014 сначала уточните.',
     parentsUnlinkedN: 'Отключилось родителей: {n}',
+    stFamHint: 'С этим номером: {names} \u2014 будут подключены как одна семья.', stFamHintOn: '{name} уже подключён, поэтому по новой ссылке номер запрашиваться не будет.',
+    family: 'Семья', lsFamilyHint: 'Ребёнок из семьи ({name}) подключён \u2014 если родитель откроет эту ссылку, подключится без повторного запроса номера.',
+    lsFamilyNote: 'Родитель уже в Telegram (через {name}). Если он откроет эту ссылку, {child} подключится сразу, без запроса номера.',
+    lsFamilyLinked: 'Подключены через этого родителя: {names}', lsFamilyUnlinkNote: 'Отключится только этот ученик; остальные дети останутся подключены.',
     dvBlocked: 'родитель заблокировал бота \u2014 сообщение не дошло', dvFailed: 'сообщение родителю не отправлено', dvUnknown: 'неизвестно, дошло ли сообщение',
     dvBad: 'в имени или заметке есть ссылка/номер \u2014 сообщение не отправлено', markedWarn: '\u2714\uFE0F {name}: {label} \u2014 {why}',
     groupNotifyFail: 'Сообщение не дошло до родителей: {k}', groupNotifyUnknown: 'Неизвестно, дошло ли сообщение: {k}',
@@ -2319,6 +2327,17 @@ function linkBadge(s) {
   const cls = ls.k === 'cancelled' ? 'badge badge-bad' : ls.k === 'waiting' || ls.k === 'pending' ? 'badge' : 'badge badge-warn';
   return `<span class="${cls}">${esc(linkLabel(ls))}</span>`;
 }
+// Oila: bitta ota-ona raqamiga yozilgan o'quvchilar (oxirgi 9 raqam bo'yicha — raqam yozilishi har xil bo'lishi mumkin)
+const phoneKey = (v) => String(v || '').replace(/\D+/g, '').slice(-9);
+function siblingsOf(s) {
+  const k = phoneKey(s.parent_phone);
+  return k.length < 9 ? [] : state.students.filter((x) => x.id !== s.id && x.active && phoneKey(x.parent_phone) === k);
+}
+// Shu raqamni Telegram orqali tasdiqlagan aka-uka: ota-ona bu farzandning havolasini ochsa, raqam qayta so'ralmaydi
+const linkedSibling = (s) => {
+  const k = phoneKey(s.parent_phone);
+  return k.length < 9 ? null : siblingsOf(s).find((x) => x.telegram_chat_id && phoneKey(x.linked_phone) === k) || null;
+};
 const stLinkF = () => (state.stLink === 'unlinked' || state.stLink === 'linked' ? state.stLink : 'all');
 function linkStats() {
   const allowed = new Set((isAdmin() ? state.courses : myCourses()).map((c) => c.id));
@@ -2377,6 +2396,18 @@ function studentActions(s) {
   return `<button class="btn btn-sm" data-link="${s.id}" title="${t('parentLink')}" aria-label="${lbl}" type="button">${I.link} ${t('lsLink')}</button>${edit}`;
 }
 
+function linkHint(s) {
+  const k = linkState(s).k;
+  if (k === 'cancelled') return `<div class="st-hint">${t('lsCancelledHint')}</div>`;
+  if (k === 'stalled') return `<div class="st-hint st-hint-soft">${t('lsStalledHint')}</div>`;
+  const sib = ['none', 'waiting', 'expired', 'pending'].includes(k) ? linkedSibling(s) : null;
+  return sib ? `<div class="st-hint st-hint-soft">${t('lsFamilyHint', { name: esc(sib.full_name) })}</div>` : '';
+}
+function familyLine(s) {
+  const sibs = siblingsOf(s);
+  return sibs.length ? `<div class="row-sub st-family"><span>\u{1F46A} ${t('family')}: ${sibs.map((x) => esc(x.full_name) + (x.telegram_chat_id ? ' \u2713' : '')).join(', ')}</span></div>` : '';
+}
+
 function rowStudent(s) {
   const c = courseById(s.course_id);
   return `<div class="row">
@@ -2388,13 +2419,13 @@ function rowStudent(s) {
         ${c.active === false ? `<span class="badge badge-warn">${t('courseClosed')}</span>` : ''}
         ${linkBadge(s)}
       </div>
-      ${linkState(s).k === 'cancelled' ? `<div class="st-hint">${t('lsCancelledHint')}</div>`
-        : linkState(s).k === 'stalled' ? `<div class="st-hint st-hint-soft">${t('lsStalledHint')}</div>` : ''}
+      ${linkHint(s)}
       <div class="row-sub">
         ${s.parent_name ? `<span>👤 ${esc(s.parent_name)}</span>` : ''}
         ${s.parent_phone ? `<a class="tel-link" href="${esc(telHref(s.parent_phone))}">📞 ${esc(s.parent_phone)}</a>` : ''}
         ${isAdmin() && Number.isInteger(state.fees.get(s.id)) ? `<span class="st-fee">💰 ${t('perMonth', { n: fmtSum(state.fees.get(s.id)) })}</span>` : ''}
       </div>
+      ${familyLine(s)}
     </div>
     <div class="row-actions">${studentActions(s)}</div>
   </div>`;
@@ -4215,6 +4246,7 @@ function studentSheet(id, { focusPhone = false, lead = null } = {}) {
       <label class="field"><span>${t('fPhone')}</span>
         <input class="inp" id="stPhone" inputmode="tel" placeholder="+998 90 123 45 67" value="${esc(s?.parent_phone ?? leadPhone)}" aria-describedby="stPhoneErr">
         <small class="f-hint">${t('fPhoneHint')}</small>${lead ? `<small class="f-hint">${t('leadPhoneFilled')}</small>` : ''}</label>
+      <p class="f-hint st-fam-hint" id="stFamHint" role="status" hidden></p>
       <p class="tpl-err" id="stPhoneErr" role="alert" hidden></p>
       ${isAdmin() ? `<label class="field"><span>${t('fStFee')}</span>
         <input class="inp" id="stFee" inputmode="numeric" autocomplete="off" aria-describedby="stFeeErr"
@@ -4227,6 +4259,17 @@ function studentSheet(id, { focusPhone = false, lead = null } = {}) {
       ${s ? `<button class="btn btn-danger btn-block" style="margin-top:9px" id="stDelete" type="button">${I.trash} ${t('del')}</button>` : ''}
     </form>`, () => {
     if (focusPhone) { const ph = $('stPhone'); ph.focus(); ph.select(); }
+    // Bitta ota-onaning bir nechta farzandi: raqam bir xil yozilsa oila bo'lib ulanadi — kiritayotganda ko'rsatamiz
+    const famHint = () => {
+      const k = phoneKey($('stPhone').value);
+      const sibs = k.length >= 9 ? state.students.filter((x) => x.id !== s?.id && x.active && phoneKey(x.parent_phone) === k) : [];
+      const el = $('stFamHint');
+      el.hidden = !sibs.length;
+      if (!sibs.length) return;
+      const on = sibs.find((x) => x.telegram_chat_id && phoneKey(x.linked_phone) === k);
+      el.textContent = t('stFamHint', { names: sibs.map((x) => x.full_name).join(', ') }) + (on ? ' ' + t('stFamHintOn', { name: on.full_name }) : '');
+    };
+    $('stPhone').addEventListener('input', famHint); famHint();
     $('stLeadName')?.addEventListener('click', () => {
       $('stName').value = lead.full_name; $('stParent').value = '';
       $('stLeadNote').hidden = true; $('stName').focus();
@@ -4320,15 +4363,17 @@ function parentLinkSheet(id) {
 
   // Allaqachon ulangan
   if (s.telegram_chat_id) {
+    const famOn = state.students.filter((x) => x.id !== s.id && x.telegram_chat_id && x.telegram_chat_id === s.telegram_chat_id);
     openSheet(t('tgLink'), `
       <div class="link-state ok">
         <div class="link-ico">✅</div>
         <b>${esc(t('linkedTo', { name: s.full_name }))}</b>
         <p>${t('goesTo', { phone: esc(maskPhone(s.linked_phone) || s.parent_phone || '') })}</p>
         ${s.linked_at ? `<p class="link-dim">${t('linkedOn', { date: uzDate(s.linked_at) })}</p>` : ''}
+        ${famOn.length ? `<p class="link-dim">${t('lsFamilyLinked', { names: esc(famOn.map((x) => x.full_name).join(', ')) })}</p>` : ''}
       </div>
       <button class="btn btn-danger btn-block" id="lnUnlink" type="button">${I.x} ${t('unlink')}</button>
-      <p class="link-dim" style="margin-top:10px">${t('unlinkHint')}</p>`,
+      <p class="link-dim" style="margin-top:10px">${t('unlinkHint')}${famOn.length ? ' ' + t('lsFamilyUnlinkNote') : ''}</p>`,
       () => {
         $('lnUnlink').addEventListener('click', async () => {
           if (!confirm(t('unlinkAsk', { name: s.full_name }))) return;
@@ -4360,6 +4405,8 @@ function parentLinkSheet(id) {
   const now = Date.now() + clockOffset;
   if (live > now && !confirm(t('lsRotate', { ago: agoText(Math.max(0, now - (live - LINK_TTL_H * 3600000))) }))) return;
 
+  const famSib = linkedSibling(s);
+
   // Yangi havola so'raymiz
   openSheet(t('parentLinkT'),
     `<div class="link-state"><div class="skel"></div><div class="skel"></div></div>`,
@@ -4387,7 +4434,8 @@ function parentLinkSheet(id) {
           <li>${t('step3')}</li>
         </ol>
         <p class="link-dim">${t('linkTtl', { h: r.ttl_hours })}</p>
-        <p class="link-dim">${t('lsStopNote')}</p>`;
+        <p class="link-dim">${t('lsStopNote')}</p>
+        ${famSib ? `<p class="link-dim">${t('lsFamilyNote', { name: esc(famSib.full_name), child: esc(s.full_name) })}</p>` : ''}`;
 
       const copy = async () => {
         try { await navigator.clipboard.writeText(r.url); toast(t('linkCopied'), 'ok'); }

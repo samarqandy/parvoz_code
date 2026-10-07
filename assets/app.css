@@ -1365,3 +1365,7 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
 .lead-dup svg { width: 14px; height: 14px; vertical-align: -2px; }
 .lead-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: -4px 0 14px; padding: 10px 12px; border-radius: var(--r-sm); font-size: .84rem; font-weight: 600; line-height: 1.45; color: var(--muted); background: var(--surface-2); border: 1px dashed var(--border-2); }
 .lead-note > span { flex: 1 1 200px; min-width: 0; }
+
+.st-family { color: var(--muted); font-weight: 600; }
+
+.st-fam-hint { margin: -6px 0 12px; color: var(--muted); font-weight: 600; }
