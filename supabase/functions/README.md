@@ -30,6 +30,11 @@ Shu sababli havola boshqa odamga tarqalsa ham u hech narsa ko'ra olmaydi.
 o'zgartirilmaydi: `authenticated` rolida ular uchun `UPDATE` huquqi yo'q,
 faqat edge funksiyalar (service_role) yoza oladi.
 
+Raqamni tasdiqlash kutilayotganda (`pending_at` 15 daqiqadan yangi) ota-ona raqamni tugma o'rniga
+yozib yuborsa yoki boshqa matn yozsa, bot tugmani qayta ko'rsatadi: yozilgan raqam tekshirilmaydi,
+faqat Telegram o'zi tasdiqlagan kontakt (tugma) qabul qilinadi. 12 xonali yozilgan raqam kod deb
+adashtirilmaydi.
+
 ## Belgini bekor qilish (`mark-attendance` → `undo_id`)
 
 "Kelmadi" yoki "Sababli" o'sha kundagi "Keldi/Ketdi"ni o'chiradi (bir kunda bitta
@@ -43,6 +48,25 @@ eskilari asl vaqti bilan qaytadi, ota-onaga xabar ketmaydi.
   turlarga tegishli bo'lishi shart (`REPLACES`), ko'pi bilan 3 ta; boshqasi — 400.
 - "Keldi" bekor qilinsa, unga bog'liq "Ketdi" ham o'chadi.
 - Panel "Keldi/Ketdi" vaqti yo'qoladigan holatda (ustidan "Kelmadi"/"Sababli") avval so'raydi.
+
+## Xabar yetdimi (`mark-attendance` → `delivery`)
+
+Belgilar avval yoziladi, xabarlar keyin ketadi: bir vaqtda 5 ta chat, bitta chatga ketma-ket
+(aka-uka bitta ota-onada). So'rov boshlanganidan 11 s o'tgach yangi xabar boshlanmaydi, bitta xabar
+ko'pi bilan 6 s kutiladi — panelning 20 s kutishiga yetmaydi. Har natijada `delivery`:
+
+| `delivery` | Ma'nosi |
+|---|---|
+| `sent` | yetdi (`notified: true`) |
+| `blocked` / `no_chat` / `failed` | yetmadi (ota-ona botni bloklagan / chat yo'q / boshqa xato) |
+| `unknown` | Telegram javob bermadi — yetgan bo'lishi mumkin; hech qachon "yetmadi" deyilmaydi |
+| `skipped` | vaqt tugadi yoki Telegram to'xtatdi (token / rate limit) — yuborilmadi |
+| `bad_name` / `bad_note` | ism yoki izohda havola, `@` yoki uzun raqam bor — ota-onaga yuborilmaydi (xuddi shu qoida to'lov xabarida ham) |
+| `muted` / `no_tg` / `no_bot` | admin o'chirgan / ota-ona ulanmagan / bot yo'q |
+| `null` | o'tgan kun — xabar umuman ketmaydi |
+
+Guruh javobida: `notify_failed` (blocked, no_chat, failed, skipped, bad_*) va `notify_unknown`.
+Panel buni toast'da ko'rsatadi. Havola ko'rinishi (`link_preview_options`) o'chirilgan.
 
 ## Ota-onaga xabar shablonlari
 
