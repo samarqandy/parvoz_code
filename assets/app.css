@@ -837,6 +837,9 @@ table.tbl tbody tr[data-row]:hover { background: var(--surface-2); }
 .jg-group th { background: var(--surface-2); }
 /* Kurs nomi bo'sh qator bo'ylab davom etadi — 112px ustunda qirqilmaydi */
 .jg-group .jg-name { overflow: visible; text-overflow: clip; }
+/* Kurs ichidagi guruh: kursdan kichikroq sarlavha, jadvali yonida */
+.jg-sub th { height: 26px; text-transform: none; letter-spacing: 0; font-weight: 800; padding-left: 18px; white-space: nowrap; }
+.jg-sub small { margin-left: 8px; font-weight: 700; color: var(--faint); }
 /* Ism ikki qatorgacha — "Aziza Kari…" o'rniga "Aziza / Karimova" */
 .jg-nm {
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
@@ -1397,6 +1400,7 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
 
 /* ===================== KURS ICHIDAGI GURUHLAR ===================== */
 .chips-group { margin-top: -4px; }
+#repGroups .chips-group { margin-top: 12px; }
 .chip-group .seg-n { margin-left: 4px; }
 .badge-group { background: color-mix(in srgb, var(--violet) 14%, transparent); border-color: color-mix(in srgb, var(--violet) 36%, transparent); color: var(--violet-ink, var(--text)); }
 .grp-sched { margin-left: 6px; font-weight: 700; color: var(--muted); font-size: .8em; white-space: nowrap; }

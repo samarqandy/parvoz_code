@@ -47,7 +47,7 @@ const state = {
   courses: [],
   students: [],
   groups: [],         // kurs ichidagi guruhlar (course_groups)
-  groupFilter: 'all', // 'all' | guruh id | 'none' (guruhsiz) — faqat bitta kurs tanlanganda
+  gf: {},             // ekran -> guruh filtri: 'all' | guruh id | 'none' (guruhsiz) — faqat bitta kurs tanlanganda (kurs filtri kabi, har ekranniki alohida)
   held: new Map(),    // ushlab turilgan xabarli belgilar: id -> { until, name } ("Bekor qilish" hali xabarni to'xtata oladi)
   pc: new Map(),      // student_id -> ulangan ota-onalar (parent_chats): ona va ota alohida
   today: [],          // tanlangan kundagi yozuvlar
@@ -154,6 +154,7 @@ const STR = {
     chDailySub: "Har kuni nechta o'quvchi keldi, sababli yoki sababsiz qoldi",
     chCourses: "Kurslar bo'yicha davomat",
     chCoursesSub: "O'rtacha davomat — har bir kurs o'z dars kunlariga nisbatan",
+    chGroups: 'Guruhlar bo\'yicha davomat', chGroupsSub: "O'rtacha davomat — har bir guruh o'z dars kunlariga nisbatan",
     asTable: "Jadval ko'rinishida", colDate: 'Sana', colCourse: 'Kurs',
     closedDay: 'Dam olish kuni', noMark: 'Belgilanmagan', futureDay: 'Hali kelmagan kun',
     gridHint: "Katakni bosing — o'sha kunni tuzatish uchun",
@@ -517,6 +518,7 @@ const STR = {
     chDailySub: 'Сколько учеников пришло, отсутствовало по причине и без',
     chCourses: 'Посещаемость по курсам',
     chCoursesSub: 'Средняя посещаемость — каждый курс относительно своих учебных дней',
+    chGroups: 'Посещаемость по группам', chGroupsSub: 'Средняя посещаемость — каждая группа относительно своих учебных дней',
     asTable: 'В виде таблицы', colDate: 'Дата', colCourse: 'Курс',
     closedDay: 'Выходной', noMark: 'Не отмечен', futureDay: 'Этот день ещё не наступил',
     gridHint: 'Нажмите на ячейку, чтобы исправить этот день',
@@ -1327,7 +1329,6 @@ async function loadCourses() {
   ]);
   state.courses = rowsOf(cq).map((c) => (COURSE_COLORS.includes(c.color) ? c : { ...c, color: 'sky' }));
   state.groups = gq?.error ? [] : (gq?.data ?? []);
-  if (state.groupFilter !== 'all' && !groupFilterOk()) state.groupFilter = 'all';
 }
 async function loadStudents() {
   // Ona va ota: har bir ulangan ota-ona parent_chats da alohida qator. Jadval yo'q yoki o'qilmasa
@@ -1643,16 +1644,18 @@ function groupSchedule(g) {
   const time = g.starts ? timeHm(g.starts) + (g.ends ? '\u2013' + timeHm(g.ends) : '') : '';
   return [days, time].filter(Boolean).join(' ');
 }
+const groupSel = () => state.gf[state.view] || 'all';
 function groupFilterOk() {
-  if (state.courseFilter === 'all' || state.groupFilter === 'all') return state.groupFilter === 'all';
-  return state.groupFilter === 'none' || groupsOf(state.courseFilter).some((g) => g.id === state.groupFilter);
+  const f = groupSel();
+  if (state.courseFilter === 'all' || f === 'all') return f === 'all';
+  return f === 'none' || groupsOf(state.courseFilter).some((g) => g.id === f);
 }
 function groupChips() {
   if (state.courseFilter === 'all' || !showGroups(state.courseFilter)) return '';
   const gs = groupsOf(state.courseFilter);
   const mine = state.students.filter((s) => s.active && s.course_id === state.courseFilter);
   const none = mine.filter((s) => !s.group_id || !gs.some((g) => g.id === s.group_id)).length;
-  const f = groupFilterOk() ? state.groupFilter : 'all';
+  const f = groupFilterOk() ? groupSel() : 'all';
   const chip = (id, label, n) => `<button class="chip chip-group ${f === id ? 'on' : ''}" data-gchip="${id}" aria-pressed="${f === id}" type="button">${esc(label)} <span class="seg-n">${n}</span></button>`;
   return `<div class="chips chips-group" role="group" aria-label="${t('groupsT')}">${chip('all', t('all'), mine.length)}${gs.map((g) =>
     chip(g.id, g.name, mine.filter((s) => s.group_id === g.id).length)).join('')}${none ? chip('none', t('grpNone'), none) : ''}</div>`;
@@ -1673,8 +1676,9 @@ function visibleStudents({ closed = false } = {}) {
     (!q || fold(s.full_name).includes(q)));
 }
 function groupMatch(s) {
-  if (state.courseFilter === 'all' || state.groupFilter === 'all' || !groupFilterOk()) return true;
-  return state.groupFilter === 'none' ? !s.group_id || !groupById(s.group_id) : s.group_id === state.groupFilter;
+  const f = groupSel();
+  if (state.courseFilter === 'all' || f === 'all' || !groupFilterOk()) return true;
+  return f === 'none' ? !s.group_id || !groupById(s.group_id) : s.group_id === f;
 }
 
 const recFor = (sid, kind) => state.today.find((r) => r.student_id === sid && r.kind === kind);
@@ -2630,11 +2634,20 @@ function viewReportShell() {
       </label>
       ${list.length > 1 ? courseChips() : ''}
     </div>
+    <div id="repGroups">${groupChips()}</div>
     <div id="repOut" style="margin-top:16px"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>`;
 }
 
 let repData = null;
 let repSeq = 0;
+// Dars kunlari qaysi to'plam bo'yicha hisoblanadi: kursda 2+ guruh bo'lsa — guruh bo'yicha (guruhsizlar alohida), aks holda kurs bo'yicha
+const lessonKey = (s) => (showGroups(s.course_id) ? `${s.course_id}|${groupById(s.group_id)?.id ?? ''}` : s.course_id);
+// Kurs ichida guruhlar dars vaqti tartibida, guruhsizlar oxirida
+const groupRank = (r) => {
+  if (!r.groupId) return 1e6;
+  const i = groupsOf(r.courseId).findIndex((g) => g.id === r.groupId);
+  return i < 0 ? 1e6 : i;
+};
 
 // Supabase bir so'rovda ko'pi bilan 1000 qator qaytaradi — undan ortig'i jimgina tushib
 // qolardi (tashriflar kam, to'lagan o'quvchi qarzdor ko'rinardi). Sahifalab o'qiymiz.
@@ -2676,9 +2689,11 @@ async function loadReport() {
 
   const allowed = new Set(myCourses().map((c) => c.id));
   const scoped = state.students.filter((s) => allowed.has(s.course_id) &&
-    (state.courseFilter === 'all' || s.course_id === state.courseFilter));
+    (state.courseFilter === 'all' || s.course_id === state.courseFilter) && groupMatch(s));
   const scopedIds = new Set(scoped.map((s) => s.id));
-  const courseOf = new Map(scoped.map((s) => [s.id, s.course_id]));
+  // Dars kunlari guruh bo'yicha: Du/Chor guruhi bilan Se/Pay guruhi bir kursda bo'lsa ham, har biri o'z kunlariga nisbatan
+  // hisoblanadi (aks holda ikkalasi ham ~50% olardi). Kursda bitta guruh bo'lsa — avvalgidek butun kurs.
+  const courseOf = new Map(scoped.map((s) => [s.id, lessonKey(s)]));
 
   const by = new Map();
   const openDays = new Set();                       // markaz ishlagan kunlar (plitka uchun)
@@ -2711,9 +2726,11 @@ async function loadReport() {
     const absentDays = e ? [...e.absent.keys()].sort() : [];
     const excusedDays = e ? [...e.excused.keys()].sort() : [];
     const count = days.length;
-    const own = courseDays.get(s.course_id)?.size || 0;
+    const own = courseDays.get(lessonKey(s))?.size || 0;
+    const grp = showGroups(s.course_id) ? groupById(s.group_id) : null;
     return {
       id: s.id, name: s.full_name, course: courseById(s.course_id), courseId: s.course_id, active: s.active,
+      group: grp, groupId: grp ? grp.id : '',
       count, absent: absentDays.length, excused: excusedDays.length,
       last: e ? e.last : null,
       daysTotal: own,
@@ -2722,7 +2739,7 @@ async function loadReport() {
       inAt: e ? Object.fromEntries(e.in) : {},
       notes: e ? Object.fromEntries(e.excused) : {},
     };
-  }).sort((a, b) => a.course.name.localeCompare(b.course.name) || a.name.localeCompare(b.name));
+  }).sort((a, b) => a.course.name.localeCompare(b.course.name) || groupRank(a) - groupRank(b) || a.name.localeCompare(b.name));
 
   // Kunlar bo'yicha: har kuni nechta keldi / sababli / kelmadi
   const [y, m] = ym.split('-').map(Number);
@@ -2751,11 +2768,25 @@ async function loadReport() {
     .map((c) => ({ ...c, pct: Math.round(c.sum / c.n) }))
     .sort((a, b) => b.pct - a.pct || a.course.name.localeCompare(b.course.name));
 
+  // Bitta kurs tanlangan va unda 2+ guruh bo'lsa — guruhlar bo'yicha o'rtacha foiz
+  const byGroup = new Map();
+  if (state.courseFilter !== 'all' && showGroups(state.courseFilter)) {
+    rows.forEach((r) => {
+      if (!r.daysTotal) return;
+      const g = byGroup.get(r.groupId) ?? { course: { ...r.course, name: r.group ? r.group.name : t('grpNone') }, sum: 0, n: 0, days: r.daysTotal };
+      g.sum += r.pct; g.n += 1;
+      byGroup.set(r.groupId, g);
+    });
+  }
+  const groups = [...byGroup.values()]
+    .map((g) => ({ ...g, pct: Math.round(g.sum / g.n) }))
+    .sort((a, b) => b.pct - a.pct || a.course.name.localeCompare(b.course.name));
+
   const visits = rows.reduce((n, r) => n + r.count, 0);
   const absences = rows.reduce((n, r) => n + r.absent, 0);
   const counted = rows.filter((r) => r.daysTotal);
   const avg = counted.length ? Math.round(counted.reduce((n, r) => n + r.pct, 0) / counted.length) : 0;
-  repData = { ym, rows, total, visits, absences, avg, daily, courses, nDays };
+  repData = { ym, rows, total, visits, absences, avg, daily, courses, groups, nDays };
 
   renderReport();
 }
@@ -2790,7 +2821,7 @@ async function loadAway() {
 }
 function awayModel(days) {
   const today = todayKey(), winStart = shiftDay(today, -AWAY_WINDOW);
-  const sCourse = new Map(state.students.map((s) => [s.id, s.course_id]));
+  const sCourse = new Map(state.students.map((s) => [s.id, lessonKey(s)]));
   const last = new Map(), lessons = new Map();
   (awayRaw?.rows ?? []).forEach(({ sid, day }) => {
     if (!last.has(sid) || day > last.get(sid)) last.set(sid, day);
@@ -2802,14 +2833,14 @@ function awayModel(days) {
   const allowed = new Set(myCourses().map((c) => c.id));
   const out = [];
   state.students.forEach((s) => {
-    if (!s.active || !allowed.has(s.course_id) || (state.courseFilter !== 'all' && s.course_id !== state.courseFilter)) return;
+    if (!s.active || !allowed.has(s.course_id) || (state.courseFilter !== 'all' && s.course_id !== state.courseFilter) || !groupMatch(s)) return;
     const joined = s.created_at ? dayKey(s.created_at) : null;
     if (joined && dayDiff(joined, today) < days) return;            // yangi qo'shilgan — hali erta
     const lv = last.get(s.id) || null;
     const since = lv ? dayDiff(lv, today) : null;
     if (lv && since < days) return;
     const after = lv || (joined && joined > winStart ? joined : winStart);
-    const missed = [...(lessons.get(s.course_id) ?? [])].filter((d) => d > after).length;
+    const missed = [...(lessons.get(lessonKey(s)) ?? [])].filter((d) => d > after).length;
     if (missed < AWAY_MIN_MISSED) return;
     out.push({ s, c: courseById(s.course_id), last: lv, since, missed });
   });
@@ -2900,7 +2931,13 @@ function repGrid(d) {
     const c = list[0].course;
     const title = `<tr class="jg-group"><th class="jg-name" scope="rowgroup">${cIcon(c)} ${esc(c.name)}</th>
       <td colspan="${d.nDays + 1}"></td></tr>`;
+    let prevGroup = null;
     return title + list.map((r) => {
+      // Kursda 2+ guruh bo'lsa — guruh nomi va jadvali bilan kichik sarlavha
+      const sub = r.group && r.groupId !== prevGroup
+        ? `<tr class="jg-group jg-sub"><th class="jg-name" scope="rowgroup" title="${esc(groupSchedule(r.group))}">${esc(r.group.name)}<small>${esc(groupSchedule(r.group))}</small></th><td colspan="${d.nDays + 1}"></td></tr>`
+        : !r.group && prevGroup ? `<tr class="jg-group jg-sub"><th class="jg-name" scope="rowgroup">${t('grpNone')}</th><td colspan="${d.nDays + 1}"></td></tr>` : '';
+      prevGroup = r.groupId;
       const cells = d.daily.map((x) => {
         const inAt = r.inAt[x.key];
         const isAbs = r.absentDays.includes(x.key);
@@ -2924,7 +2961,7 @@ function repGrid(d) {
           data-tip-t="${esc(r.name)}" data-tip-v="${esc(dateTxt + '\n' + status)}"
           aria-label="${esc(r.name + ', ' + dateTxt + ': ' + status)}">${kind ? ico(MARKS[kind]) : ''}</td>`;
       }).join('');
-      return `<tr>
+      return sub + `<tr>
         <th class="jg-name" scope="row" title="${esc(r.name)}"><span class="jg-nm">${esc(r.name)}${r.active ? '' : ` <span class="badge">${t('archiveShort')}</span>`}</span></th>
         ${cells}
         <td class="jg-sum"><b>${r.pct}%</b><span>${r.count}/${r.daysTotal}</span></td>
@@ -2987,6 +3024,17 @@ function repCharts(d) {
             <td class="num">${x.in}</td><td class="num">${x.excused}</td><td class="num">${x.absent}</td></tr>`).join('')}</tbody></table></div>
       </details>
     </div>
+    ${d.groups.length > 1 ? `
+    <div class="card viz-card">
+      <div class="viz-head"><h3>${t('chGroups')}</h3><p>${t('chGroupsSub')}</p></div>
+      <div class="viz-plot" data-chart="groups"></div>
+      <details class="viz-table"><summary>${t('asTable')}</summary>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>${t('groupWord')}</th>
+          <th class="num">${t('colAtt')}</th><th class="num">${t('sStudents')}</th><th class="num">${t('sWorkdays')}</th></tr></thead>
+          <tbody>${d.groups.map((c) => `<tr><td>${esc(c.course.name)}</td>
+            <td class="num">${c.pct}%</td><td class="num">${c.n}</td><td class="num">${c.days}</td></tr>`).join('')}</tbody></table></div>
+      </details>
+    </div>` : ''}
     ${d.courses.length > 1 ? `
     <div class="card viz-card">
       <div class="viz-head"><h3>${t('chCourses')}</h3><p>${t('chCoursesSub')}</p></div>
@@ -3050,15 +3098,15 @@ function chartDaily(d, W) {
 }
 
 // Kurslar: bitta rang (nominal toifa — qiymatga qarab bo'yalmaydi), qiymat uchida
-function chartCourses(d, W) {
+function chartCourses(d, W, list = d.courses, title = t('chCourses')) {
   // Tor ekranda nom ustun ustida turadi — yonida qolsa ustunga joy qolmaydi
   const narrow = W < 480;
   const rowH = narrow ? 50 : 34, bh = 18, T = 4, R = 46;
   const L = narrow ? 0 : 150;
-  const H = T + d.courses.length * rowH + 4;
+  const H = T + list.length * rowH + 4;
   const pw = Math.max(40, W - L - R);
   const max = narrow ? 34 : 20;
-  const bars = d.courses.map((c, i) => {
+  const bars = list.map((c, i) => {
     const y = T + i * rowH + (narrow ? 24 : (rowH - bh) / 2);
     const w = Math.max(0, (c.pct / 100) * pw);
     const label = cText(c.course);
@@ -3073,9 +3121,9 @@ function chartCourses(d, W) {
       <text class="viz-value" x="${L + w + 8}" y="${y + bh / 2 + 5}">${c.pct}%</text>
     </g>`;
   }).join('');
-  const alt = d.courses.map((c) => `${c.course.name}: ${c.pct}%`).join('; ');
+  const alt = list.map((c) => `${c.course.name}: ${c.pct}%`).join('; ');
   return `<svg class="viz viz-h" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
-    aria-label="${esc(t('chCourses') + '. ' + alt)}">${bars}</svg>`;
+    aria-label="${esc(title + '. ' + alt)}">${bars}</svg>`;
 }
 
 /* Diagrammalar konteyner enida chiziladi: 1 birlik = 1px. viewBox cho'zilsa
@@ -3091,6 +3139,7 @@ function drawCharts() {
 const CHARTS = {
   daily: (w) => repData && chartDaily(repData, w),
   courses: (w) => repData && chartCourses(repData, w),
+  groups: (w) => repData && chartCourses(repData, w, repData.groups, t('chGroups')),
   finSum: (w) => finData && chartFinSum(finData, w),
   finCount: (w) => finData && chartFinCount(finData, w),
   finCourses: (w) => finData && chartFinCourses(finData, w),
@@ -3116,7 +3165,7 @@ function repList(d) {
     </tr></thead><tbody>${[...d.rows].sort((a, b) => b.pct - a.pct || a.name.localeCompare(b.name)).map((r) => `
       <tr data-row="${r.id}">
         <td><div style="font-weight:800"><button class="row-toggle" type="button" data-row-toggle="${r.id}" aria-expanded="false" aria-controls="det-${r.id}">${esc(r.name)}</button>${r.active ? '' : ` <span class="badge">${t('archiveShort')}</span>`}</div>
-            <div style="color:var(--faint);font-size:.8rem;font-weight:700">${cIcon(r.course)} ${esc(r.course.name)}</div></td>
+            <div style="color:var(--faint);font-size:.8rem;font-weight:700">${cIcon(r.course)} ${esc(r.course.name)}${r.group ? ` · ${esc(r.group.name)}` : ''}</div></td>
         <td class="num">${r.count} / ${r.daysTotal}</td>
         <td class="num"><span class="${r.absent ? 'tone-red num-on' : 'num-off'}">${r.absent}</span>
             <span class="num-off"> / </span><span class="${r.excused ? 'tone-violet num-on' : 'num-off'}">${r.excused}</span></td>
@@ -3196,11 +3245,13 @@ function downloadCsv(filename, head, rows) {
 
 function exportCsv() {
   if (!repData || !repData.rows.length) { toast(t('csvFirst'), 'bad'); return; }
-  const head = [t('colStudent'), t('csvCourse'), t('csvCameDays'), MARKS.absent.label, MARKS.excused.label,
+  // «Guruh» ustuni faqat guruhlari bor kurs bo'lsa (aks holda fayl avvalgidek)
+  const withGroup = repData.rows.some((r) => r.group);
+  const head = [t('colStudent'), t('csvCourse'), ...(withGroup ? [t('groupWord')] : []), t('csvCameDays'), MARKS.absent.label, MARKS.excused.label,
                 t('csvWorkDays'), t('csvPct'), t('csvLast'),
                 t('csvCameDates'), t('csvAbsentDates'), t('csvExcusedDates')];
   downloadCsv(`parvoz-davomat-${repData.ym}.csv`, head, repData.rows.map((r) =>
-    [r.name, r.course.name, r.count, r.absent, r.excused, r.daysTotal, r.pct,
+    [r.name, r.course.name, ...(withGroup ? [r.group ? r.group.name : ''] : []), r.count, r.absent, r.excused, r.daysTotal, r.pct,
      r.last ? dayKey(r.last) : '', r.days.join(' '), r.absentDays.join(' '),
      r.excusedDays.map((d) => r.notes[d] ? `${d} (${r.notes[d]})` : d).join(' ')]));
   toast(t('csvDone'), 'ok');
@@ -5027,15 +5078,20 @@ document.addEventListener('click', async (e) => {
   if (leadBtn) return leadSheet(leadBtn.dataset.lead);
 
   const gchip = el.closest('[data-gchip]');
-  if (gchip) { state.groupFilter = gchip.dataset.gchip; return render(); }
+  if (gchip) {
+    state.gf[state.view] = gchip.dataset.gchip;
+    if (state.view === 'report') { $('repGroups').innerHTML = groupChips(); return loadReport(); }
+    return render();
+  }
   const chip = el.closest('[data-chip]');
   if (chip) {
-    state.groupFilter = 'all';                                // boshqa kurs — guruh filtri qayta boshlanadi
+    state.gf[state.view] = 'all';                             // boshqa kurs — guruh filtri qayta boshlanadi
     state.courseFilter = chip.dataset.chip;
     state.cf[state.view] = state.courseFilter;
     if (state.view === 'today') { try { localStorage.setItem('parvoz-today-course', state.courseFilter); } catch (_) {} }
     if (state.view === 'report') {
       document.querySelectorAll('[data-chip]').forEach((b) => { const on = b.dataset.chip === state.courseFilter; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+      $('repGroups').innerHTML = groupChips();
       loadReport();
     } else if (state.view === 'payments' && state.pay) {
       state.payFocus = null;
