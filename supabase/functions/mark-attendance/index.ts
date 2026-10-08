@@ -133,7 +133,7 @@ const dayStartIso = (key: string) => new Date(`${key}T00:00:00+05:00`).toISOStri
 const dayEndIso = (key: string) => new Date(new Date(`${key}T00:00:00+05:00`).getTime() + 86400_000).toISOString();
 
 // ---- Ota-onaga xabar shablonlari ----
-// {ism} {vaqt} {kurs} {sana} {sabab} — o'zgaruvchilar, *matn* — qalin.
+// {ism} {vaqt} {kurs} {guruh} {sana} {sabab} — o'zgaruvchilar, *matn* — qalin.
 // Qiymati bo'sh o'zgaruvchi turgan qator yuborilmaydi (masalan, sabab yozilmasa
 // "💬 {sabab}" qatori tushib qoladi) — {ism} turgan asosiy qatordan tashqari.
 // Xuddi shu mantiq panelda ham bor (assets/app.js → renderTpl): admin ko'rgan
@@ -146,6 +146,17 @@ const DEFAULT_TPL: Record<Kind, string> = {
 };
 
 type Tpl = { on: boolean; text: string };
+
+// {guruh} — o'quvchining guruhi. Kursda 2 ta va undan ko'p guruh bo'lsagina (panelda ham shunday: bitta «Asosiy» guruh
+// xabarni to'ldirmasin); aks holda bo'sh — shu o'zgaruvchi turgan qator tushib qoladi. Jadval o'qilmasa — bo'sh.
+async function loadGroupNames(): Promise<(st: any) => string> {
+  const { data, error } = await admin.from('course_groups').select('id, course_id, name');
+  if (error || !data) return () => '';
+  const perCourse = new Map<string, number>();
+  data.forEach((g) => perCourse.set(g.course_id, (perCourse.get(g.course_id) ?? 0) + 1));
+  const name = new Map<string, string>(data.map((g) => [g.id, g.name]));
+  return (st) => ((perCourse.get(st?.course_id) ?? 0) >= 2 && st?.group_id ? name.get(st.group_id) ?? '' : '');
+}
 
 function loadTemplates(raw: string | null | undefined): Record<Kind, Tpl> {
   let saved: any = {};
@@ -302,7 +313,7 @@ Deno.serve(async (req) => {
 
     const { data: rows } = await admin
       .from('students')
-      .select('id, full_name, telegram_chat_id, course_id, active, courses(name), parent_chats(chat_id)')
+      .select('id, full_name, telegram_chat_id, course_id, group_id, active, courses(name), parent_chats(chat_id)')
       .in('id', ids);
     const students = rows ?? [];
     if (!students.length) return json({ error: 'student not found' }, 404);
@@ -346,6 +357,8 @@ Deno.serve(async (req) => {
       token = byKey.get('bot_token') ?? null;
       tpls = loadTemplates(byKey.get('msg_templates'));
     }
+    // {guruh}: faqat shablonda ishlatilgan bo'lsa guruhlar o'qiladi
+    const groupOf = Object.values(tpls).some((x) => x.text.includes('{guruh}')) ? await loadGroupNames() : () => '';
 
     for (const student of students) {
       const skip = (reason: string, code: string) => {
@@ -399,6 +412,7 @@ Deno.serve(async (req) => {
             ism: normName(student.full_name),
             vaqt: time,
             kurs: (student as any).courses?.name ?? '',
+            guruh: groupOf(student),
             sana: sanaOf(dayKey!),
             sabab: note ?? '',
           });

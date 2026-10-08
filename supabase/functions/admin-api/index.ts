@@ -97,13 +97,13 @@ async function enableWebhook(token: string) {
 // app_config.msg_templates = {"in": {"on": true, "text": "..." | null}, ...}
 // text=null — standart matn (standart keyin yaxshilansa, o'zi yangilanadi).
 const TPL_VARS: Record<string, string[]> = {
-  in:      ['ism', 'vaqt', 'kurs', 'sana'],
-  out:     ['ism', 'vaqt', 'kurs', 'sana'],
-  absent:  ['ism', 'kurs', 'sana'],
-  excused: ['ism', 'sabab', 'kurs', 'sana'],
-  pay:     ['ism', 'kurs', 'oy', 'oylar'],     // to'lov eslatmasi — faqat qo'lda yuboriladi
+  in:      ['ism', 'vaqt', 'kurs', 'guruh', 'sana'],
+  out:     ['ism', 'vaqt', 'kurs', 'guruh', 'sana'],
+  absent:  ['ism', 'kurs', 'guruh', 'sana'],
+  excused: ['ism', 'sabab', 'kurs', 'guruh', 'sana'],
+  pay:     ['ism', 'kurs', 'guruh', 'oy', 'oylar'],     // to'lov eslatmasi — faqat qo'lda yuboriladi
   payfam:  ['bolalar', 'oy'],                  // to'lov eslatmasi, bir oilaning bir nechta farzandi — bitta xabar
-  paid:    ['ism', 'kurs', 'oy', 'summa', 'sana'], // to'lov qabul qilindi — to'lov yozilganda
+  paid:    ['ism', 'kurs', 'guruh', 'oy', 'summa', 'sana'], // to'lov qabul qilindi — to'lov yozilganda
 };
 const TPL_MAX = 1000;
 
@@ -119,6 +119,17 @@ const FAM_MAX = 10;   // bir xabarda ko'pi bilan nechta farzand (qolgani "… +N
 const DEFAULT_PAID = "✅ Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi qabul qilindi.\n💵 {summa} so'm\n📚 {kurs}\n📅 {sana}\n\nRahmat!";
 // 300000 -> "300 000" (bo'linmas probel)
 const fmtSum = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
+
+// {guruh} — o'quvchining guruhi. Kursda 2 ta va undan ko'p guruh bo'lsagina (panelda ham shunday: bitta «Asosiy» guruh
+// xabarni to'ldirmasin); aks holda bo'sh — shu o'zgaruvchi turgan qator tushib qoladi. Jadval o'qilmasa — bo'sh.
+async function loadGroupNames(): Promise<(st: any) => string> {
+  const { data, error } = await admin.from('course_groups').select('id, course_id, name');
+  if (error || !data) return () => '';
+  const perCourse = new Map<string, number>();
+  data.forEach((g: any) => perCourse.set(g.course_id, (perCourse.get(g.course_id) ?? 0) + 1));
+  const name = new Map<string, string>(data.map((g: any) => [g.id, g.name]));
+  return (st) => ((perCourse.get(st?.course_id) ?? 0) >= 2 && st?.group_id ? name.get(st.group_id) ?? '' : '');
+}
 
 const escHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -529,12 +540,13 @@ Deno.serve(async (req) => {
       } catch { /* standart matn */ }
 
       const [{ data: studs }, { data: pays }, { data: recent }] = await Promise.all([
-        admin.from('students').select('id, full_name, active, telegram_chat_id, created_at, courses(name), parent_chats(chat_id)').in('id', ids),
+        admin.from('students').select('id, full_name, active, telegram_chat_id, created_at, course_id, group_id, courses(name), parent_chats(chat_id)').in('id', ids),
         admin.from('payments').select('student_id, month').in('student_id', ids).gte('month', from + '-01').lte('month', cur + '-01'),
         admin.from('payment_reminders').select('student_id').in('student_id', ids).neq('status', 'failed')
           .gte('sent_at', new Date(Date.now() - REMIND_COOLDOWN_DAYS * 86400_000).toISOString()),
       ]);
       const byId = new Map((studs ?? []).map((s: any) => [s.id, s]));
+      const groupOf = tplText.includes('{guruh}') ? await loadGroupNames() : () => '';
       const paid = new Map<string, Set<string>>();
       (pays ?? []).forEach((p: any) => {
         if (!paid.has(p.student_id)) paid.set(p.student_id, new Set());
@@ -561,7 +573,7 @@ Deno.serve(async (req) => {
       // 1) Kimga yuboriladi: har bir o'quvchi uchun qoidalar (o'tkazib yuborilganlar skip bilan belgilanadi)
       type Res = { c: ReturnType<typeof classify>; r: any };
       type Cand = {
-        id: string; s: any; ism: string; kurs: string; chats: number[]; owed: string[];
+        id: string; s: any; ism: string; kurs: string; guruh: string; chats: number[]; owed: string[];
         row?: string; tried: boolean; sent: boolean; unk: Res | null; fail: Res | null;
       };
       const cands = new Map<string, Cand>();
@@ -582,7 +594,7 @@ Deno.serve(async (req) => {
           // Joriy oygacha qarz oylari (tanlangan oy emas) — ota-ona to'liq qarzni ko'rsin
           const owed: string[] = [];
           for (let m = from; m <= cur; m = ymShift(m, 1)) if (m >= start && !pm.has(m)) owed.push(m);
-          cands.set(id, { id, s, ism, kurs: String(s.courses?.name ?? ''), chats: chatList, owed, tried: false, sent: false, unk: null, fail: null });
+          cands.set(id, { id, s, ism, kurs: String(s.courses?.name ?? ''), guruh: groupOf(s), chats: chatList, owed, tried: false, sent: false, unk: null, fail: null });
         } catch (_e) {
           // Bitta o'quvchidagi kutilmagan xato butun ro'yxatni to'xtatmasin
           skip(s, id, 'db');
@@ -617,6 +629,7 @@ Deno.serve(async (req) => {
           ? renderTpl(tplText, {
             ism: live[0].ism,
             kurs: live[0].kurs,
+            guruh: live[0].guruh,
             oy: oyName(month),
             oylar: live[0].owed.length === 1 && live[0].owed[0] === month ? '' : live[0].owed.map(oyName).join(', '),
           })
@@ -690,7 +703,7 @@ Deno.serve(async (req) => {
       const pid = String(body.payment_id ?? '');
       if (!UUID_RE.test(pid)) return json({ error: 'payment_id kerak' }, 400);
       const { data: pay } = await admin.from('payments')
-        .select('id, month, amount, paid_on, notified_at, students(full_name, telegram_chat_id, courses(name), parent_chats(chat_id))')
+        .select('id, month, amount, paid_on, notified_at, students(full_name, telegram_chat_id, course_id, group_id, courses(name), parent_chats(chat_id))')
         .eq('id', pid).maybeSingle();
       if (!pay) return json({ error: 'payment not found' }, 404);
       const st: any = (pay as any).students;
@@ -720,6 +733,7 @@ Deno.serve(async (req) => {
       const text = renderTpl(tpl.text, {
         ism,
         kurs: String(st.courses?.name ?? ''),
+        guruh: tpl.text.includes('{guruh}') ? (await loadGroupNames())(st) : '',
         oy: oyName(String(pay.month).slice(0, 7)),
         summa: pay.amount == null ? '' : fmtSum(Number(pay.amount)),
         sana: sanaOf(String(pay.paid_on)),
