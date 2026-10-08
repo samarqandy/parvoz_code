@@ -72,6 +72,21 @@ yozib yuborsa yoki boshqa matn yozsa, bot tugmani qayta ko'rsatadi: yozilgan raq
 faqat Telegram o'zi tasdiqlagan kontakt (tugma) qabul qilinadi. 12 xonali yozilgan raqam kod deb
 adashtirilmaydi.
 
+## Kurs ichidagi guruhlar (`admin-api` → `save_group`, `remove_group`)
+
+Kurs (Dasturlash) ichida bir nechta guruh bo'lishi mumkin: `public.course_groups (course_id, name, days, starts, ends)` —
+nom, dars kunlari (1 = dushanba … 7 = yakshanba) va vaqt (hammasi ixtiyoriy). O'quvchi bitta guruhda: `students.group_id`
+(guruh o'chsa o'quvchi guruhsiz qoladi). O'qituvchi hamon **kursga** biriktiriladi (`private.teaches(course_id)`): kursning hamma
+guruhini ko'radi — RLS o'zgarmagan.
+
+- Guruhlarni faqat admin boshqaradi (`save_group`: nom 1–40 belgi, kursda takrorlanmaydi (registrsiz) → 409; kunlar 1–7; vaqt `HH:MM`,
+  tugash boshlanishidan keyin; tahrirlashda kurs o'zgarmaydi. `remove_group` — nechta o'quvchi guruhsiz qolganini qaytaradi).
+  Jadvalga panel faqat o'qiydi (`select` huquqi), yozadigan faqat service_role.
+- `students.group_id` ni panel to'g'ridan-to'g'ri yozadi (ustun huquqi berilgan). Trigger `private.check_student_group` guruh o'quvchining
+  kursiga tegishli bo'lishini majbur qiladi; kurs almashsa (guruh o'zgarmasa) eski kursning guruhi tozalanadi.
+- Migratsiya hozirgi o'quvchilarni har kursning «Asosiy» guruhiga qo'yadi. Panelda guruh nomi kursda 2+ guruh bo'lgandagina ko'rinadi.
+- Jadval bo'lmasa (migratsiya qo'llanmagan) panel guruhsiz ishlayveradi.
+
 ## Xabarni ushlab turish (`mark-attendance` → `hold`)
 
 Panel `hold: true` yuboradi: ota-onaga xabar **8 soniya** (`HOLD_MS`) ushlab turiladi. Shu vaqt ichida o'qituvchi «Bekor qilish» bossa

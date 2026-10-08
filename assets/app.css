@@ -1394,3 +1394,20 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + 24px); scroll-padding-top: 
 @media (max-width: 599px) {
   .seg-tpl .seg-btn:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
 }
+
+/* ===================== KURS ICHIDAGI GURUHLAR ===================== */
+.chips-group { margin-top: -4px; }
+.chip-group .seg-n { margin-left: 4px; }
+.badge-group { background: color-mix(in srgb, var(--violet) 14%, transparent); border-color: color-mix(in srgb, var(--violet) 36%, transparent); color: var(--violet-ink, var(--text)); }
+.grp-sched { margin-left: 6px; font-weight: 700; color: var(--muted); font-size: .8em; white-space: nowrap; }
+.grp-rows { margin: 8px 0 4px; }
+.grp-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.grp-form h4 { margin: 0 0 10px; font-size: 1rem; }
+.grp-days { gap: 6px; flex-wrap: wrap; overflow: visible; }
+.grp-day { position: relative; cursor: pointer; min-height: 40px; min-width: 44px; justify-content: center; }
+.grp-day input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.grp-day:has(input:checked) { background: color-mix(in srgb, var(--gold) 22%, transparent); border-color: var(--gold); font-weight: 800; }
+.grp-day:has(input:focus-visible) { outline: 2px solid var(--gold); outline-offset: 2px; }
+.grp-times { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grp-times .field { margin-bottom: 14px; }
+.field[hidden] { display: none; }

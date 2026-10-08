@@ -418,6 +418,48 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    // ---- Kurs ichidagi guruhlar (nom + dars kunlari + vaqt). Faqat admin; o'quvchining guruhini panel students.group_id orqali o'zgartiradi ----
+    if (action === 'save_group') {
+      const id = body.id ? String(body.id) : null;
+      if (id && !UUID_RE.test(id)) return json({ error: 'id noto\'g\'ri' }, 400);
+      const courseId = String(body.course_id ?? '');
+      if (!UUID_RE.test(courseId)) return json({ error: 'Kurs kerak' }, 400);
+      const name = String(body.name ?? '').replace(/\s+/g, ' ').trim();
+      if (!name) return json({ error: 'Guruh nomi kerak' }, 400);
+      if (name.length > 40) return json({ error: 'Guruh nomi juda uzun (40 belgigacha)' }, 400);
+      const rawDays = Array.isArray(body.days) ? body.days.map((d: unknown) => Number(d)) : [];
+      if (rawDays.some((d: number) => !Number.isInteger(d) || d < 1 || d > 7)) return json({ error: "Dars kunlari noto'g'ri" }, 400);
+      const days = [...new Set(rawDays)].sort((a: number, b: number) => a - b);
+      const hhmm = (v: unknown): string | null | undefined => {
+        if (v === null || v === undefined || v === '') return null;
+        const m = /^([01]\d|2[0-3]):([0-5]\d)/.exec(String(v));
+        return m ? `${m[1]}:${m[2]}` : undefined;
+      };
+      const starts = hhmm(body.starts), ends = hhmm(body.ends);
+      if (starts === undefined || ends === undefined) return json({ error: "Dars vaqti noto'g'ri" }, 400);
+      if (starts && ends && ends <= starts) return json({ error: "Tugash vaqti boshlanishidan keyin bo'lishi kerak" }, 400);
+      const row = { name, days, starts, ends };
+      const q = id ? await admin.from('course_groups').update(row).eq('id', id).select('id')
+        : await admin.from('course_groups').insert({ ...row, course_id: courseId }).select('id');
+      if (q.error) {
+        if (q.error.code === '23505') return json({ error: `«${name}» nomli guruh bu kursda allaqachon bor` }, 409);
+        if (q.error.code === '23503') return json({ error: 'Kurs topilmadi' }, 404);
+        return json({ error: q.error.message }, 400);
+      }
+      if (!q.data?.length) return json({ error: 'Guruh topilmadi' }, 404);
+      return json({ ok: true, id: q.data[0].id });
+    }
+
+    if (action === 'remove_group') {
+      const id = String(body.id ?? '');
+      if (!UUID_RE.test(id)) return json({ error: 'id kerak' }, 400);
+      const { count } = await admin.from('students').select('*', { count: 'exact', head: true }).eq('group_id', id);
+      const { data: gone, error } = await admin.from('course_groups').delete().eq('id', id).select('id');
+      if (error) return json({ error: error.message }, 400);
+      if (!gone?.length) return json({ error: 'Guruh topilmadi' }, 404);
+      return json({ ok: true, unassigned: count ?? 0 });   // o'quvchilar guruhsiz qoladi (FK: on delete set null)
+    }
+
     // ---- Ariza xabarnomalari ----
     if (action === 'admin_link') {
       const botUsername = await getCfg('bot_username');
