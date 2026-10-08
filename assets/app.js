@@ -46,6 +46,8 @@ const state = {
   me: null,            // { email, role, full_name, course_ids }
   courses: [],
   students: [],
+  groups: [],         // kurs ichidagi guruhlar (course_groups)
+  groupFilter: 'all', // 'all' | guruh id | 'none' (guruhsiz) — faqat bitta kurs tanlanganda
   held: new Map(),    // ushlab turilgan xabarli belgilar: id -> { until, name } ("Bekor qilish" hali xabarni to'xtata oladi)
   pc: new Map(),      // student_id -> ulangan ota-onalar (parent_chats): ona va ota alohida
   today: [],          // tanlangan kundagi yozuvlar
@@ -169,6 +171,10 @@ const STR = {
     groupAskNotif: 'Ota-onaga Telegram xabari boradi: {k} ta.',
     undoneNotified: 'Belgi bekor qilindi. Ota-onaga xabar allaqachon ketgan edi',
     markedHeld: '\u23F3 {name}: {label} \u2014 ota-onaga xabar {n} soniyadan keyin ketadi', undoneHeld: 'Belgi bekor qilindi. Ota-onaga xabar ketmaydi',
+    groupsT: 'Guruhlar', groupWord: 'Guruh', grpNone: 'Guruhsiz', nGroups: '{n} ta guruh', addGroup: "Guruh qo'shish", editGroup: 'Guruhni tahrirlash',
+    gCancel: 'Bekor qilish', gName: 'Guruh nomi', gDays: 'Dars kunlari', gStart: 'Boshlanishi', gEnd: 'Tugashi', gDelAsk: "«{name}» guruhi o'chiriladi. {n} ta o'quvchi guruhsiz qoladi. Davom etasizmi?",
+    gNone: "Bu kursda hali guruh yo'q", gNoneP: "Guruh \u2014 kurs ichidagi dars guruhi (masalan, Du\u00b7Chor\u00b7Ju 15:00). Guruhlarsiz ham ishlayveradi.", gStudents: "{n} ta o'quvchi",
+    daysShort: 'Du,Se,Chor,Pay,Ju,Sha,Yak', gTimeBad: "Tugash vaqti boshlanishidan keyin bo'lishi kerak", gFieldHint: "Ixtiyoriy: o'quvchi kursning bitta guruhida o'qiydi.",
     heldWarn: '\u26A0\uFE0F {name}: {why}', groupHeldNote: '. Ota-onalarga xabar {n} soniyadan keyin ketadi',
     nudgeText: 'Kecha {course}: {n} ta o\'quvchi belgilanmagan — {names}', nudgeFix: 'Tuzatish', nudgeHide: 'Yopish',
     callParent: 'Ota-onaga qo\'ng\'iroq',
@@ -528,6 +534,10 @@ const STR = {
     groupAskNotif: 'Сообщение в Telegram получат родители: {k}.',
     undoneNotified: 'Отметка отменена. Сообщение родителю уже было отправлено',
     markedHeld: '\u23F3 {name}: {label} \u2014 сообщение родителю уйдёт через {n} с', undoneHeld: 'Отметка отменена. Сообщение родителю не уйдёт',
+    groupsT: 'Группы', groupWord: 'Группа', grpNone: 'Без группы', nGroups: 'Групп: {n}', addGroup: 'Добавить группу', editGroup: 'Редактировать группу',
+    gCancel: 'Отмена', gName: 'Название группы', gDays: 'Дни занятий', gStart: 'Начало', gEnd: 'Конец', gDelAsk: 'Группа «{name}» будет удалена. Учеников без группы станет: {n}. Продолжить?',
+    gNone: 'В этом курсе пока нет групп', gNoneP: 'Группа \u2014 учебная группа внутри курса (например, Пн\u00b7Ср\u00b7Пт 15:00). Можно работать и без групп.', gStudents: 'Учеников: {n}',
+    daysShort: 'Пн,Вт,Ср,Чт,Пт,Сб,Вс', gTimeBad: 'Конец должен быть позже начала', gFieldHint: 'Необязательно: ученик занимается в одной из групп курса.',
     heldWarn: '\u26A0\uFE0F {name}: {why}', groupHeldNote: '. Сообщения родителям уйдут через {n} с',
     nudgeText: 'Вчера в {course} не отмечено: {n} — {names}', nudgeFix: 'Исправить', nudgeHide: 'Скрыть',
     callParent: 'Позвонить родителю',
@@ -1310,8 +1320,14 @@ function rowsOf({ data, error, status }) {
 // Kurs rangi style="--acc:var(--<rang>)" ga tushadi — faqat ma'lum qiymatlar o'tadi
 const COURSE_COLORS = ['sky', 'green', 'teal', 'violet', 'rose', 'gold'];
 async function loadCourses() {
-  state.courses = rowsOf(await sb.from('courses').select('*').order('sort'))
-    .map((c) => (COURSE_COLORS.includes(c.color) ? c : { ...c, color: 'sky' }));
+  // Guruhlar jadvali yo'q yoki o'qilmasa (migratsiya qo'llanmagan) — guruhsiz ishlayveradi
+  const [cq, gq] = await Promise.all([
+    sb.from('courses').select('*').order('sort'),
+    sb.from('course_groups').select('*').order('created_at'),
+  ]);
+  state.courses = rowsOf(cq).map((c) => (COURSE_COLORS.includes(c.color) ? c : { ...c, color: 'sky' }));
+  state.groups = gq?.error ? [] : (gq?.data ?? []);
+  if (state.groupFilter !== 'all' && !groupFilterOk()) state.groupFilter = 'all';
 }
 async function loadStudents() {
   // Ona va ota: har bir ulangan ota-ona parent_chats da alohida qator. Jadval yo'q yoki o'qilmasa
@@ -1612,6 +1628,36 @@ function courseChips() {
   return `<div class="chips">${chip('all', t('all'), '', 'gold')}${list.map((c) => chip(c.id, c.name, cIcon(c), c.color)).join('')}</div>`;
 }
 
+/* ---- Kurs ichidagi guruhlar ---- */
+const timeHm = (v) => (v ? String(v).slice(0, 5) : '');
+// Kurs guruhlari: dars vaqti bo'yicha, keyin nom bo'yicha
+const groupsOf = (cid) => state.groups.filter((g) => g.course_id === cid)
+  .sort((a, b) => timeHm(a.starts).localeCompare(timeHm(b.starts)) || String(a.name).localeCompare(String(b.name)));
+const groupById = (id) => state.groups.find((g) => g.id === id) || null;
+// Guruh nomi faqat kursda 2 va undan ko'p guruh bo'lsa ko'rsatiladi (bitta «Asosiy» guruh ro'yxatni to'ldirmasin)
+const showGroups = (cid) => groupsOf(cid).length >= 2;
+function groupSchedule(g) {
+  if (!g) return '';
+  const names = t('daysShort').split(',');
+  const days = (g.days || []).map((d) => names[d - 1]).filter(Boolean).join('\u00b7');
+  const time = g.starts ? timeHm(g.starts) + (g.ends ? '\u2013' + timeHm(g.ends) : '') : '';
+  return [days, time].filter(Boolean).join(' ');
+}
+function groupFilterOk() {
+  if (state.courseFilter === 'all' || state.groupFilter === 'all') return state.groupFilter === 'all';
+  return state.groupFilter === 'none' || groupsOf(state.courseFilter).some((g) => g.id === state.groupFilter);
+}
+function groupChips() {
+  if (state.courseFilter === 'all' || !showGroups(state.courseFilter)) return '';
+  const gs = groupsOf(state.courseFilter);
+  const mine = state.students.filter((s) => s.active && s.course_id === state.courseFilter);
+  const none = mine.filter((s) => !s.group_id || !gs.some((g) => g.id === s.group_id)).length;
+  const f = groupFilterOk() ? state.groupFilter : 'all';
+  const chip = (id, label, n) => `<button class="chip chip-group ${f === id ? 'on' : ''}" data-gchip="${id}" aria-pressed="${f === id}" type="button">${esc(label)} <span class="seg-n">${n}</span></button>`;
+  return `<div class="chips chips-group" role="group" aria-label="${t('groupsT')}">${chip('all', t('all'), mine.length)}${gs.map((g) =>
+    chip(g.id, g.name, mine.filter((s) => s.group_id === g.id).length)).join('')}${none ? chip('none', t('grpNone'), none) : ''}</div>`;
+}
+
 // Qidiruv uchun: katta-kichik harf va apostrof turlari farq qilmaydi — iPhone ’ (U+2019),
 // o'zbekcha ʻ (U+02BB) va oddiy ' bir xil: "G'afurova" "G’af" bilan ham topiladi
 const fold = (v) => String(v ?? '').toLowerCase().replace(/[ʻʼ’‘`´']/g, "'");
@@ -1623,7 +1669,12 @@ function visibleStudents({ closed = false } = {}) {
   return state.students.filter((s) =>
     allowed.has(s.course_id) &&
     (state.courseFilter === 'all' || s.course_id === state.courseFilter) &&
+    groupMatch(s) &&
     (!q || fold(s.full_name).includes(q)));
+}
+function groupMatch(s) {
+  if (state.courseFilter === 'all' || state.groupFilter === 'all' || !groupFilterOk()) return true;
+  return state.groupFilter === 'none' ? !s.group_id || !groupById(s.group_id) : s.group_id === state.groupFilter;
 }
 
 const recFor = (sid, kind) => state.today.find((r) => r.student_id === sid && r.kind === kind);
@@ -1742,7 +1793,13 @@ function todayParts() {
   // Guruhlar kurslarning belgilangan tartibida (oldin ro'yxatdagi birinchi ism tartibida chiqardi)
   const order = new Map(state.courses.map((c, i) => [c.id, i]));
   const groups = {};
-  shown.forEach((s) => { (groups[s.course_id] ??= []).push(s); });
+  // Kursda 2+ guruh bo'lsa — har bir guruh alohida blok (o'z "Hammasi keldi" tugmasi bilan); guruhsizlar oxirida
+  shown.forEach((s) => { (groups[s.course_id + '|' + (showGroups(s.course_id) && groupById(s.group_id) ? s.group_id : '')] ??= []).push(s); });
+  const blockRank = (key) => {
+    const [cid, gid] = key.split('|');
+    const i = gid ? groupsOf(cid).findIndex((g) => g.id === gid) : 999;
+    return (order.get(cid) ?? 99) * 1000 + (i < 0 ? 999 : i);
+  };
   // Kun yuklanayotganda yoki yuklanmay qolganda belgilash mumkin emas —
   // aks holda allaqachon belgilangan bolalar qayta belgilanadi
   const busy = state.dayLoading || state.err.today;
@@ -1758,19 +1815,24 @@ function todayParts() {
        ${state.search ? '' : `<button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('addStudent')}</button>`}</div></div>`
     : !shown.length
     ? `<div class="card"><div class="empty"><div class="e-ico">${f === 'pending' ? '✅' : '🏠'}</div><b>${f === 'pending' ? t('fEmptyPending') : t('fEmptyInside')}</b></div></div>`
-    : Object.entries(groups).sort(([a], [b]) => (order.get(a) ?? 99) - (order.get(b) ?? 99)).map(([cid, arr]) => {
+    : Object.entries(groups).sort(([a], [b]) => blockRank(a) - blockRank(b)).map(([key, arr]) => {
+      const [cid, gid] = key.split('|');
       const c = courseById(cid);
+      const grouped = showGroups(cid);                       // guruh nomi sarlavhada va tugmalar guruhga bog'liq
+      const g = gid ? groupById(gid) : null;
+      const gLabel = grouped ? ' \u00b7 ' + (g ? g.name : t('grpNone')) : '';
+      const gAttr = grouped ? ` data-gid="${gid}"` : '';
       // Hali hech qanday belgi qo'yilmaganlar bo'lsa — guruhni bir bosishda "Keldi".
       // Kelmadi/Sababli qo'yilganlar bunga kirmaydi: kasal bolaning ota-onasiga "keldi" xabari ketmasin.
       const left = busy ? 0 : arr.filter((s) => isUnmarked(s.id)).length;
       // Dars oxirida: hozir markazdagilarning hammasiga bir bosishda "Ketdi" (faqat bugun)
       const inside = busy || !isToday() ? 0 : arr.filter((s) => isInside(s.id)).length;
       return `<div class="group-title">
-          <span role="heading" aria-level="3" title="${esc(c.name)}">${cIcon(c)} ${esc(c.name)} · ${arr.length}</span>
+          <span role="heading" aria-level="3" title="${esc(c.name + gLabel)}">${cIcon(c)} ${esc(c.name)}${esc(gLabel)} · ${arr.length}${g && groupSchedule(g) ? ` <small class="grp-sched">${esc(groupSchedule(g))}</small>` : ''}</span>
           <span class="group-acts">
-          ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}" aria-label="${esc(t('allArrived') + ' — ' + c.name + ' · ' + left)}" type="button">
+          ${left ? `<button class="btn btn-sm btn-tone tone-green" data-group-mark="${cid}"${gAttr} aria-label="${esc(t('allArrived') + ' — ' + c.name + gLabel + ' · ' + left)}" type="button">
             ${ico(MARKS.in)} ${t('allArrived')} · ${left}</button>` : ''}
-          ${inside ? `<button class="btn btn-sm btn-tone tone-gold" data-group-out="${cid}" aria-label="${esc(t('allLeft') + ' — ' + c.name + ' · ' + inside)}" type="button">
+          ${inside ? `<button class="btn btn-sm btn-tone tone-gold" data-group-out="${cid}"${gAttr} aria-label="${esc(t('allLeft') + ' — ' + c.name + gLabel + ' · ' + inside)}" type="button">
             ${ico(MARKS.out)} ${t('allLeft')} · ${inside}</button>` : ''}
           </span>
         </div>
@@ -1807,6 +1869,7 @@ function viewToday() {
     </div>
     <div id="todaySeg">${p.seg}</div>
     ${courseChips()}
+    ${groupChips()}
     <label class="field" style="margin:14px 0">
       <span class="sr-only">${t('search')}</span>
       <input class="inp" id="searchInp" placeholder="${t('searchStudent')}" value="${esc(state.search)}">
@@ -2155,13 +2218,17 @@ async function setDay(key) {
 }
 
 /* ---- Butun guruhni bir bosishda belgilash ---- */
-async function sendGroupMark(courseId, kind) {
-  const c = courseById(courseId);
+async function sendGroupMark(courseId, kind, gid) {
+  const c0 = courseById(courseId);
+  const grouped = gid !== undefined;                        // gid '' — guruhsizlar bloki
+  const gr = gid ? groupById(gid) : null;
+  const c = grouped ? { ...c0, name: c0.name + ' \u00b7 ' + (gr ? gr.name : t('grpNone')) } : c0;
   if (state.dayLoading || state.err.today) return;
   // "Keldi": faqat hali hech qanday belgi qo'yilmaganlar ("Kelmadi"/"Sababli" qo'yilgan bolani "Keldi" qilib,
   // ota-onasiga noto'g'ri xabar yubormaymiz). "Ketdi": faqat hozir markazdagilar (Keldi bor, Ketdi yo'q).
   const targets = visibleStudents()
     .filter((s) => s.active && s.course_id === courseId)
+    .filter((s) => !grouped || (gid ? s.group_id === gid : !s.group_id || !groupById(s.group_id)))
     .filter((s) => (kind === 'out' ? isInside(s.id) : isUnmarked(s.id)));
 
   if (!targets.length) { toast(t('groupNone')); return; }
@@ -2171,7 +2238,7 @@ async function sendGroupMark(courseId, kind) {
     : t('groupAsk', { course: c.name, n: targets.length, label: MARKS[kind].label });
   if (!confirm(ask)) return;
 
-  const btn = document.querySelector(`[data-group-${kind === 'out' ? 'out' : 'mark'}="${courseId}"]`);
+  const btn = document.querySelector(`[data-group-${kind === 'out' ? 'out' : 'mark'}="${courseId}"]${grouped ? `[data-gid="${gid}"]` : ''}`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>'; }
 
   const day = selDay();
@@ -2475,6 +2542,7 @@ function viewStudents() {
       <button class="btn btn-primary" data-add-student type="button">${I.plus} ${t('add')}</button>
     </div>
     ${courseChips()}
+    ${groupChips()}
     ${studentsLinkHtml()}
     <label class="field" style="margin:14px 0">
       <span class="sr-only">${t('search')}</span>
@@ -2523,6 +2591,7 @@ function rowStudent(s) {
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}
         <span class="badge badge-course" style="--acc:var(--${c.color})">${cIcon(c)} ${esc(c.name)}</span>
+        ${showGroups(s.course_id) ? `<span class="badge badge-group" title="${esc(groupSchedule(groupById(s.group_id)))}">\u{1F465} ${esc(groupById(s.group_id)?.name ?? t('grpNone'))}</span>` : ''}
         ${s.active ? '' : `<span class="badge">${t('archive')}</span>`}
         ${c.active === false ? `<span class="badge badge-warn">${t('courseClosed')}</span>` : ''}
         ${linkBadge(s)}
@@ -3186,9 +3255,10 @@ async function loadTeam() {
       <div class="avatar" style="--acc:var(--${c.color});font-size:1.1rem">${cIcon(c)}</div>
       <div class="row-main">
         <div class="row-title">${esc(c.name)} ${c.active ? '' : `<span class="badge">${t('closed')}</span>`}</div>
-        <div class="row-sub"><span>${t('nStudents', { n })}</span>${Number.isInteger(c.monthly_fee) ? `<span>${t('perMonth', { n: fmtSum(c.monthly_fee) })}</span>` : ''}</div>
+        <div class="row-sub"><span>${t('nStudents', { n })}</span>${groupsOf(c.id).length ? `<span>${t('nGroups', { n: groupsOf(c.id).length })}</span>` : ''}${Number.isInteger(c.monthly_fee) ? `<span>${t('perMonth', { n: fmtSum(c.monthly_fee) })}</span>` : ''}</div>
       </div>
       <div class="row-actions">
+        <button class="btn btn-sm btn-ico" data-course-groups="${c.id}" aria-label="${esc(t('groupsT') + ': ' + c.name)}" title="${t('groupsT')}" type="button">${I.users}</button>
         <button class="btn btn-sm btn-ico" data-edit-course="${c.id}" aria-label="${esc(t('edit') + ': ' + c.name)}" title="${t('edit')}" type="button">${I.edit}</button>
       </div></div>`;
   }).join('');
@@ -4347,7 +4417,7 @@ async function checkWebhook(autoFix) {
    ============================================================ */
 // Oyna qaysi tugmadan ochilgani — yopilgach fokus o'sha joyga qaytadi, hatto ro'yxat
 // qayta chizilib tugma almashgan bo'lsa ham (klaviatura foydalanuvchisi joyini yo'qotmasin)
-const ORIGIN_ATTRS = ['data-edit-student', 'data-more', 'data-pay-open', 'data-lead', 'data-edit-teacher',
+const ORIGIN_ATTRS = ['data-course-groups', 'data-edit-student', 'data-more', 'data-pay-open', 'data-lead', 'data-edit-teacher',
   'data-edit-course', 'data-link', 'data-set', 'data-add-student', 'data-add-teacher', 'data-add-course'];
 let sheetOrigin = null;
 let sheetOpenedAt = 0;
@@ -4409,6 +4479,9 @@ function studentSheet(id, { focusPhone = false, lead = null } = {}) {
         <button class="btn btn-sm" id="stLeadName" type="button">${t('leadNameIsStudent')}</button></div>` : ''}
       <label class="field"><span>${t('fCourseReq')}</span>
         <select class="inp" id="stCourse" required>${s ? '' : `<option value="">${t('fChoose')}</option>`}${opts}</select></label>
+      <label class="field" id="stGroupWrap" hidden><span>${t('groupWord')}</span>
+        <select class="inp" id="stGroup"></select>
+        <small class="f-hint">${t('gFieldHint')}</small></label>
       <label class="field"><span>${t('fParent')}</span>
         <input class="inp" id="stParent" value="${esc(s?.parent_name ?? lead?.full_name ?? '')}"></label>
       <label class="field"><span>${t('fPhone')}</span>
@@ -4436,6 +4509,17 @@ function studentSheet(id, { focusPhone = false, lead = null } = {}) {
       ${s ? `<button class="btn btn-danger btn-block" style="margin-top:9px" id="stDelete" type="button">${I.trash} ${t('del')}</button>` : ''}
     </form>`, () => {
     if (focusPhone) { const ph = $('stPhone'); ph.focus(); ph.select(); }
+    // Guruh: tanlangan kursning guruhlari (kursda guruh bo'lmasa maydon yashirin va guruh yuborilmaydi)
+    const fillGroups = () => {
+      const gs = groupsOf($('stCourse').value);
+      const prev = $('stGroup').value || s?.group_id || '';
+      $('stGroupWrap').hidden = !gs.length;
+      $('stGroup').innerHTML = `<option value="">${t('grpNone')}</option>` + gs.map((g) =>
+        `<option value="${g.id}">${esc(g.name + (groupSchedule(g) ? ' \u00b7 ' + groupSchedule(g) : ''))}</option>`).join('');
+      // Oldingi tanlov shu kursda bo'lsa saqlanadi; yangi o'quvchida kursda bitta guruh bo'lsa — o'sha tanlanadi
+      $('stGroup').value = gs.some((g) => g.id === prev) ? prev : (!s && gs.length === 1 ? gs[0].id : '');
+    };
+    fillGroups(); $('stCourse').addEventListener('change', () => { $('stGroup').value = ''; fillGroups(); });
     // Bitta ota-onaning bir nechta farzandi: raqam bir xil yozilsa oila bo'lib ulanadi — kiritayotganda ko'rsatamiz
     const famHint = () => {
       const ks = [...new Set([$('stPhone').value, $('stPhone2').value].map(phoneKey).filter((k) => k.length >= 9))];
@@ -4495,6 +4579,8 @@ function studentSheet(id, { focusPhone = false, lead = null } = {}) {
       if (phone2.value || s?.parent_phone2 || s?.parent_name2) { row.parent_name2 = phone2.value ? name2 || null : null; row.parent_phone2 = phone2.value; }
       if (s) row.active = $('stActive').checked;
       if (!row.course_id) return;
+      // Guruh faqat kursda guruhlar bo'lsa yuboriladi (eski bazada ustun yo'q bo'lishi mumkin)
+      if (!$('stGroupWrap').hidden) row.group_id = $('stGroup').value || null;
       // Xuddi shu kursda xuddi shu ism — ehtimol takror qo'shilyapti
       if (!s && state.students.some((x) => x.course_id === row.course_id && fold(x.full_name) === fold(name)) &&
           !confirm(t('dupStudent', { name, course: courseById(row.course_id).name }))) return;
@@ -4762,6 +4848,69 @@ async function teacherSheet(email, btn) {
   });
 }
 
+/* ---- Kurs guruhlari (faqat admin): nom + dars kunlari + vaqt ---- */
+function groupsSheet(cid, editId) {
+  const c = state.courses.find((x) => x.id === cid);
+  if (!c) return;
+  const gs = groupsOf(cid);
+  const g = editId === 'new' ? {} : editId ? groupById(editId) : null;
+  const names = t('daysShort').split(',');
+  const count = (gid) => state.students.filter((s) => s.group_id === gid).length;
+  const list = gs.length ? `<div class="rows grp-rows">${gs.map((x) => `<div class="row">
+      <div class="row-main"><div class="row-title">${esc(x.name)}</div>
+        <div class="row-sub">${groupSchedule(x) ? `<span>${esc(groupSchedule(x))}</span>` : ''}<span>${t('gStudents', { n: count(x.id) })}</span></div></div>
+      <div class="row-actions">
+        <button class="btn btn-sm btn-ico" data-grp-edit="${x.id}" aria-label="${esc(t('edit') + ': ' + x.name)}" title="${t('edit')}" type="button">${I.edit}</button>
+        <button class="btn btn-sm btn-ico btn-danger" data-grp-del="${x.id}" aria-label="${esc(t('del') + ': ' + x.name)}" title="${t('del')}" type="button">${I.trash}</button>
+      </div></div>`).join('')}</div>`
+    : `<div class="empty"><div class="e-ico">\u{1F465}</div><b>${t('gNone')}</b><p>${t('gNoneP')}</p></div>`;
+  const form = g ? `<form id="gForm" class="grp-form">
+      <h4>${g.id ? t('editGroup') : t('addGroup')}</h4>
+      <label class="field"><span>${t('gName')} *</span>
+        <input class="inp" id="gName" required maxlength="40" value="${esc(g.name ?? '')}" aria-describedby="gErr"></label>
+      <div class="field"><span>${t('gDays')}</span>
+        <div class="chips grp-days" role="group" aria-label="${t('gDays')}">${names.map((n, i) =>
+          `<label class="chip grp-day"><input type="checkbox" class="gDay" value="${i + 1}" ${(g.days || []).includes(i + 1) ? 'checked' : ''}><span>${esc(n)}</span></label>`).join('')}</div></div>
+      <div class="grp-times">
+        <label class="field"><span>${t('gStart')}</span><input class="inp" id="gStart" type="time" value="${esc(timeHm(g.starts))}"></label>
+        <label class="field"><span>${t('gEnd')}</span><input class="inp" id="gEnd" type="time" value="${esc(timeHm(g.ends))}"></label>
+      </div>
+      <p class="tpl-err" id="gErr" role="alert" hidden></p>
+      <button class="btn btn-primary btn-block" type="submit">${t('save')}</button>
+      <button class="btn btn-block" style="margin-top:9px" id="gCancel" type="button">${t('gCancel')}</button>
+    </form>` : `<button class="btn btn-primary btn-block" id="gAdd" type="button" style="margin-top:12px">${I.plus} ${t('addGroup')}</button>`;
+  openSheet(`${t('groupsT')} \u00b7 ${esc(c.name)}`, `<div id="grpBody">${list}${form}</div>`, () => {
+    $('gAdd')?.addEventListener('click', () => groupsSheet(cid, 'new'));
+    $('gCancel')?.addEventListener('click', () => groupsSheet(cid));
+    document.querySelectorAll('[data-grp-edit]').forEach((b) => b.addEventListener('click', () => groupsSheet(cid, b.dataset.grpEdit)));
+    document.querySelectorAll('[data-grp-del]').forEach((b) => b.addEventListener('click', async () => {
+      const x = groupById(b.dataset.grpDel);
+      if (!x || !confirm(t('gDelAsk', { name: x.name, n: count(x.id) }))) return;
+      try {
+        await edge('admin-api', { action: 'remove_group', id: x.id });
+        toast(t('deleted'), 'ok');
+        await Promise.all([loadCourses(), loadStudents()]); render(); groupsSheet(cid);
+      } catch (err) { toast('\u274c ' + err.message, 'bad'); }
+    }));
+    $('gForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const showErr = (m) => { const er = $('gErr'); er.textContent = m; er.hidden = !m; };
+      const starts = $('gStart').value, ends = $('gEnd').value;
+      if (starts && ends && ends <= starts) { showErr(t('gTimeBad')); $('gEnd').focus(); return; }
+      showErr('');
+      const btn = e.submitter || $('gForm').querySelector('[type="submit"]'); if (btn) btn.disabled = true;
+      try {
+        await edge('admin-api', {
+          action: 'save_group', id: g.id ?? null, course_id: cid, name: $('gName').value.trim(),
+          days: [...document.querySelectorAll('.gDay:checked')].map((i) => +i.value), starts, ends,
+        });
+        toast(t('saved'), 'ok');
+        await loadCourses(); render(); groupsSheet(cid);
+      } catch (err) { showErr(err.message); if (btn) btn.disabled = false; $('gName').focus(); }
+    });
+  });
+}
+
 /* ---- Kurs qo'shish / tahrirlash ---- */
 function courseSheet(id) {
   const c = id ? state.courses.find((x) => x.id === id) : null;
@@ -4877,8 +5026,11 @@ document.addEventListener('click', async (e) => {
   const leadBtn = el.closest('[data-lead]');
   if (leadBtn) return leadSheet(leadBtn.dataset.lead);
 
+  const gchip = el.closest('[data-gchip]');
+  if (gchip) { state.groupFilter = gchip.dataset.gchip; return render(); }
   const chip = el.closest('[data-chip]');
   if (chip) {
+    state.groupFilter = 'all';                                // boshqa kurs — guruh filtri qayta boshlanadi
     state.courseFilter = chip.dataset.chip;
     state.cf[state.view] = state.courseFilter;
     if (state.view === 'today') { try { localStorage.setItem('parvoz-today-course', state.courseFilter); } catch (_) {} }
@@ -4937,6 +5089,8 @@ document.addEventListener('click', async (e) => {
   if (el.closest('[data-add-course]')) return courseSheet(null);
   const edC = el.closest('[data-edit-course]');
   if (edC) return courseSheet(edC.dataset.editCourse);
+  const cg = el.closest('[data-course-groups]');
+  if (cg) return groupsSheet(cg.dataset.courseGroups);
 
   const langTrig = el.closest('#langBtn');
   if (langTrig) { toggleMenu(langTrig, $('langMenu')); return; }
@@ -4960,9 +5114,9 @@ document.addEventListener('click', async (e) => {
 
   // Butun guruhni "Keldi" qilish
   const grp = el.closest('[data-group-mark]');
-  if (grp) return sendGroupMark(grp.dataset.groupMark, 'in');
+  if (grp) return sendGroupMark(grp.dataset.groupMark, 'in', grp.dataset.gid);
   const grpOut = el.closest('[data-group-out]');
-  if (grpOut) return sendGroupMark(grpOut.dataset.groupOut, 'out');
+  if (grpOut) return sendGroupMark(grpOut.dataset.groupOut, 'out', grpOut.dataset.gid);
   const tf = el.closest('[data-today-filter]');
   if (tf) return setTodayFilter(tf.dataset.todayFilter);
   const nFix = el.closest('[data-nudge-fix]');
