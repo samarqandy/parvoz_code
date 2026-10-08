@@ -399,7 +399,7 @@ const STR = {
     finCur: "{m}: yig'ildi, so'm", finTotal: "{n} oyda jami, so'm", finDebt: "Qarz ≈, so'm",
     finSumT: "Oylar bo'yicha yig'ilgan pul", finSumP: "So'm. To'lov qaysi oy uchun yozilgan bo'lsa, o'sha oyda hisoblanadi.",
     finCountT: "To'lagan va to'lamagan o'quvchilar", finCountP: "Arxivdagi o'quvchilar to'lamaganlarga qo'shilmaydi.",
-    finCourseT: "Kurslar bo'yicha yig'ilgan pul", finCourseP: "So'nggi {n} oy ichida",
+    finCourseT: "Kurslar bo'yicha yig'ilgan pul", finCourseP: "So'nggi {n} oy ichida", finGroupT: "Guruhlar bo'yicha yig'ilgan pul",
     finColMonth: 'Oy', finColSum: "Yig'ildi, so'm", finColDebt: "Qarz ≈, so'm",
     finDebtNote: "Qarz ≈ — hozirgi oylik narx (shaxsiy yoki kurs) bo'yicha taxmin; narxi yo'q o'quvchilar kirmaydi.",
     finTipSum: "Yig'ildi: {n} so'm", finTipPays: "To'lovlar: {n}", finTipNoAmt: 'Summasiz: {n}', finTipShare: 'Ulushi: {n}%',
@@ -754,7 +754,7 @@ const STR = {
     finCur: '{m}: собрано, сум', finTotal: 'За {n} мес., сум', finDebt: 'Долг ≈, сум',
     finSumT: 'Собрано по месяцам', finSumP: 'Сум. Оплата считается в том месяце, за который она записана.',
     finCountT: 'Оплатили и не оплатили', finCountP: 'Архивные ученики не считаются должниками.',
-    finCourseT: 'Собрано по курсам', finCourseP: 'За последние {n} мес.',
+    finCourseT: 'Собрано по курсам', finCourseP: 'За последние {n} мес.', finGroupT: 'Собрано по группам',
     finColMonth: 'Месяц', finColSum: 'Собрано, сум', finColDebt: 'Долг ≈, сум',
     finDebtNote: 'Долг ≈ — оценка по текущей месячной цене (личной или курса); ученики без цены не учитываются.',
     finTipSum: 'Собрано: {n} сум', finTipPays: 'Оплат: {n}', finTipNoAmt: 'Без суммы: {n}', finTipShare: 'Доля: {n}%',
@@ -3143,6 +3143,7 @@ const CHARTS = {
   finSum: (w) => finData && chartFinSum(finData, w),
   finCount: (w) => finData && chartFinCount(finData, w),
   finCourses: (w) => finData && chartFinCourses(finData, w),
+  finGroups: (w) => finData && chartFinCourses(finData, w, finData.groups, t('finGroupT')),
 };
 function drawPlot(el) {
   const w = Math.floor(el.clientWidth);
@@ -3398,6 +3399,7 @@ function viewPayShell() {
     </div>
     ${ym > currentYm() ? `<div class="daybar-note">${I.note}<span>${t('payFutureNote')}</span></div>` : ''}
     ${courseChips()}
+    <div id="payGroups">${groupChips()}</div>
     <div id="payOut">${'<div class="skel"></div>'.repeat(4)}</div>`;
 }
 
@@ -3444,7 +3446,7 @@ function payModel() {
   });
   const allowed = new Set(myCourses().map((c) => c.id));
   const items = state.students
-    .filter((s) => allowed.has(s.course_id) && (state.courseFilter === 'all' || s.course_id === state.courseFilter))
+    .filter((s) => allowed.has(s.course_id) && (state.courseFilter === 'all' || s.course_id === state.courseFilter) && groupMatch(s))
     .map((s) => {
       const pm = byStudent.get(s.id) || new Map();
       const start = dayKey(s.created_at || new Date().toISOString()).slice(0, 7);
@@ -3593,7 +3595,7 @@ function payRow({ s, c, p, owed, rem, debt }) {
     <div class="avatar" style="--acc:var(--${c.color})">${esc(initials(s.full_name))}</div>
     <div class="row-main">
       <div class="row-title">${esc(s.full_name)}${s.active ? '' : ` <span class="badge">${t('archive')}</span>`}</div>
-      <div class="row-sub"><span>${cIcon(c)} ${esc(c.name)}</span>${s.parent_phone ? `<a class="tel-link" href="${esc(telHref(s.parent_phone))}">📞 ${esc(s.parent_phone)}</a>` : ''}</div>
+      <div class="row-sub"><span>${cIcon(c)} ${esc(c.name)}${showGroups(s.course_id) ? ` · ${esc(groupById(s.group_id)?.name ?? t('grpNone'))}` : ''}</span>${s.parent_phone ? `<a class="tel-link" href="${esc(telHref(s.parent_phone))}">📞 ${esc(s.parent_phone)}</a>` : ''}</div>
     </div>
     <div class="pay-state">${state_}</div>
     <div class="row-actions">
@@ -3980,7 +3982,7 @@ function niceSum(v) {
 function finModel() {
   const { ym, rows } = state.pay;
   const allowed = new Set(myCourses().map((c) => c.id));
-  const inFilter = (s) => !!s && allowed.has(s.course_id) && (state.courseFilter === 'all' || s.course_id === state.courseFilter);
+  const inFilter = (s) => !!s && allowed.has(s.course_id) && (state.courseFilter === 'all' || s.course_id === state.courseFilter) && groupMatch(s);
   const byId = new Map(state.students.map((s) => [s.id, s]));
   const paidKey = new Set(rows.map((r) => `${r.student_id}|${r.month.slice(0, 7)}`));
   const rateOf = (s) => {
@@ -4015,9 +4017,21 @@ function finModel() {
     if (!inFilter(st) || !months.some((x) => x.m === r.month.slice(0, 7))) return;
     courses.set(st.course_id, (courses.get(st.course_id) || 0) + (r.amount || 0));
   });
+  // Bitta kurs tanlangan va unda 2+ guruh bo'lsa — guruhlar bo'yicha tushum
+  const grp = new Map();
+  if (state.courseFilter !== 'all' && showGroups(state.courseFilter)) {
+    rows.forEach((r) => {
+      const st = byId.get(r.student_id);
+      if (!inFilter(st) || !months.some((x) => x.m === r.month.slice(0, 7))) return;
+      const g = groupById(st.group_id);
+      grp.set(g ? g.id : '', (grp.get(g ? g.id : '') || 0) + (r.amount || 0));
+    });
+  }
   const total = months.reduce((n, x) => n + x.sum, 0);
   return {
     ym, months, total, cur: months[months.length - 1],
+    groups: [...grp.entries()].map(([id, sum]) => ({ course: { ...courseById(state.courseFilter), name: id ? groupById(id).name : t('grpNone') }, sum }))
+      .sort((a, b) => b.sum - a.sum || a.course.name.localeCompare(b.course.name)),
     any: months.some((x) => x.paid),
     courses: [...courses.entries()].map(([id, sum]) => ({ course: courseById(id), sum }))
       .sort((a, b) => b.sum - a.sum || a.course.name.localeCompare(b.course.name)),
@@ -4059,6 +4073,11 @@ function renderFinance(out) {
       </div>
       <div class="viz-plot" data-chart="finCount"></div>
     </div>
+    ${d.groups.length > 1 ? `
+    <div class="card viz-card">
+      <div class="viz-head"><h3>${t('finGroupT')}</h3><p>${t('finCourseP', { n })}</p></div>
+      <div class="viz-plot" data-chart="finGroups"></div>
+    </div>` : ''}
     ${d.courses.length > 1 ? `
     <div class="card viz-card">
       <div class="viz-head"><h3>${t('finCourseT')}</h3><p>${t('finCourseP', { n })}</p></div>
@@ -4141,15 +4160,15 @@ function chartFinCount(d, W) {
 }
 
 // Kurslar: bitta rang (nominal toifa), qiymat uchida qisqa summa
-function chartFinCourses(d, W) {
+function chartFinCourses(d, W, list = d.courses, title = t('finCourseT')) {
   const narrow = W < 480;
   const rowH = narrow ? 50 : 34, bh = 18, T = 4, R = 70;
   const L = narrow ? 0 : 150;
-  const H = T + d.courses.length * rowH + 4;
+  const H = T + list.length * rowH + 4;
   const pw = Math.max(40, W - L - R);
-  const max = Math.max(1, ...d.courses.map((c) => c.sum));
+  const max = Math.max(1, ...list.map((c) => c.sum));
   const lim = narrow ? 34 : 20;
-  const bars = d.courses.map((c, i) => {
+  const bars = list.map((c, i) => {
     const y = T + i * rowH + (narrow ? 24 : (rowH - bh) / 2);
     const w = Math.max(0, (c.sum / max) * pw);
     const label = cText(c.course);
@@ -4166,9 +4185,9 @@ function chartFinCourses(d, W) {
     </g>`;
   }).join('');
   // Ekran o'qigich uchun qiymatlar matn bilan: kurs — summa (ulush)
-  const alt = d.courses.map((c) => `${c.course.name}: ${fmtSum(c.sum)}`).join('; ');
+  const alt = list.map((c) => `${c.course.name}: ${fmtSum(c.sum)}`).join('; ');
   return `<svg class="viz viz-h" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
-    aria-label="${esc(t('finCourseT') + '. ' + alt)}">${bars}</svg>`;
+    aria-label="${esc(title + '. ' + alt)}">${bars}</svg>`;
 }
 
 function exportFinCsv() {
@@ -4182,10 +4201,11 @@ function exportPayCsv() {
   if (!state.pay) return;
   if (state.payMode === 'fin') return exportFinCsv();
   const d = payModel();
-  const head = [t('payCsvName'), t('csvCourse'), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed'), t('payCsvRate'), t('payCsvDebt')];
+  const withGroup = d.items.some((x) => showGroups(x.s.course_id));
+  const head = [t('payCsvName'), t('csvCourse'), ...(withGroup ? [t('groupWord')] : []), t('fPhone'), t('payCsvStatus'), t('payAmount'), t('payDate'), t('payNote'), t('payCsvOwed'), t('payCsvRate'), t('payCsvDebt')];
   const rows = [...d.items].sort((a, b) => (!!a.p - !!b.p) || a.s.full_name.localeCompare(b.s.full_name));
   downloadCsv(`parvoz-tolovlar-${d.ym}.csv`, head, rows.map(({ s, c, p, owed, rate, debt }) =>
-    [s.full_name, c.name, s.parent_phone, p ? t('payPaid') : t('payUnpaid'), p?.amount ?? '', p?.paid_on ?? '', p?.note ?? '',
+    [s.full_name, c.name, ...(withGroup ? [showGroups(s.course_id) ? (groupById(s.group_id)?.name ?? '') : ''] : []), s.parent_phone, p ? t('payPaid') : t('payUnpaid'), p?.amount ?? '', p?.paid_on ?? '', p?.note ?? '',
      owed.map(ymShort).join(', '), rate ?? '', debt ?? '']));
 }
 
@@ -5081,6 +5101,11 @@ document.addEventListener('click', async (e) => {
   if (gchip) {
     state.gf[state.view] = gchip.dataset.gchip;
     if (state.view === 'report') { $('repGroups').innerHTML = groupChips(); return loadReport(); }
+    if (state.view === 'payments' && state.pay) {
+      state.payFocus = null;
+      $('payGroups').innerHTML = groupChips();
+      return keepFocus(renderPayments);
+    }
     return render();
   }
   const chip = el.closest('[data-chip]');
@@ -5097,6 +5122,7 @@ document.addEventListener('click', async (e) => {
       state.payFocus = null;
       // Kurs filtri faqat ro'yxatni o'zgartiradi — bazaga qayta so'rov shart emas
       document.querySelectorAll('[data-chip]').forEach((b) => { const on = b.dataset.chip === state.courseFilter; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+      $('payGroups').innerHTML = groupChips();
       renderPayments();
     } else render();
     return;
