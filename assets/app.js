@@ -339,6 +339,10 @@ const STR = {
     newTeacher: "Yangi o'qituvchi", editTeacher: "O'qituvchini tahrirlash",
     fEmailReq: 'Email *', fRole: 'Rol',
     passKeep: "(o'zgartirmasangiz bo'sh qoldiring)",
+    passHint: "Kamida 8 belgi. Oddiy parollar (12345678, parol123), ism yoki emailga o'xshash parollar qabul qilinmaydi.",
+    passErr_digits: "Parol faqat raqamlardan iborat bo'lmasin", passErr_repeat: "Parol bir xil belgilar takrori bo'lmasin (masalan 11111111, abababab)",
+    passErr_seq: "Parol ketma-ket belgilar bo'lmasin (12345678, qwertyui)", passErr_common: "Bu parol juda oddiy (so'z + raqam). Boshqasini tanlang",
+    passErr_email: "Parolda email manzil bo'lmasin", passErr_name: "Parolda ism yoki familiya bo'lmasin",
     roleTeacherOpt: "O'qituvchi \u2014 faqat o'z fanlari",
     roleAdminOpt: 'Administrator \u2014 barcha huquqlar',
     assignedCourses: 'Biriktirilgan fanlar',
@@ -684,6 +688,10 @@ const STR = {
     newTeacher: 'Новый преподаватель', editTeacher: 'Изменить преподавателя',
     fEmailReq: 'Email *', fRole: 'Роль',
     passKeep: '(оставьте пустым, если не меняете)',
+    passHint: 'Не короче 8 символов. Простые пароли (12345678, parol123), а также содержащие имя или email не принимаются.',
+    passErr_digits: 'Пароль не должен состоять только из цифр', passErr_repeat: 'Пароль не должен быть повтором одних символов (например 11111111, abababab)',
+    passErr_seq: 'Пароль не должен быть последовательностью (12345678, qwertyui)', passErr_common: 'Слишком простой пароль (слово + цифры). Выберите другой',
+    passErr_email: 'В пароле не должно быть email', passErr_name: 'В пароле не должно быть имени или фамилии',
     roleTeacherOpt: 'Преподаватель \u2014 только свои предметы',
     roleAdminOpt: 'Администратор \u2014 все права',
     assignedCourses: 'Назначенные предметы',
@@ -4615,6 +4623,23 @@ function parentLinkSheet(id, { add = false } = {}) {
 // Ro'yxat serverdan olinguncha bosilgan tugma "band" ko'rinadi — sekin internetda
 // takror bosish va "hech narsa bo'lmadi" degan taassurot bo'lmasin
 let teacherLoading = false;
+// Parol siyosati — admin-api dagi passwordIssue bilan bir xil qoidalar (Supabase Free tarifida "leaked password" tekshiruvi yo'q)
+const WEAK_WORDS = new Set(['password', 'parol', 'parvoz', 'parvozcode', 'qwerty', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm', 'admin', 'administrator',
+  'welcome', 'letmein', 'iloveyou', 'monkey', 'dragon', 'football', 'login', 'master', 'test', 'teacher', 'student', 'ustoz', 'oqituvchi',
+  'maktab', 'markaz', 'uzbekistan', 'samarqand', 'samarkand', 'abcdefgh', 'abcdefghi', 'qazwsx', 'sunshine', 'princess', 'secret']);
+function passIssue(pw, email, fullName) {
+  const low = pw.toLowerCase();
+  if (/^\d+$/.test(pw)) return 'digits';
+  if (/^(.{1,3})\1+$/s.test(pw)) return 'repeat';
+  if ('0123456789012'.includes(low) || '9876543210987'.includes(low) || 'abcdefghijklmnopqrstuvwxyz'.includes(low) || 'qwertyuiopasdfghjklzxcvbnm'.includes(low)) return 'seq';
+  const base = low.replace(/[\d\W_]+/g, '');
+  if (base && WEAK_WORDS.has(base)) return 'common';
+  const local = String(email || '').split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (local.length >= 4 && low.includes(local)) return 'email';
+  const tokens = String(fullName || '').toLowerCase().split(/[\s.,'`\u2019-]+/).filter((x) => x.length >= 4);
+  if (tokens.some((x) => low.includes(x))) return 'name';
+  return '';
+}
 async function teacherSheet(email, btn) {
   if (teacherLoading) return;
   let tc = null;
@@ -4639,7 +4664,9 @@ async function teacherSheet(email, btn) {
       <label class="field"><span>${t('fEmailReq')}</span>
         <input class="inp" id="tEmail" type="email" required ${tc ? 'readonly' : ''} value="${esc(tc?.email ?? '')}"></label>
       <label class="field"><span>${t('fPass')} ${tc ? t('passKeep') : '*'}</span>
-        <input class="inp" id="tPass" type="password" minlength="8" autocomplete="new-password" ${tc ? '' : 'required'}></label>
+        <input class="inp" id="tPass" type="password" minlength="8" autocomplete="new-password" ${tc ? '' : 'required'} aria-describedby="tPassErr">
+        <small class="f-hint">${t('passHint')}</small></label>
+      <p class="tpl-err" id="tPassErr" role="alert" hidden></p>
       <label class="field"><span>${t('fRole')}</span>
         <select class="inp" id="tRole"${isSelf ? ` disabled title="${esc(t('selfRole'))}"` : ''}>
           <option value="teacher" ${tc?.role !== 'admin' ? 'selected' : ''}>${t('roleTeacherOpt')}</option>
@@ -4661,6 +4688,10 @@ async function teacherSheet(email, btn) {
       if (!tc && teachers.some((x) => x.email.toLowerCase() === newEmail.toLowerCase())) {
         toast('❌ ' + t('teacherExists'), 'bad'); $('tEmail').focus(); return;
       }
+      // Oddiy / ism yoki emailga o'xshash parol serverga ham bormaydi (server ham xuddi shunday rad etadi)
+      const pw = $('tPass').value, pwBad = pw ? passIssue(pw, newEmail, $('tName').value) : '';
+      const pwErr = $('tPassErr'); pwErr.hidden = !pwBad; pwErr.textContent = pwBad ? t('passErr_' + pwBad) : '';
+      if (pwBad) { $('tPass').focus(); return; }
       const btn = e.submitter; if (btn) btn.disabled = true;
       try {
         await edge('admin-api', {
