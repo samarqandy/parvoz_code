@@ -143,9 +143,13 @@ Matnni admin paneldan (Sozlamalar → Ota-onaga xabarlar) tahrirlaydi. Saqlanadi
 
 - Turlar: `in` `out` `absent` `excused` (davomat), `pay` (to'lov eslatmasi, faqat qo'lda),
   `paid` (to'lov qabul qilindi).
-- O'zgaruvchilar: `{ism}` `{vaqt}` `{kurs}` `{sana}` `{sabab}` `{oy}` `{oylar}` `{summa}` — har bir turda
+- O'zgaruvchilar: `{ism}` `{vaqt}` `{kurs}` `{guruh}` `{sana}` `{sabab}` `{oy}` `{oylar}` `{summa}` — har bir turda
   faqat mosi ruxsat (`admin-api` → `TPL_VARS`). `{ism}` har doim shart:
   oilada bir nechta farzand o'qishi mumkin.
+- `{guruh}` — o'quvchining guruhi (`course_groups`). Faqat kursda 2 ta va undan ko'p guruh bo'lsa to'ladi
+  (bitta «Asosiy» guruh xabarni to'ldirmasin), aks holda bo'sh va uning qatori tushib qoladi. `payfam`
+  (oilaviy eslatma) da yo'q: unda bir nechta farzand bor. Standart matnlarda ishlatilmaydi — admin o'zi qo'shadi
+  (masalan `👥 {guruh}`). Qiymatni `mark-attendance` va `admin-api` (`loadGroupNames`) hamda panel (`tplGroupName`) bir xil hisoblaydi.
 - `*matn*` — qalin. Qolgan hamma narsa ekranlanadi (`parse_mode: HTML`).
 - Qiymati bo'sh o'zgaruvchi turgan qator tushib qoladi ({ism} qatoridan tashqari).
 - `on: false` — belgi yoziladi, xabar ketmaydi (javobda `muted: true`).

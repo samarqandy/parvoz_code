@@ -450,7 +450,7 @@ const STR = {
     tplOnP: "O'chirilsa, belgi qo'yiladi, lekin ota-onaga xabar bormaydi",
     tplText: 'Xabar matni',
     tplVars: "Bosing — matnga qo'shiladi",
-    tplHint: "*matn* — qalin yozuv. Qiymati bo'sh o'zgaruvchi turgan qator yuborilmaydi (masalan, sabab yozilmasa).",
+    tplHint: "*matn* — qalin yozuv. Qiymati bo'sh o'zgaruvchi turgan qator yuborilmaydi (masalan, sabab yozilmasa). {guruh} faqat kursda 2 ta va undan ko'p guruh bo'lsa to'ladi — aks holda uning qatori tushib qoladi.",
     tplPrev: "Ota-ona shunday ko'radi",
     tplMuted: 'Bu xabar yuborilmaydi',
     tplReset: 'Standart matnga qaytarish',
@@ -463,8 +463,8 @@ const STR = {
     tplErrIsm: "Xabarda {ism} bo'lishi shart — oilada bir nechta farzand o'qishi mumkin",
     tplErrVar: "Bu xabarda ishlatib bo'lmaydi: {v}",
     tplErrLen: 'Xabar {n} belgidan oshmasin',
-    tplSampleName: 'Ali Valiyev',
-    vIsm: 'Ism', vVaqt: 'Soat', vKurs: 'Kurs', vSana: 'Sana', vSabab: 'Sabab',
+    tplSampleName: 'Ali Valiyev', tplSampleGroup: 'Du-Chor 15:00',
+    vIsm: 'Ism', vVaqt: 'Soat', vKurs: 'Kurs', vGuruh: 'Guruh', vSana: 'Sana', vSabab: 'Sabab',
     botNone: 'Bot ulanmagan', reconnect: 'Qayta ulash',
     newToken: 'Yangi token (BotFather)', saveToken: 'Tokenni saqlash',
     tokenNeeded: 'Token kiriting',
@@ -805,7 +805,7 @@ const STR = {
     tplOnP: 'Если выключить, отметка сохранится, но родитель сообщение не получит',
     tplText: 'Текст сообщения',
     tplVars: 'Нажмите — вставится в текст',
-    tplHint: '*текст* — жирный. Строка с пустой переменной не отправляется (например, если причина не указана).',
+    tplHint: '*текст* — жирный. Строка с пустой переменной не отправляется (например, если причина не указана). {guruh} заполняется, только если в курсе 2 и более групп — иначе строка пропускается.',
     tplPrev: 'Так увидит родитель',
     tplMuted: 'Это сообщение не отправляется',
     tplReset: 'По умолчанию',
@@ -818,8 +818,8 @@ const STR = {
     tplErrIsm: 'В сообщении должно быть {ism} — в семье может учиться несколько детей',
     tplErrVar: 'В этом сообщении нельзя использовать: {v}',
     tplErrLen: 'Не более {n} символов',
-    tplSampleName: 'Ali Valiyev',
-    vIsm: 'Имя', vVaqt: 'Время', vKurs: 'Курс', vSana: 'Дата', vSabab: 'Причина',
+    tplSampleName: 'Ali Valiyev', tplSampleGroup: 'Пн-Ср 15:00',
+    vIsm: 'Имя', vVaqt: 'Время', vKurs: 'Курс', vGuruh: 'Группа', vSana: 'Дата', vSabab: 'Причина',
     botNone: 'Бот не подключён', reconnect: 'Переподключить',
     newToken: 'Новый токен (BotFather)', saveToken: 'Сохранить токен',
     tokenNeeded: 'Введите токен',
@@ -3756,11 +3756,15 @@ function remindBar(d, base) {
   </div>`;
 }
 
+// {guruh}: kursda 2+ guruh bo'lsa o'quvchining guruhi, aks holda bo'sh (server ham shunday: mark-attendance, admin-api)
+const tplGroupName = (s) => (showGroups(s.course_id) ? groupById(s.group_id)?.name ?? '' : '');
+
 function remVars(it, ym) {
   const oy = (m) => DATE_NAMES.uz.m[Number(m.slice(5, 7)) - 1];
   return {
     ism: remName(it.s.full_name),
     kurs: it.c?.name || '',
+    guruh: tplGroupName(it.s),
     oy: oy(ym),
     oylar: it.owedNow.length === 1 && it.owedNow[0] === ym ? '' : it.owedNow.map(oy).join(', '),
   };
@@ -4229,15 +4233,15 @@ const TPL_DEFAULT = {
   paid:    "✅ Hurmatli ota-ona! *{ism}* uchun *{oy}* oyi to'lovi qabul qilindi.\n💵 {summa} so'm\n📚 {kurs}\n📅 {sana}\n\nRahmat!",
 };
 const TPL_VARS = {
-  in:      ['ism', 'vaqt', 'kurs', 'sana'],
-  out:     ['ism', 'vaqt', 'kurs', 'sana'],
-  absent:  ['ism', 'kurs', 'sana'],
-  excused: ['ism', 'sabab', 'kurs', 'sana'],
-  pay:     ['ism', 'kurs', 'oy', 'oylar'],
+  in:      ['ism', 'vaqt', 'kurs', 'guruh', 'sana'],
+  out:     ['ism', 'vaqt', 'kurs', 'guruh', 'sana'],
+  absent:  ['ism', 'kurs', 'guruh', 'sana'],
+  excused: ['ism', 'sabab', 'kurs', 'guruh', 'sana'],
+  pay:     ['ism', 'kurs', 'guruh', 'oy', 'oylar'],
   payfam:  ['bolalar', 'oy'],
-  paid:    ['ism', 'kurs', 'oy', 'summa', 'sana'],
+  paid:    ['ism', 'kurs', 'guruh', 'oy', 'summa', 'sana'],
 };
-const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', sana: 'vSana', sabab: 'vSabab', oy: 'vOy', oylar: 'vOylar', summa: 'vSumma', bolalar: 'vBolalar' };
+const TPL_VAR_LABEL = { ism: 'vIsm', vaqt: 'vVaqt', kurs: 'vKurs', guruh: 'vGuruh', sana: 'vSana', sabab: 'vSabab', oy: 'vOy', oylar: 'vOylar', summa: 'vSumma', bolalar: 'vBolalar' };
 // Tab uchun nom va belgi: holatlar MARKS dan, to'lov xabarlari alohida
 const tplMeta = (k) => k === 'pay' ? { label: t('tplPayTab'), icon: 'wallet', tone: 'gold' }
   : k === 'payfam' ? { label: t('tplFamTab'), icon: 'users', tone: 'gold' }
@@ -4293,6 +4297,8 @@ function tplSample() {
     ism: st?.full_name || t('tplSampleName'),
     vaqt: hhmm(new Date().toISOString()),
     kurs: course?.name || '',
+    // Namuna o'quvchining haqiqiy guruhi; guruhlar yo'q bo'lsa ham shablonda ko'rinishi uchun namuna nom
+    guruh: (st && tplGroupName(st)) || t('tplSampleGroup'),
     // Xabar ota-onaga doim o'zbekcha sana bilan ketadi — panel tili qanday bo'lmasin
     sana: `${Number(key.slice(8, 10))}-${DATE_NAMES.uz.m[Number(key.slice(5, 7)) - 1]}`,
     sabab: t('r1'),
