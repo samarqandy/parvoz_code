@@ -209,3 +209,12 @@ Admin Jamoa → Kurslar oynasida kiritadi.
   soni, kurslar bo'yicha pul va taxminiy qarz. Yangi so'rov yo'q — `loadPayments`
   yuklagan to'lovlardan panelda hisoblanadi. To'lov qaysi oy **uchun** yozilgan bo'lsa,
   o'sha oyda sanaladi (to'langan sana emas).
+
+## Parol siyosati (`admin-api` → `save_teacher`, `bootstrap`)
+
+Supabase Free tarifida «leaked password protection» (HaveIBeenPwned) yo'q, shuning uchun eng xavfli parollarni o'zimiz rad etamiz
+(`passwordIssue`; panelda `passIssue` — xuddi shu qoidalar, serverga bormasdan ko'rsatadi). Kamida 8 belgi, va:
+faqat raqamlar; bir xil belgi/qisqa birlik takrori (`11111111`, `abababab`); ketma-ketlik (`12345678`, `abcdefgh`, `qwertyui`);
+oddiy so'z + raqam/belgi (`parol123`, `Qwerty2024!`, `Parvoz_2026`; so'zlar ro'yxati `WEAK_WORDS`); emailning lokal qismi (4+ belgi)
+yoki ism/familiya (4+ belgi) parol ichida. Parol almashtirishda bo'sh parol — «o'zgartirmaslik», tekshirilmaydi.
+Pro tarifga o'tilsa, Supabase'ning o'z tekshiruvini ham yoqish mumkin (Authentication → Sign In / Providers → Email).

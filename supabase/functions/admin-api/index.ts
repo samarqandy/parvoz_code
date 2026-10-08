@@ -47,6 +47,28 @@ const redact = (s: string) => s.replace(/bot\d+:[\w-]+/g, 'bot***');
 // ilike da _ va % qolip belgisi — foydalanuvchining o'z emaili qolip bo'lib qolmasin
 const likeEsc = (s: string) => s.replace(/[\\%_]/g, '\\$&');
 
+// Parol siyosati (Supabase Free tarifida "leaked password" tekshiruvi yo'q): eng xavfli parollarni o'zimiz rad etamiz.
+// Panelda (assets/app.js -> passIssue) xuddi shu qoidalar — foydalanuvchi serverga bormay ko'rsin.
+const WEAK_WORDS = new Set(['password', 'parol', 'parvoz', 'parvozcode', 'qwerty', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm', 'admin', 'administrator',
+  'welcome', 'letmein', 'iloveyou', 'monkey', 'dragon', 'football', 'login', 'master', 'test', 'teacher', 'student', 'ustoz', 'oqituvchi',
+  'maktab', 'markaz', 'uzbekistan', 'samarqand', 'samarkand', 'abcdefgh', 'abcdefghi', 'qazwsx', 'sunshine', 'princess', 'secret']);
+function passwordIssue(pw: string, email: string, fullName: string | null): string | null {
+  const low = pw.toLowerCase();
+  if (/^\d+$/.test(pw)) return "Parol faqat raqamlardan iborat bo'lmasin";
+  if (/^(.{1,3})\1+$/s.test(pw)) return "Parol bir xil belgilar takrori bo'lmasin (masalan 11111111, abababab)";
+  if ('0123456789012'.includes(low) || '9876543210987'.includes(low) || 'abcdefghijklmnopqrstuvwxyz'.includes(low) || 'qwertyuiopasdfghjklzxcvbnm'.includes(low)) {
+    return "Parol ketma-ket belgilar bo'lmasin (12345678, qwertyui)";
+  }
+  // "parol123", "Qwerty2024!" — so'z + raqam/belgi
+  const base = low.replace(/[\d\W_]+/g, '');
+  if (base && WEAK_WORDS.has(base)) return "Bu parol juda oddiy (so'z + raqam). Boshqasini tanlang";
+  const local = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (local.length >= 4 && low.includes(local)) return "Parolda email manzil bo'lmasin";
+  const tokens = String(fullName ?? '').toLowerCase().split(/[\s.,'`’-]+/).filter((t) => t.length >= 4);
+  if (tokens.some((t) => low.includes(t))) return "Parolda ism yoki familiya bo'lmasin";
+  return null;
+}
+
 function randomHex(bytes = 32): string {
   const b = new Uint8Array(bytes);
   crypto.getRandomValues(b);
@@ -243,6 +265,8 @@ Deno.serve(async (req) => {
       const password = String(body.password ?? '');
       const fullName = String(body.full_name ?? '').trim() || null;
       if (!email || password.length < 8) return json({ error: "Email va kamida 8 belgili parol kerak" }, 400);
+      const weak0 = passwordIssue(password, email, fullName);
+      if (weak0) return json({ error: weak0 }, 400);
       const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
       if (error) return json({ error: error.message }, 400);
       await admin.from('allowed_teachers').insert({ email: email.toLowerCase(), full_name: fullName, role: 'admin', added_by: 'bootstrap' });
@@ -301,6 +325,8 @@ Deno.serve(async (req) => {
       }
       if (!existing) {
         if (password.length < 8) return json({ error: "Yangi hisob uchun kamida 8 belgili parol kerak" }, 400);
+        const weak1 = passwordIssue(password, email, fullName);
+        if (weak1) return json({ error: weak1 }, 400);
         const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
         if (error) {
           if (!/already|exists|registered/i.test(error.message)) return json({ error: error.message }, 400);
@@ -313,6 +339,8 @@ Deno.serve(async (req) => {
         }
       } else if (password) {
         if (password.length < 8) return json({ error: "Parol kamida 8 belgi bo'lishi kerak" }, 400);
+        const weak2 = passwordIssue(password, email, fullName);
+        if (weak2) return json({ error: weak2 }, 400);
         const u = await findAuthUser(email);
         if (u) {
           const { error: perr } = await admin.auth.admin.updateUserById(u.id, { password });
