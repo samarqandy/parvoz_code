@@ -31,7 +31,10 @@
 //
 // Yuborish ikki bosqichda: avval hamma belgilar yoziladi, keyin xabarlar ketadi (5 ta chat parallel,
 // bitta chatga ketma-ket, umumiy vaqt chegarasi bilan) — 60 o'quvchilik guruh bitta sekin Telegramda
-// so'rovni to'xtatib qo'ymaydi. O'quvchining ikki ota-onasi (ona va ota) bo'lsa, xabar ikkalasiga ketadi
+// so'rovni to'xtatib qo'ymaydi. `hold: true` bilan (panel yuboradi) xabar HOLD_MS (8 s) ushlab turiladi: o'qituvchi shu vaqt ichida
+// "Bekor qilish" bossa belgi o'chadi va ota-onaga hech narsa ketmaydi (`delivery: 'held'`, `hold_ms`). Ushlash fonda
+// (EdgeRuntime.waitUntil) ishlaydi — panel yopilsa ham xabar ketadi; natija attendance.notify_status ga yoziladi
+// (held -> sent | blocked | no_chat | failed | unknown | skipped | bad_*). Eski panel (`hold` yo'q) — xabar darhol, avvalgidek. O'quvchining ikki ota-onasi (ona va ota) bo'lsa, xabar ikkalasiga ketadi
 // (parent_chats); bittasiga yetsa ham `delivery: 'sent'`. Javobda har bir o'quvchi uchun `delivery` — xabar yetdimi:
 //   sent | blocked | no_chat | failed | unknown (javob kelmadi, yetgan bo'lishi mumkin) | skipped (vaqt tugadi)
 //   | muted (admin o'chirgan) | no_tg (ota-ona ulanmagan) | bad_name / bad_note (xavfsizlik) | null (o'tgan kun)
@@ -115,6 +118,9 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const SEND_CONCURRENCY = 5;
 const SEND_DEADLINE_MS = 11_000;
 const SEND_TIMEOUT_MS = 6_000;
+// "Bekor qilish" oynasi: xabar shuncha ushlab turiladi. Ushlangan xabarlar fonda yuboriladi, panel javobni kutmaydi — vaqt chegarasi kengroq
+const HOLD_MS = 8_000;
+const BG_DEADLINE_MS = 30_000;
 
 // Samarqand bo'yicha kun kaliti (UTC+5, yoz vaqti yo'q)
 function dayKeyOf(d: Date): string {
@@ -330,7 +336,6 @@ Deno.serve(async (req) => {
       ...((st.parent_chats ?? []) as any[]).map((c) => Number(c.chat_id)),
       st.telegram_chat_id ? Number(st.telegram_chat_id) : 0,
     ].filter(Boolean))];
-    let notifiedCount = 0;
 
     // Bot tokeni va shablonlar — faqat bugungi belgilashda, bitta so'rovda
     let token: string | null = null;
@@ -418,9 +423,10 @@ Deno.serve(async (req) => {
     }
 
     // ---- 2-bosqich: xabarlar. Telegram ishlamasa ham belgilar saqlangan — xato hech narsani qaytarmaydi ----
-    if (toSend.length && token) {
+    // Xabar yuborish: bir vaqtda 5 ta chat, bitta chatga ketma-ket; `startedAt` dan boshlab `deadline` ms o'tgach yangi xabar boshlanmaydi
+    const sendAll = async (list: typeof toSend, startedAt: number, deadline: number) => {
       const byChat = new Map<number, typeof toSend>();
-      for (const m of toSend) byChat.set(m.chat, [...(byChat.get(m.chat) ?? []), m]);
+      for (const m of list) byChat.set(m.chat, [...(byChat.get(m.chat) ?? []), m]);
       const queues = [...byChat.values()];
       let qi = 0, aborted = false, netStreak = 0;
       const worker = async () => {
@@ -428,7 +434,7 @@ Deno.serve(async (req) => {
           const q = queues[qi++];
           if (!q) return;
           for (const m of q) {
-            if (aborted || Date.now() - reqStart > SEND_DEADLINE_MS) { (m.res._out as string[]).push('skipped'); continue; }
+            if (aborted || Date.now() - startedAt > deadline) { (m.res._out as string[]).push('skipped'); continue; }
             let r = await sendTg(token!, m.chat, m.text);
             if (!r?.ok && Number(r?.error_code) === 429 && Number(r?.parameters?.retry_after) <= 3) {
               await sleep(Number(r.parameters.retry_after) * 1000 + 100);
@@ -444,24 +450,67 @@ Deno.serve(async (req) => {
         }
       };
       await Promise.all(Array.from({ length: Math.min(SEND_CONCURRENCY, queues.length) }, worker));
-    }
+    };
     // Har bir o'quvchi bo'yicha natija: kamida bitta ota-onaga yetgan bo'lsa — yetdi
-    for (const res of results) {
+    const settle = (res: Record<string, unknown>) => {
       const out = res._out as string[] | undefined;
-      if (!out) continue;
+      if (!out) return;
       delete res._out;
       const sent = out.filter((x) => x === 'sent').length;
       (res.chats as { sent: number; total: number }).sent = sent;
-      if (sent) { res.delivery = 'sent'; res.notified = true; notifiedCount++; continue; }
+      if (sent) { res.delivery = 'sent'; res.notified = true; return; }
       const bad = out.filter((x) => x !== 'sent');
       res.delivery = bad.length && bad.every((x) => x === bad[0]) ? bad[0] : 'failed';
-    }
+    };
 
-    const okCount = results.filter((r) => r.ok).length;
+    const wantHold = body.hold === true && isToday && !!token && toSend.length > 0;
+    let heldCount = 0;
+    let publicResults: Record<string, unknown>[];
+    if (wantHold) {
+      // Ushlab turamiz: javobda `held`; xabar HOLD_MS dan keyin fonda ketadi (o'chirilgan belgilar uchun ketmaydi)
+      const heldRes = results.filter((r) => r._out) as Record<string, unknown>[];
+      const heldIds = heldRes.map((r) => String(r.id));
+      heldCount = heldRes.length;
+      publicResults = results.map((r) => {
+        if (!r._out) return r;
+        const { _out: _skip, ...rest } = r;
+        return { ...rest, delivery: 'held', notified: false, hold_ms: HOLD_MS };
+      });
+      const task = (async () => {
+        // Davomat jadvalida notify_status ustuni bo'lmasa (migratsiya qo'llanmagan) — xato e'tiborsiz: xabar baribir ketadi
+        await admin.from('attendance').update({ notify_status: 'held' }).in('id', heldIds);
+        await sleep(HOLD_MS);
+        const { data: alive, error: aerr } = await admin.from('attendance').select('id').in('id', heldIds);
+        // Qayta o'qib bo'lmasa — yuboramiz (xabar yo'qolgandan ko'ra bekor qilingan xabar ketgani yaxshi)
+        const aliveSet = aerr || !alive ? new Set(heldIds) : new Set(alive.map((x: any) => String(x.id)));
+        const live = toSend.filter((m) => aliveSet.has(String(m.res.id)));
+        const startedAt = Date.now();
+        if (live.length) await sendAll(live, startedAt, BG_DEADLINE_MS);
+        const byCode = new Map<string, string[]>();
+        for (const res of heldRes) {
+          if (!aliveSet.has(String(res.id))) continue;
+          settle(res);
+          const code = String(res.delivery);
+          byCode.set(code, [...(byCode.get(code) ?? []), String(res.id)]);
+        }
+        for (const [code, rowIds] of byCode) {
+          await admin.from('attendance').update({ notify_status: code, notified_at: new Date().toISOString() }).in('id', rowIds);
+        }
+      })().catch(() => {});
+      const rt = (globalThis as any).EdgeRuntime;
+      if (rt?.waitUntil) rt.waitUntil(task);
+    } else {
+      if (toSend.length && token) await sendAll(toSend, reqStart, SEND_DEADLINE_MS);
+      for (const res of results) settle(res);
+      publicResults = results;
+    }
+    const notifiedCount = publicResults.filter((r) => r.notified === true).length;
+
+    const okCount = publicResults.filter((r) => r.ok).length;
 
     // Bitta o'quvchi so'ralgan bo'lsa — eski javob shakli saqlanadi
     if (ids.length === 1 && !Array.isArray(body.student_ids)) {
-      const one = results[0];
+      const one = publicResults[0];
       if (!one) return json({ error: 'student not found' }, 404);
       if (!one.ok) return json({ error: one.reason }, one.code === 'forbidden' ? 403 : one.code === 'db' ? 500 : 409);
       return json({ ...one, ok: true, day: dayKey, past: !isToday });
@@ -469,12 +518,12 @@ Deno.serve(async (req) => {
 
     return json({
       ok: true, day: dayKey, past: !isToday,
-      marked: okCount, skipped: results.length - okCount,
-      notified: notifiedCount,
+      marked: okCount, skipped: publicResults.length - okCount,
+      notified: notifiedCount, held: heldCount,
       // Xabar yetmaganlar: ota-ona botni bloklagan / yuborilmadi / vaqt tugadi (unknown — yetgan bo'lishi mumkin, alohida)
-      notify_failed: results.filter((r) => r.ok && ['blocked', 'no_chat', 'failed', 'skipped', 'bad_name', 'bad_note'].includes(String(r.delivery))).length,
-      notify_unknown: results.filter((r) => r.ok && r.delivery === 'unknown').length,
-      results,
+      notify_failed: publicResults.filter((r) => r.ok && ['blocked', 'no_chat', 'failed', 'skipped', 'bad_name', 'bad_note'].includes(String(r.delivery))).length,
+      notify_unknown: publicResults.filter((r) => r.ok && r.delivery === 'unknown').length,
+      results: publicResults,
     });
 
   } catch (e) {

@@ -46,6 +46,7 @@ const state = {
   me: null,            // { email, role, full_name, course_ids }
   courses: [],
   students: [],
+  held: new Map(),    // ushlab turilgan xabarli belgilar: id -> { until, name } ("Bekor qilish" hali xabarni to'xtata oladi)
   pc: new Map(),      // student_id -> ulangan ota-onalar (parent_chats): ona va ota alohida
   today: [],          // tanlangan kundagi yozuvlar
   day: null,          // YYYY-MM-DD — null bo'lsa bugun
@@ -167,6 +168,8 @@ const STR = {
     groupAskOut: '{course} guruhidagi {n} o\'quvchiga «Ketdi» qo\'yilsinmi?',
     groupAskNotif: 'Ota-onaga Telegram xabari boradi: {k} ta.',
     undoneNotified: 'Belgi bekor qilindi. Ota-onaga xabar allaqachon ketgan edi',
+    markedHeld: '\u23F3 {name}: {label} \u2014 ota-onaga xabar {n} soniyadan keyin ketadi', undoneHeld: 'Belgi bekor qilindi. Ota-onaga xabar ketmaydi',
+    heldWarn: '\u26A0\uFE0F {name}: {why}', groupHeldNote: '. Ota-onalarga xabar {n} soniyadan keyin ketadi',
     nudgeText: 'Kecha {course}: {n} ta o\'quvchi belgilanmagan — {names}', nudgeFix: 'Tuzatish', nudgeHide: 'Yopish',
     callParent: 'Ota-onaga qo\'ng\'iroq',
     groupAsk: '{course} guruhidagi {n} o\'quvchiga «{label}» qo\'yilsinmi?',
@@ -524,6 +527,8 @@ const STR = {
     groupAskOut: 'Поставить «Ушёл» ученикам группы {course} (всего: {n})?',
     groupAskNotif: 'Сообщение в Telegram получат родители: {k}.',
     undoneNotified: 'Отметка отменена. Сообщение родителю уже было отправлено',
+    markedHeld: '\u23F3 {name}: {label} \u2014 сообщение родителю уйдёт через {n} с', undoneHeld: 'Отметка отменена. Сообщение родителю не уйдёт',
+    heldWarn: '\u26A0\uFE0F {name}: {why}', groupHeldNote: '. Сообщения родителям уйдут через {n} с',
     nudgeText: 'Вчера в {course} не отмечено: {n} — {names}', nudgeFix: 'Исправить', nudgeHide: 'Скрыть',
     callParent: 'Позвонить родителю',
     groupAsk: 'Поставить «{label}» ученикам группы {course} (всего: {n})?',
@@ -2018,7 +2023,7 @@ async function sendMark(studentId, kind, note) {
   render();
 
   try {
-    const r = await edge('mark-attendance', { student_id: studentId, kind, note, date: state.day || undefined });
+    const r = await edge('mark-attendance', { student_id: studentId, kind, note, date: state.day || undefined, hold: true });
     // Server javobini darhol qo'yamiz (xabar ro'yxatni qayta o'qishni kutmaydi), haqiqiy holat esa
     // quyida fonda solishtiriladi — 60 o'quvchili ro'yxatda bu har bosishni ~0,6 s tezlashtiradi
     if (selDay() === day) {
@@ -2030,9 +2035,14 @@ async function sendMark(studentId, kind, note) {
     reconcileToday(day);
 
     const v = { name: s?.full_name ?? '', label: MARKS[kind].label };
+    // Xabar ushlab turilgan: shu vaqt ichida "Bekor qilish" bosilsa ota-onaga hech narsa ketmaydi
+    const held = r.delivery === 'held';
+    const holdMs = held ? (r.hold_ms || 8000) : 0;
+    if (held && r.id) { state.held.set(r.id, { until: Date.now() + holdMs, name: v.name }); watchDelivery([r.id], holdMs, day); }
     // Xabar yetib bormagan bo'lsa (bot bloklangan, Telegram javob bermadi...) o'qituvchi darhol bilsin — telefon qilish mumkin
     const why = deliveryWhy(r.delivery);
-    const msg = why ? t('markedWarn', { ...v, why })
+    const msg = held ? t('markedHeld', { ...v, n: Math.round(holdMs / 1000) })
+      : why ? t('markedWarn', { ...v, why })
       : r.notified ? t('sentToParent', v)
       : t('markedOk', v) + (isToday() && !r.muted && !s?.telegram_chat_id ? t('tgOff') : '');
     toast(msg, why ? 'bad' : 'ok', r.id ? { fn: () => undoMark(r) } : undefined);
@@ -2057,6 +2067,32 @@ function deliveryWhy(code) {
   if (code === 'bad_name' || code === 'bad_note') return t('dvBad');
   if (code === 'failed' || code === 'no_chat' || code === 'skipped') return t('dvFailed');
   return '';
+}
+
+// Ushlab turilgan xabarlar fonda ketadi: natijasi belgiga yoziladi (attendance.notify_status). Yetmagan bo'lsa o'qituvchi baribir
+// bilsin (telefon qilish mumkin). Ustun yo'q (migratsiya qo'llanmagan) yoki belgi bekor qilingan bo'lsa — jim
+function watchDelivery(ids, holdMs, day) {
+  if (!ids.length) return;
+  const steps = [holdMs + 3000, holdMs + 12000, holdMs + 35000];
+  const run = async (i) => {
+    let rows;
+    try { rows = rowsOf(await sb.from('attendance').select('*').in('id', ids)); } catch (_) { return; }
+    if (!rows.length || !rows.some((x) => 'notify_status' in x)) return;
+    const pending = rows.filter((x) => x.notify_status === 'held');
+    if (pending.length && i < steps.length - 1) { setTimeout(() => run(i + 1), steps[i + 1] - steps[i]); return; }
+    const bad = rows.filter((x) => x.notify_status && deliveryWhy(x.notify_status));
+    const unknown = bad.filter((x) => x.notify_status === 'unknown').length + pending.length;
+    const failed = bad.length - bad.filter((x) => x.notify_status === 'unknown').length;
+    if (!failed && !unknown) return;
+    if (ids.length === 1) {
+      const row = bad[0] || pending[0];
+      const st = state.students.find((x) => x.id === row?.student_id);
+      toast(t('heldWarn', { name: st?.full_name ?? '', why: deliveryWhy(row?.notify_status === 'held' || !row?.notify_status ? 'unknown' : row.notify_status) }), 'bad');
+    } else {
+      toast([failed && t('groupNotifyFail', { k: failed }), unknown && t('groupNotifyUnknown', { k: unknown })].filter(Boolean).join('. '), 'bad');
+    }
+  };
+  setTimeout(() => run(0), steps[0]);
 }
 
 // Belgi saqlangandan keyin kun ro'yxatini serverdagi holat bilan solishtirish (fonda, xabarni kutdirmasdan).
@@ -2090,8 +2126,11 @@ async function undoMark(r) {
   }
   try { await loadToday(); } catch (_) {}
   render();
-  // Ota-onaga xabar allaqachon ketgan bo'lsa — buni yashirmaymiz: belgi o'chadi, lekin xabarni qaytarib bo'lmaydi
-  toast(r.notified ? t('undoneNotified') : t('undone'), 'ok');
+  // Ota-onaga xabar allaqachon ketgan bo'lsa — buni yashirmaymiz: belgi o'chadi, lekin xabarni qaytarib bo'lmaydi.
+  // Ushlab turilgan xabar: vaqt tugashidan oldin (1,5 s zaxira bilan) bekor qilinsa — ketmaydi
+  const h = state.held.get(r.id); state.held.delete(r.id);
+  const early = !!h && Date.now() < h.until - 1500;
+  toast(r.notified || (h && !early) ? t('undoneNotified') : early ? t('undoneHeld') : t('undone'), 'ok');
 }
 
 // Kunni almashtirish: kelajakka o'tkazmaymiz. Javob kelguncha tugmalar bloklanadi.
@@ -2138,22 +2177,26 @@ async function sendGroupMark(courseId, kind) {
   const day = selDay();
   try {
     // Server bir so'rovda ko'pi bilan 60 ta o'quvchini qabul qiladi
-    let marked = 0, skipped = 0, notified = 0, nFail = 0, nUnk = 0;
-    const ids = [];
+    let marked = 0, skipped = 0, notified = 0, nFail = 0, nUnk = 0, nHeld = 0, holdMs = 0;
+    const ids = [], heldIds = [];
     for (let i = 0; i < targets.length; i += 60) {
       const r = await edge('mark-attendance', {
-        student_ids: targets.slice(i, i + 60).map((s) => s.id), kind, date: state.day || undefined,
+        student_ids: targets.slice(i, i + 60).map((s) => s.id), kind, date: state.day || undefined, hold: true,
       });
+      nHeld += r.held ?? 0;
       marked += r.marked ?? 0; skipped += r.skipped ?? 0; notified += r.notified ?? 0;
       nFail += r.notify_failed ?? 0; nUnk += r.notify_unknown ?? 0;
-      (r.results || []).forEach((x) => { if (x.ok && x.id) ids.push(x.id); });
+      (r.results || []).forEach((x) => { if (x.ok && x.id) ids.push(x.id); if (x.delivery === 'held' && x.id) { heldIds.push(x.id); holdMs = x.hold_ms || holdMs || 8000; } });
     }
+    const heldUntil = nHeld ? Date.now() + holdMs : 0;
+    if (heldIds.length) watchDelivery(heldIds, holdMs, day);
     try { await loadToday(); } catch (_) {}
     render();
     // Butun guruhni bir bosishda qaytarish ham mumkin (oldin guruh belgisida "Bekor qilish" yo'q edi)
     const warn = [nFail && t('groupNotifyFail', { k: nFail }), nUnk && t('groupNotifyUnknown', { k: nUnk })].filter(Boolean).join('. ');
-    toast((skipped ? t('groupDoneSkip', { n: marked, k: skipped }) : t('groupDone', { n: marked })) + (warn ? `. ${warn}` : ''), warn ? 'bad' : 'ok',
-      ids.length && selDay() === day ? { fn: () => undoGroup(ids, notified, day) } : undefined);
+    toast((skipped ? t('groupDoneSkip', { n: marked, k: skipped }) : t('groupDone', { n: marked })) + (warn ? `. ${warn}` : '')
+      + (nHeld ? t('groupHeldNote', { n: Math.round(holdMs / 1000) }) : ''), warn ? 'bad' : 'ok',
+      ids.length && selDay() === day ? { fn: () => undoGroup(ids, notified, day, heldUntil) } : undefined);
   } catch (err) {
     try { await loadToday(); } catch (_) {}
     render();
@@ -2162,7 +2205,7 @@ async function sendGroupMark(courseId, kind) {
 }
 
 // Guruh belgisini qaytarish: faqat shu bosish yaratgan yozuvlar o'chadi
-async function undoGroup(ids, notified, day) {
+async function undoGroup(ids, notified, day, heldUntil = 0) {
   if (selDay() !== day) return;
   const all = withDependents(ids);
   const removed = state.today.filter((x) => all.includes(x.id));
@@ -2177,7 +2220,8 @@ async function undoGroup(ids, notified, day) {
   }
   try { await loadToday(); } catch (_) {}
   render();
-  toast(notified ? t('undoneNotified') : t('undone'), 'ok');
+  const early = !!heldUntil && Date.now() < heldUntil - 1500;
+  toast(notified || (heldUntil && !early) ? t('undoneNotified') : early ? t('undoneHeld') : t('undone'), 'ok');
 }
 
 

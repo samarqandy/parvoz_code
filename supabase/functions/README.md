@@ -72,6 +72,21 @@ yozib yuborsa yoki boshqa matn yozsa, bot tugmani qayta ko'rsatadi: yozilgan raq
 faqat Telegram o'zi tasdiqlagan kontakt (tugma) qabul qilinadi. 12 xonali yozilgan raqam kod deb
 adashtirilmaydi.
 
+## Xabarni ushlab turish (`mark-attendance` → `hold`)
+
+Panel `hold: true` yuboradi: ota-onaga xabar **8 soniya** (`HOLD_MS`) ushlab turiladi. Shu vaqt ichida o'qituvchi «Bekor qilish» bossa
+belgi o'chadi va ota-onaga **hech narsa ketmaydi**; «Kelmadi» «Keldi»ni almashtirsa ham ushlangan «keldi» xabari ketmaydi.
+
+- Javob darhol qaytadi: har bir ushlangan o'quvchida `delivery: 'held'`, `hold_ms`; javob boshida `held` — nechta xabar ushlangan.
+- Ushlash **fonda** (`EdgeRuntime.waitUntil`) ishlaydi, panelga bog'liq emas: tab yopilsa ham xabar ketadi. 8 s dan keyin avval belgilar
+  hali bazada borligi qayta tekshiriladi, faqat ular uchun yuboriladi (qayta o'qib bo'lmasa — yuboriladi: yo'qolgan xabardan
+  bekor qilingan xabar yaxshi). Vaqt chegarasi — yuborish boshlanganidan 30 s.
+- Natija `attendance.notify_status` ga yoziladi: `held` → `sent | blocked | no_chat | failed | unknown | skipped | bad_name | bad_note`,
+  `notified_at` — qachon. Panel ushlash tugagach shuni o'qib, yetmagan xabar haqida ogohlantiradi. Ustun yo'q bo'lsa
+  (migratsiya qo'llanmagan) yozuv e'tiborsiz, xabar baribir ketadi, panel jim.
+- `hold` yo'q (eski panel), o'tgan kun, ulanmagan ota-ona, o'chirilgan shablon — xabar avvalgidek darhol yoki umuman ketmaydi.
+- Migratsiya: `attendance.notify_status text`, `attendance.notified_at timestamptz` (qo'shimcha, nullable).
+
 ## Belgini bekor qilish (`mark-attendance` → `undo_id`)
 
 "Kelmadi" yoki "Sababli" o'sha kundagi "Keldi/Ketdi"ni o'chiradi (bir kunda bitta
