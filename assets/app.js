@@ -245,6 +245,9 @@ const STR = {
     leadsSub: 'Saytdan kelgan murojaatlar',
     noLeadT: "Ariza yo'q",
     noLeadNew: "Yangi arizalar shu yerda ko'rinadi.",
+    leadSrc: 'Manba', leadCamp: 'Kampaniya', leadKw: "Qidiruv so'zi", leadLanding: 'Kirgan sahifa', leadRef: 'Qayerdan', leadClick: 'Reklama bosilishi',
+    ch_direct: "To'g'ridan-to'g'ri", ch_google_organic: 'Google (qidiruv)', ch_yandex_organic: 'Yandex (qidiruv)', ch_bing_organic: 'Bing (qidiruv)',
+    ch_ddg_organic: 'DuckDuckGo (qidiruv)', ch_telegram: 'Telegram', ch_instagram: 'Instagram', ch_facebook: 'Facebook', ch_referral: 'Boshqa sayt',
     noLeadOther: "Bu bo'limda ariza yo'q.",
     call: "Qo'ng'iroq",
     status: 'Holat',
@@ -605,6 +608,9 @@ const STR = {
     leadsSub: 'Обращения с сайта',
     noLeadT: 'Заявок нет',
     noLeadNew: 'Новые заявки появятся здесь.',
+    leadSrc: 'Источник', leadCamp: 'Кампания', leadKw: 'Ключевое слово', leadLanding: 'Страница входа', leadRef: 'Откуда', leadClick: 'Клик по рекламе',
+    ch_direct: 'Напрямую', ch_google_organic: 'Google (поиск)', ch_yandex_organic: 'Яндекс (поиск)', ch_bing_organic: 'Bing (поиск)',
+    ch_ddg_organic: 'DuckDuckGo (поиск)', ch_telegram: 'Telegram', ch_instagram: 'Instagram', ch_facebook: 'Facebook', ch_referral: 'Другой сайт',
     noLeadOther: 'В этом разделе заявок нет.',
     call: 'Позвонить',
     status: 'Статус',
@@ -2317,6 +2323,37 @@ function leadDup(l) {
     leads: state.leads.filter((x) => x.id !== l.id && phoneTail(x.phone) === tail).length,
   };
 }
+// Ariza qayerdan kelgani (sayt yuborgan reklama manbasi). Ustunlar bo'lmasa (eski ariza) — bo'sh.
+const PAID_CHANNELS = { google_ads: 'Google Ads', yandex_ads: 'Yandex Direct', meta: 'Meta (Instagram/Facebook)' };
+function chLabel(ch) {
+  if (!ch) return '';
+  if (PAID_CHANNELS[ch]) return PAID_CHANNELS[ch];
+  if (ch.startsWith('utm_')) return ch.slice(4);
+  return t('ch_' + ch);
+}
+const leadHasSrc = (l) => !!l.channel && l.channel !== 'direct';
+function leadSrcHtml(l) {
+  if (!leadHasSrc(l)) return '';
+  const a = l.attribution || {};
+  const bits = [`\u{1F4E3} ${esc(chLabel(l.channel))}`];
+  if (a.utm_campaign) bits.push(esc(a.utm_campaign));
+  if (a.utm_term) bits.push(`\u{1F50E} ${esc(a.utm_term)}`);
+  return `<div class="row-sub lead-src"><span>${bits.join(' \u00B7 ')}</span></div>`;
+}
+function leadSrcCard(l) {
+  const a = l.attribution || {};
+  const clickId = ['gclid', 'gbraid', 'wbraid', 'yclid', 'fbclid'].find((k) => a[k]);
+  const rows = [
+    [t('leadSrc'), l.channel ? chLabel(l.channel) : ''],
+    [t('leadCamp'), a.utm_campaign], [t('leadKw'), a.utm_term],
+    [t('leadLanding'), a.landing], [t('leadRef'), a.referrer],
+    [t('leadClick'), clickId ? `${clickId} \u2713` : ''],
+  ].filter(([, v]) => v);
+  if (!rows.length || (!leadHasSrc(l) && !a.landing && !a.referrer)) return '';
+  return `<div class="card lead-src-card" style="margin-bottom:14px">${rows.map(([k, v]) =>
+    `<div class="row-sub"><span><b>${esc(k)}:</b> ${esc(v)}</span></div>`).join('')}</div>`;
+}
+
 function leadDupHtml(l) {
   const d = leadDup(l);
   const parts = [];
@@ -2377,6 +2414,7 @@ function loadLeads() {
           ${leadWaitText(l) ? `<span class="lead-wait">${leadWaitText(l)}</span>` : ''}
         </div>
         ${l.note ? `<div class="row-sub"><span>\u{1F4AC} ${esc(l.note)}</span></div>` : ''}
+        ${leadSrcHtml(l)}
         ${leadDupHtml(l)}
       </div>
       <div class="row-actions">
@@ -2397,6 +2435,7 @@ function leadSheet(id) {
       <div class="row-sub" style="margin-top:6px"><span>${uzDate(l.created_at)}, ${hhmm(l.created_at)}</span>${leadWaitText(l) ? `<span class="lead-wait">${leadWaitText(l)}</span>` : ''}</div>
       ${leadDupHtml(l)}
     </div>
+    ${leadSrcCard(l)}
     ${l.status !== 'enrolled' ? `<button class="btn btn-primary btn-block" style="margin-bottom:14px" data-lead-enroll type="button">${I.plus} ${t('leadEnroll')}</button>` : ''}
     <div class="field"><span>${t('status')}</span>
       <div class="check-list">${Object.entries(LEAD_STATUS).map(([k, v]) =>
