@@ -931,23 +931,31 @@ try { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}
       </h2>
       <p class="sec-sub">
 
-        <span>Уроки, турниры и самые яркие моменты наших учеников.</span>
+        <span>Кадры с наших занятий и яркие моменты наших учеников.</span>
 
       </p>
     </div>
 
-        <div class="gallery-grid" data-reveal>
-      <button class="g-item g-wide" type="button" data-full="assets/gallery/placeholder-hero.svg">
-        <img src="assets/gallery/placeholder-hero.svg" alt="Жизнь в центре — фото скоро" loading="lazy" width="600" height="600">
+    <div class="gallery-grid" data-reveal>
+      <button class="g-item g-wide" type="button" data-full="assets/gallery/chess-class-board.webp">
+        <img src="assets/gallery/chess-class-board-tile.webp" alt="Урок шахмат: преподаватель показывает ход на демонстрационной доске" loading="lazy" width="640" height="640">
       </button>
-      <button class="g-item" type="button" data-full="assets/gallery/placeholder-code.svg">
-        <img src="assets/gallery/placeholder-code.svg" alt="Урок программирования — фото скоро" loading="lazy" width="600" height="600">
+      <button class="g-item" type="button" data-full="assets/gallery/building.webp">
+        <img src="assets/gallery/building-tile.webp" alt="Здание учебного центра Parvoz и входная дверь, Самарканд" loading="lazy" width="640" height="640">
       </button>
-      <button class="g-item" type="button" data-full="assets/gallery/placeholder-robot.svg">
-        <img src="assets/gallery/placeholder-robot.svg" alt="Урок робототехники — фото скоро" loading="lazy" width="600" height="600">
+      <button class="g-item g-video" type="button" data-video="assets/gallery/robotics-lesson.mp4" data-poster="assets/gallery/robotics-poster.webp">
+        <img src="assets/gallery/robotics-tile.webp" alt="Урок робототехники: ученики работают за компьютерами с электронными схемами (видео)" loading="lazy" width="640" height="640">
+        <span class="g-play" aria-hidden="true"><svg viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="27" fill="rgba(4,8,20,.55)" stroke="#fff" stroke-width="2"/><path d="M23 18.5v19l16-9.5z" fill="#fff"/></svg></span>
       </button>
-      <button class="g-item" type="button" data-full="assets/gallery/placeholder-chess.svg">
-        <img src="assets/gallery/placeholder-chess.svg" alt="Шахматный турнир — фото скоро" loading="lazy" width="600" height="600">
+      <button class="g-item" type="button" data-full="assets/gallery/chess-class-tables.webp">
+        <img src="assets/gallery/chess-class-tables-tile.webp" alt="Урок шахмат: ученики за шахматными досками слушают преподавателя" loading="lazy" width="640" height="640">
+      </button>
+      <button class="g-item g-video" type="button" data-video="assets/gallery/lessons-promo.mp4" data-poster="assets/gallery/promo-poster.webp">
+        <img src="assets/gallery/promo-tile.webp" alt="Фрагменты занятий центра Parvoz: ученики работают за компьютерами (видео)" loading="lazy" width="640" height="640">
+        <span class="g-play" aria-hidden="true"><svg viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="27" fill="rgba(4,8,20,.55)" stroke="#fff" stroke-width="2"/><path d="M23 18.5v19l16-9.5z" fill="#fff"/></svg></span>
+      </button>
+      <button class="g-item" type="button" data-full="assets/gallery/chess-teacher-board.webp">
+        <img src="assets/gallery/chess-teacher-board-tile.webp" alt="Преподаватель шахмат у демонстрационной доски" loading="lazy" width="640" height="640">
       </button>
       <a class="g-item g-ig" href="https://www.instagram.com/parvoz_code" target="_blank" rel="noopener">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="ig_g2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#fd5"/><stop offset="50%" stop-color="#ff543e"/><stop offset="100%" stop-color="#c837ab"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" stroke="url(#ig_g2)" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="url(#ig_g2)" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="url(#ig_g2)"/></svg>
@@ -958,8 +966,9 @@ try { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}
   </section>
 </div>
 
-<dialog class="lightbox" id="lightbox" aria-label="Фото в увеличенном виде">
+<dialog class="lightbox" id="lightbox" aria-label="Фото или видео в увеличенном виде">
   <img src="" alt="" id="lightboxImg">
+  <video id="lightboxVideo" controls playsinline preload="none" hidden></video>
   <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Закрыть">✕</button>
 </dialog>
 
@@ -1473,17 +1482,35 @@ document.querySelectorAll('.faq-item').forEach((item, i) => {
 /* ============ GALLERY LIGHTBOX ============ */
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
-document.querySelectorAll('.g-item[data-full]').forEach(item => {
+const lightboxVideo = document.getElementById('lightboxVideo');
+document.querySelectorAll('.g-item[data-full], .g-item[data-video]').forEach(item => {
   item.addEventListener('click', () => {
     const img = item.querySelector('img');
-    lightboxImg.src = item.dataset.full;
-    lightboxImg.alt = img ? img.alt : '';
+    const alt = img ? img.alt : '';
+    const isVideo = !!item.dataset.video;
+    lightboxImg.hidden = isVideo;
+    lightboxVideo.hidden = !isVideo;
+    if (isVideo) {
+      // Video faqat bosilganda yuklanadi (sahifa ochilganda trafik ketmaydi)
+      lightboxVideo.poster = item.dataset.poster || '';
+      lightboxVideo.setAttribute('aria-label', alt);
+      lightboxVideo.src = item.dataset.video;
+    } else {
+      lightboxImg.src = item.dataset.full;
+      lightboxImg.alt = alt;
+    }
     lightbox.showModal();
+    if (isVideo) lightboxVideo.play().catch(() => {});
   });
 });
 document.getElementById('lightboxClose').addEventListener('click', () => lightbox.close());
 lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.close(); });
-lightbox.addEventListener('close', () => { lightboxImg.src = ''; });
+lightbox.addEventListener('close', () => {
+  lightboxImg.src = '';
+  lightboxVideo.pause();
+  lightboxVideo.removeAttribute('src');
+  lightboxVideo.load();
+});
 
 /* ============ SHARHLAR (assets/reviews.json) ============ */
 (function loadReviews() {
