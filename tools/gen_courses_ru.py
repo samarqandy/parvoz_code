@@ -109,7 +109,7 @@ def ru_ld(uz_ld, c, url):
     course['offers']['url'] = url
     for inst in course['hasCourseInstance']:
         inst['location']['name'] = 'Учебный центр Parvoz'
-        inst['location']['address'].update(streetAddress='ул. Дагбитская, 11', addressLocality='Самарканд',
+        inst['location']['address'].update(streetAddress='ул. Дагбитская, 11, 2 этаж', addressLocality='Самарканд',
                                            addressRegion='Самаркандская область')
     crumbs = next(x for x in g if x['@type'] == 'BreadcrumbList')['itemListElement']
     crumbs[0].update(name='Главная', item=BASE + 'ru.html')

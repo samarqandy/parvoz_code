@@ -34,8 +34,8 @@ SHARED = [
     ('<span class="k">Sinov darsi</span><span class="v">Bepul</span>', '<span class="k">Пробный урок</span><span class="v">Бесплатно</span>'),
     ("<span class=\"k\">To'lov</span><span class=\"v\">Naqd yoki Click / Payme</span>",
      '<span class="k">Оплата</span><span class="v">Наличными или Click / Payme</span>'),
-    ("<span class=\"k\">Manzil</span><span class=\"v\">Dagbit ko'chasi 11, Samarqand<br>",
-     '<span class="k">Адрес</span><span class="v">Самарканд, ул. Дагбитская, 11<br>'),
+    ("<span class=\"k\">Manzil</span><span class=\"v\">Dahbed ko'chasi 11, 2-qavat, Samarqand<br>",
+     '<span class="k">Адрес</span><span class="v">Самарканд, ул. Дагбитская, 11, 2 этаж<br>'),
     ("(Gelion chorrahasi, Mone Café ro'parasida)", '(перекрёсток Гелион, напротив Mone Café)'),
     # Bosh sahifadagi ruscha tarjima bilan bir xil
     ("Iqtidorli o'quvchilar uchun <strong>scholarship — bepul o'qish</strong> imkoniyati mavjud!",
