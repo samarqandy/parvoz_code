@@ -931,26 +931,32 @@
         <span data-lang="en">Life at the center</span>
       </h2>
       <p class="sec-sub">
-        <span data-lang="uz" class="show">Darslar, turnirlar va o'quvchilarimizning eng yorqin lahzalari.</span>
-        <span data-lang="ru">Уроки, турниры и самые яркие моменты наших учеников.</span>
-        <span data-lang="en">Lessons, tournaments, and our students' brightest moments.</span>
+        <span data-lang="uz" class="show">Darslarimizdan va o'quvchilarimizning yorqin lahzalaridan lavhalar.</span>
+        <span data-lang="ru">Кадры с наших занятий и яркие моменты наших учеников.</span>
+        <span data-lang="en">Glimpses of our lessons and our students' brightest moments.</span>
       </p>
     </div>
 
-    <!-- Real fotolarni assets/gallery/ papkasiga joylab, quyidagi src va alt'larni yangilang.
-         "Tez orada" plashkalari haqiqiy suratlar kelguncha vaqtinchalik turadi. -->
     <div class="gallery-grid" data-reveal>
-      <button class="g-item g-wide" type="button" data-full="assets/gallery/placeholder-hero.svg">
-        <img src="assets/gallery/placeholder-hero.svg" alt="Markazdagi hayot — foto tez orada" loading="lazy" width="600" height="600">
+      <button class="g-item g-wide" type="button" data-full="assets/gallery/chess-class-board.webp">
+        <img src="assets/gallery/chess-class-board-tile.webp" alt="Shaxmat darsi: ustoz namoyish taxtasida o'quvchilarga yurishni ko'rsatmoqda" loading="lazy" width="640" height="640">
       </button>
-      <button class="g-item" type="button" data-full="assets/gallery/placeholder-code.svg">
-        <img src="assets/gallery/placeholder-code.svg" alt="Dasturlash darsi — foto tez orada" loading="lazy" width="600" height="600">
+      <button class="g-item" type="button" data-full="assets/gallery/building.webp">
+        <img src="assets/gallery/building-tile.webp" alt="Parvoz O'quv Markazi binosi va kirish eshigi, Samarqand" loading="lazy" width="640" height="640">
       </button>
-      <button class="g-item" type="button" data-full="assets/gallery/placeholder-robot.svg">
-        <img src="assets/gallery/placeholder-robot.svg" alt="Robototexnika darsi — foto tez orada" loading="lazy" width="600" height="600">
+      <button class="g-item g-video" type="button" data-video="assets/gallery/robotics-lesson.mp4" data-poster="assets/gallery/robotics-poster.webp">
+        <img src="assets/gallery/robotics-tile.webp" alt="Robototexnika darsi: o'quvchilar kompyuter va elektron sxemalar bilan ishlamoqda (video)" loading="lazy" width="640" height="640">
+        <span class="g-play" aria-hidden="true"><svg viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="27" fill="rgba(4,8,20,.55)" stroke="#fff" stroke-width="2"/><path d="M23 18.5v19l16-9.5z" fill="#fff"/></svg></span>
       </button>
-      <button class="g-item" type="button" data-full="assets/gallery/placeholder-chess.svg">
-        <img src="assets/gallery/placeholder-chess.svg" alt="Shaxmat turniri — foto tez orada" loading="lazy" width="600" height="600">
+      <button class="g-item" type="button" data-full="assets/gallery/chess-class-tables.webp">
+        <img src="assets/gallery/chess-class-tables-tile.webp" alt="Shaxmat darsi: o'quvchilar shaxmat taxtalari oldida ustozni tinglamoqda" loading="lazy" width="640" height="640">
+      </button>
+      <button class="g-item g-video" type="button" data-video="assets/gallery/lessons-promo.mp4" data-poster="assets/gallery/promo-poster.webp">
+        <img src="assets/gallery/promo-tile.webp" alt="Parvoz markazi darslaridan lavhalar: o'quvchilar kompyuterda ishlamoqda (video)" loading="lazy" width="640" height="640">
+        <span class="g-play" aria-hidden="true"><svg viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="27" fill="rgba(4,8,20,.55)" stroke="#fff" stroke-width="2"/><path d="M23 18.5v19l16-9.5z" fill="#fff"/></svg></span>
+      </button>
+      <button class="g-item" type="button" data-full="assets/gallery/chess-teacher-board.webp">
+        <img src="assets/gallery/chess-teacher-board-tile.webp" alt="Shaxmat ustozi namoyish taxtasi yonida" loading="lazy" width="640" height="640">
       </button>
       <a class="g-item g-ig" href="https://www.instagram.com/parvoz_code" target="_blank" rel="noopener">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="ig_g2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#fd5"/><stop offset="50%" stop-color="#ff543e"/><stop offset="100%" stop-color="#c837ab"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" stroke="url(#ig_g2)" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="url(#ig_g2)" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="url(#ig_g2)"/></svg>
@@ -961,8 +967,9 @@
   </section>
 </div>
 
-<dialog class="lightbox" id="lightbox" aria-label="Foto kattalashtirilgan ko'rinishda">
+<dialog class="lightbox" id="lightbox" aria-label="Foto yoki video kattalashtirilgan ko'rinishda">
   <img src="" alt="" id="lightboxImg">
+  <video id="lightboxVideo" controls playsinline preload="none" hidden></video>
   <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Yopish">✕</button>
 </dialog>
 
@@ -1482,17 +1489,35 @@ document.querySelectorAll('.faq-item').forEach((item, i) => {
 /* ============ GALLERY LIGHTBOX ============ */
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
-document.querySelectorAll('.g-item[data-full]').forEach(item => {
+const lightboxVideo = document.getElementById('lightboxVideo');
+document.querySelectorAll('.g-item[data-full], .g-item[data-video]').forEach(item => {
   item.addEventListener('click', () => {
     const img = item.querySelector('img');
-    lightboxImg.src = item.dataset.full;
-    lightboxImg.alt = img ? img.alt : '';
+    const alt = img ? img.alt : '';
+    const isVideo = !!item.dataset.video;
+    lightboxImg.hidden = isVideo;
+    lightboxVideo.hidden = !isVideo;
+    if (isVideo) {
+      // Video faqat bosilganda yuklanadi (sahifa ochilganda trafik ketmaydi)
+      lightboxVideo.poster = item.dataset.poster || '';
+      lightboxVideo.setAttribute('aria-label', alt);
+      lightboxVideo.src = item.dataset.video;
+    } else {
+      lightboxImg.src = item.dataset.full;
+      lightboxImg.alt = alt;
+    }
     lightbox.showModal();
+    if (isVideo) lightboxVideo.play().catch(() => {});
   });
 });
 document.getElementById('lightboxClose').addEventListener('click', () => lightbox.close());
 lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.close(); });
-lightbox.addEventListener('close', () => { lightboxImg.src = ''; });
+lightbox.addEventListener('close', () => {
+  lightboxImg.src = '';
+  lightboxVideo.pause();
+  lightboxVideo.removeAttribute('src');
+  lightboxVideo.load();
+});
 
 /* ============ SHARHLAR (assets/reviews.json) ============ */
 (function loadReviews() {
