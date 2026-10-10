@@ -70,8 +70,36 @@ yozadi. Ruscha tanlagan odam bosh sahifaga kirsa, `index.html` uni `ru.html`
 ga o'tkazadi ("Orqaga" bilan qaytganda o'tkazmaydi). Qidiruv robotlarida
 `localStorage` bo'sh — ular har doim o'z tilidagi sahifani ko'radi.
 
-Uchala generatorni ham qayta ishga tushirish xavfsiz — o'zgarish bo'lmasa
-fayllar bir xil qoladi. Tartib: `gen_articles.py`, `gen_courses_ru.py`,
-`gen_home_ru.py`.
+## Inglizcha bosh sahifa
+
+- `home_en.py` — `en.html` uchun `<head>`, JSON-LD, atribut tarjimalari, kurslar
+  haqida batafsil bo'lim (`DETAILS`) va qo'shimcha savol-javoblar (`EXTRA_FAQ`).
+- `gen_home_en.py` — `index.html` dan `en.html` ni yozadi (`gen_home_ru.py` bilan bir xil usul).
+
+```
+python3 tools/gen_home_en.py
+```
+
+Inglizcha kurs sahifalari yo'q: kurs kartalari `en.html` ichidagi bo'limlarga olib boradi.
+`EXTRA_FAQ` va `DETAILS` ga faqat tasdiqlangan faktlarni yozing (manzil, narx, jadval — `llms.txt`
+va o'zbekcha kurs sahifalaridagi bilan bir xil). Hreflang uchligi (uz / ru / en) `index.html`
+`<head>` ida, `sitemap.xml` yozuvlarini `gen_home_ru.py` yangilaydi.
+Tilni tanlash: `index.html` dagi RU va EN — havola; oldin `ru` yoki `en` tanlagan odamni
+`index.html` o'sha sahifaga o'tkazadi.
+
+## AI assistentlar uchun (GEO)
+
+- `llms.txt` — qisqa fakt varaqasi (NAP, narx, jadval, sahifalar xaritasi); qo'lda yangilanadi.
+- `gen_llms_full.py` — `llms-full.txt`: markaz faktlari (`llms.txt` boshi) + kurs va maqolalarning
+  to'liq matni (o'zbekcha va ruscha). Kurs/maqola matni o'zgarsa qayta ishga tushiring.
+- `parvoz-markazi-haqida-savol-javob.html` / `uchebnyj-centr-parvoz-voprosy-otvety.html` —
+  `articles.py` / `articles_ru.py` dagi 7-maqola (19 ta savol-javob); javob birinchi jumlada.
+
+```
+python3 tools/gen_llms_full.py
+```
+
+Hamma generatorni qayta ishga tushirish xavfsiz — o'zgarish bo'lmasa fayllar bir xil qoladi.
+Tartib: `gen_articles.py`, `gen_courses_ru.py`, `gen_home_ru.py`, `gen_home_en.py`, `gen_llms_full.py`.
 
 `llms.txt` hali qo'lda yangilanadi — mazmun o'zgarsa, uni ham tekshiring.

@@ -11,6 +11,7 @@
 <link rel="canonical" href="https://parvozcode.uz/">
 <link rel="alternate" hreflang="uz" href="https://parvozcode.uz/">
 <link rel="alternate" hreflang="ru" href="https://parvozcode.uz/ru.html">
+<link rel="alternate" hreflang="en" href="https://parvozcode.uz/en.html">
 <link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/">
 
 <!-- SEO / Open Graph -->
@@ -30,7 +31,7 @@
 <meta name="theme-color" content="#071029" id="themeColorMeta">
 <link rel="manifest" href="manifest.json">
 
-<!-- Til: avval ruscha tanlagan odam bosh sahifaga kirsa — ruscha bosh sahifaga (ru.html).
+<!-- Til: avval ruscha yoki inglizcha tanlagan odam bosh sahifaga kirsa — o'sha tildagi bosh sahifaga (ru.html, en.html).
      Qidiruv robotlarida localStorage bo'sh, ular doim shu o'zbekcha sahifani ko'radi.
      "Orqaga" tugmasi bilan qaytganda o'tkazmaymiz — aks holda odam o'zbekchaga qaytolmasdi. -->
 <script id="langRoute">
@@ -38,10 +39,12 @@
   try {
     var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
     var back = nav ? nav.type === 'back_forward' : (performance.navigation && performance.navigation.type === 2);
-    if (!back && localStorage.getItem('parvoz-lang') === 'ru') {
+    var l = localStorage.getItem('parvoz-lang');
+    var to = l === 'ru' ? 'ru.html' : l === 'en' ? 'en.html' : '';
+    if (!back && to) {
       window.__toRu = true;
       document.documentElement.style.visibility = 'hidden';
-      location.replace('ru.html' + location.search + location.hash);
+      location.replace(to + location.search + location.hash);
     }
   } catch (e) {}
 })();
@@ -324,7 +327,7 @@
     <div class="lang-btns" role="group" aria-label="Til tanlash">
       <button class="lang-btn active" data-set-lang="uz" type="button">UZ</button>
       <a class="lang-btn" href="ru.html" hreflang="ru" lang="ru" data-set-lang="ru">RU</a>
-      <button class="lang-btn" data-set-lang="en" type="button">EN</button>
+      <a class="lang-btn" href="en.html" hreflang="en" lang="en" data-set-lang="en">EN</a>
     </div>
 
     <button class="theme-btn" id="themeBtn" type="button" aria-label="Rejimni almashtirish">
@@ -1329,9 +1332,9 @@ try {
 } catch (e) {}
 
 /* ============ LANGUAGE ============ */
-// Ruscha bosh sahifa — alohida fayl: ru.html (tools/gen_home_ru.py shu fayldan yaratadi).
-// Bu yerda faqat o'zbekcha va inglizcha joyida almashadi; RU havolasi ru.html ga olib boradi.
-// ru.html da til doim ruscha.
+// Ruscha va inglizcha bosh sahifa — alohida fayllar: ru.html, en.html (tools/gen_home_ru.py va
+// tools/gen_home_en.py shu fayldan yaratadi). RU va EN havolalari o'sha sahifalarga olib boradi;
+// bu sahifada til doim o'zbekcha, ru.html va en.html da — ruscha va inglizcha.
 const LANGS = ['uz','ru','en'];
 const PAGE_LANG = document.documentElement.lang;
 function setLang(lang) {
@@ -1365,10 +1368,8 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
     setLang(btn.dataset.setLang);
   });
 });
-let savedLang = 'uz';
-try { savedLang = localStorage.getItem('parvoz-lang') || 'uz'; } catch(e) {}
-// O'zbekcha sahifa ruschani o'zida ko'rsatmaydi — buning uchun ru.html bor
-setLang(PAGE_LANG !== 'uz' ? PAGE_LANG : (savedLang === 'en' ? 'en' : 'uz'));
+// Til sahifaning o'zidan olinadi (<html lang>): har bir til alohida fayl
+setLang(PAGE_LANG);
 // "Orqaga" bilan keshdan qaytganda tanlov shu sahifa tiliga qaytadi
 window.addEventListener('pageshow', e => { if (e.persisted) setLang(currentLang); });
 

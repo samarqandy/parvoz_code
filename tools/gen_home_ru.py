@@ -31,8 +31,10 @@ BASE = 'https://parvozcode.uz/'
 URL = BASE + 'ru.html'
 KEEP = 'ru'
 
+EN_URL = BASE + 'en.html'
 HREFLANG = (f'<link rel="alternate" hreflang="uz" href="{BASE}">\n'
             f'<link rel="alternate" hreflang="ru" href="{URL}">\n'
+            f'<link rel="alternate" hreflang="en" href="{EN_URL}">\n'
             f'<link rel="alternate" hreflang="x-default" href="{BASE}">')
 BOOT = "<script>\ntry { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}\n</script>"
 NOTE = ('<!-- Bu fayl tools/gen_home_ru.py tomonidan index.html dan yaratiladi — qo\'lda tahrirlamang.\n'
@@ -188,16 +190,18 @@ def check(page):
 
 
 def sync_sitemap():
+    """Bosh sahifa uchlik (uz / ru / en) uchun sitemap yozuvlari."""
     path = ROOT / 'sitemap.xml'
     xml = path.read_text()
-    xml = re.sub(r'\n  <url>\n    <loc>' + re.escape(URL) + r'</loc>.*?</url>', '', xml, flags=re.S)
+    for u in (URL, EN_URL):
+        xml = re.sub(r'\n  <url>\n    <loc>' + re.escape(u) + r'</loc>.*?</url>', '', xml, flags=re.S)
     m = re.search(r'  <url>\n    <loc>' + re.escape(BASE) + r'</loc>.*?</url>', xml, re.S)
     block = m.group(0)
     tail = re.sub(r'\s*<xhtml:link[^>]*/>', '', block[block.index('</loc>') + len('</loc>'):])
     links = '\n'.join(f'    <xhtml:link rel="alternate" hreflang="{c}" href="{u}"/>'
-                      for c, u in (('uz', BASE), ('ru', URL), ('x-default', BASE)))
+                      for c, u in (('uz', BASE), ('ru', URL), ('en', EN_URL), ('x-default', BASE)))
     entry = lambda loc: f'  <url>\n    <loc>{loc}</loc>\n{links}{tail}'  # noqa: E731
-    path.write_text(xml.replace(block, entry(BASE) + '\n' + entry(URL)))
+    path.write_text(xml.replace(block, '\n'.join(entry(u) for u in (BASE, URL, EN_URL))))
 
 
 def main():

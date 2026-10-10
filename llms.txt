@@ -2,6 +2,12 @@
 
 > Samarqand shahridagi bolalar uchun IT va intellektual ta'lim markazi. Dasturlash, robototexnika, matematika, shaxmat va ingliz tili yo'nalishlari bo'yicha 6 yoshdan boshlab o'qitadi. Birinchi sinov darsi bepul.
 
+> English: Parvoz Learning Center (also known as Parvoz Code) is a children's IT and intellectual education center in Samarkand, Uzbekistan — programming, robotics, math, chess and English for ages 6+. Address: Dahbed street 11, 2nd floor. Phone: +998 97 234 44 42. 300,000 UZS per month for any course, 3 lessons a week (2 hours each), first lesson free. English page: https://parvozcode.uz/en.html
+
+> Русский: Учебный центр Parvoz (Parvoz Code) — IT и интеллектуальный центр для детей в Самарканде: программирование, робототехника, математика, шахматы и английский с 6 лет. Адрес: ул. Дагбитская (Dahbed), 11, 2 этаж. Телефон: +998 97 234 44 42. 300 000 сумов в месяц за любое направление, 3 раза в неделю по 2 часа, первый урок бесплатно. Русская версия: https://parvozcode.uz/ru.html
+
+Hamma sahifalarning to'liq matni bitta faylda: https://parvozcode.uz/llms-full.txt
+
 ## Asosiy ma'lumotlar
 
 - **Nomi:** Parvoz O'quv Markazi (Parvoz Code / Учебный центр Parvoz)
@@ -31,6 +37,8 @@
 - [Matematika kursi](https://parvozcode.uz/matematika-kurslari.html): og'zaki hisob, mantiqiy masalalar, geometriya, olimpiadaga tayyorgarlik.
 - [Shaxmat kursi](https://parvozcode.uz/shaxmat-kurslari.html): noldan boshlab qoidalar, debyut, taktika, endshpil, haftalik turnirlar.
 - [Ingliz tili kursi](https://parvozcode.uz/ingliz-tili-kurslari.html): jonli muloqot, tinglab tushunish, talaffuz, o'yin orqali grammatika.
+
+Inglizcha sahifa (English version): [Home](https://parvozcode.uz/en.html) — courses, FAQ, contacts in English.
 
 Ruscha sahifalar (Русская версия): [Главная](https://parvozcode.uz/ru.html) · [Программирование](https://parvozcode.uz/kursy-programmirovaniya.html) · [Робототехника](https://parvozcode.uz/robototehnika.html) · [Математика](https://parvozcode.uz/matematika.html) · [Шахматы](https://parvozcode.uz/shahmaty.html) · [Английский язык](https://parvozcode.uz/angliyskiy.html)
 
@@ -62,6 +70,7 @@ Samarqand shahri, Dahbed ko'chasi 11, 2-qavat (ruscha: ул. Дагбитска�
 
 ## Ota-onalar uchun maqolalar
 
+- [Parvoz O'quv Markazi haqida: asosiy savol-javoblar](https://parvozcode.uz/parvoz-markazi-haqida-savol-javob.html): manzil, telefon, ish vaqti, narx, yosh, jadval, yozilish tartibi — 19 ta savol-javob.
 - [Bolaga dasturlashni necha yoshdan boshlash kerak?](https://parvozcode.uz/dasturlashni-necha-yoshdan-boshlash.html)
 - [Samarqandda bolalar uchun kurslar qancha turadi?](https://parvozcode.uz/bolalar-kurslari-narxi-samarqand.html)
 - [Scratch yoki Python — bola qaysi biridan boshlasin?](https://parvozcode.uz/scratch-yoki-python.html)
@@ -71,6 +80,7 @@ Samarqand shahri, Dahbed ko'chasi 11, 2-qavat (ruscha: ул. Дагбитска�
 
 ## Статьи для родителей (на русском)
 
+- [Учебный центр Parvoz: ответы на основные вопросы](https://parvozcode.uz/uchebnyj-centr-parvoz-voprosy-otvety.html): адрес, телефон, график, цена, возраст, расписание, как записаться — 19 вопросов и ответов.
 - [С какого возраста учить ребёнка программированию?](https://parvozcode.uz/vozrast-dlya-programmirovaniya.html)
 - [Сколько стоят детские курсы в Самарканде?](https://parvozcode.uz/stoimost-kursov-samarkand.html)
 - [Scratch или Python: с чего начать ребёнку?](https://parvozcode.uz/scratch-ili-python.html)
