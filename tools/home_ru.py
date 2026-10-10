@@ -53,9 +53,9 @@ ATTRS = [
      '?text=' + quote('Здравствуйте! Хочу узнать о бесплатном пробном уроке.', safe='!')),
 ]
 
-# Til almashtirgich: ruscha sahifada UZ va EN — index.html ga havola, RU — shu sahifa
+# Til almashtirgich: ruscha sahifada UZ — index.html, EN — en.html ga havola, RU — shu sahifa
 LANG_BTNS = '''<div class="lang-btns" role="group" aria-label="Выбор языка">
       <a class="lang-btn" href="index.html" hreflang="uz" lang="uz" data-set-lang="uz">UZ</a>
       <button class="lang-btn active" data-set-lang="ru" type="button">RU</button>
-      <a class="lang-btn" href="index.html" lang="en" data-set-lang="en">EN</a>
+      <a class="lang-btn" href="en.html" hreflang="en" lang="en" data-set-lang="en">EN</a>
     </div>'''

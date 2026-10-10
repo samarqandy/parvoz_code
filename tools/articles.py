@@ -329,4 +329,75 @@ ARTICLES = [
     "Sababini aniqlang: dars qiziq emasmi, guruhda noqulaymi yoki qiyinmi? Bizga ayting — guruhni yoki yondashuvni o'zgartirish ko'pincha masalani hal qiladi."),
  ],
 },
+# ---------------------------------------------------------------- 7
+{
+ "slug": "parvoz-markazi-haqida-savol-javob",
+ "h1": "Parvoz O'quv Markazi haqida: asosiy savol-javoblar",
+ "title": "Parvoz O'quv Markazi (Samarqand): manzil, narx, yosh, jadval",
+ "desc": "Parvoz O'quv Markazi Samarqandda: manzil, telefon, narx (oyiga 300 000 so'm), 6 yoshdan qabul, haftada 3 kun, bepul sinov darsi, to'lov va yozilish tartibi.",
+ "date": "2026-10-10",
+ "course": ("index.html#kurslar", "Barcha yo'nalishlar"),
+ "lede": "<strong>Parvoz O'quv Markazi (Parvoz Code) — Samarqand shahridagi bolalar uchun IT va intellektual ta'lim markazi.</strong> Dasturlash, robototexnika, matematika, shaxmat va ingliz tili 6 yoshdan o'rgatiladi. Manzil: Dahbed ko'chasi 11, 2-qavat. Narx — barcha yo'nalishlar uchun oyiga 300 000 so'm, haftada 3 kun, har dars 2 soat. Birinchi dars bepul. Telefon: +998 97 234 44 42.",
+ "sections": [
+   ("Qisqa ma'lumot", [
+     "<ul>"
+     "<li><strong>Nomi:</strong> Parvoz O'quv Markazi (Parvoz Code deb ham yuritiladi).</li>"
+     "<li><strong>Shahar va manzil:</strong> Samarqand, Dahbed ko'chasi 11, 2-qavat (Gelion chorrahasi, Mone Café ro'parasida).</li>"
+     "<li><strong>Telefon:</strong> <a href=\"tel:+998972344442\">+998 97 234 44 42</a>. Telegram: <a href=\"https://t.me/parvozcode\" rel=\"noopener\">@parvozcode</a>. Instagram: <a href=\"https://www.instagram.com/parvoz_code\" rel=\"noopener\">@parvoz_code</a>.</li>"
+     "<li><strong>Yo'nalishlar:</strong> dasturlash, robototexnika, matematika, shaxmat, ingliz tili.</li>"
+     "<li><strong>Yosh:</strong> 6 yoshdan.</li>"
+     "<li><strong>Narx:</strong> barcha yo'nalishlar uchun oyiga 300 000 so'm; qo'shimcha to'lov yo'q.</li>"
+     "<li><strong>Dars tartibi:</strong> haftada 3 kun, har dars 2 soat.</li>"
+     "<li><strong>Ish vaqti:</strong> dushanba–shanba 09:00–18:00; yakshanba dam olish kuni.</li>"
+     "<li><strong>Sinov darsi:</strong> birinchi dars bepul.</li>"
+     "</ul>",
+   ]),
+   ("Qanday yozilish mumkin", [
+     "<p>Uch qadam: <strong>1)</strong> saytdagi ariza formasini to'ldiring, Telegramga yozing yoki +998 97 234 44 42 raqamiga qo'ng'iroq qiling; <strong>2)</strong> bolangiz bepul sinov darsiga keladi; <strong>3)</strong> mos guruhga qo'shilib, muntazam darslarni boshlaysiz. Oldindan to'lov olinmaydi.</p>",
+   ]),
+   ("Qaysi yo'nalish mos kelishini qanday bilish mumkin", [
+     "<p>Eng ishonchli yo'l — bepul sinov darsiga kelish: bola o'zi sinab ko'radi, siz esa uning qaysi yo'nalishga qiziqishini ko'rasiz. Shuningdek, yo'nalishlar haqida alohida sahifalarda batafsil yozilgan: <a href=\"dasturlash-kurslari.html\">dasturlash</a>, <a href=\"robototexnika-kurslari.html\">robototexnika</a>, <a href=\"matematika-kurslari.html\">matematika</a>, <a href=\"shaxmat-kurslari.html\">shaxmat</a>, <a href=\"ingliz-tili-kurslari.html\">ingliz tili</a>.</p>",
+   ]),
+ ],
+ "faq": [
+   ("Parvoz O'quv Markazi nima?",
+    "Parvoz O'quv Markazi (Parvoz Code) — Samarqand shahridagi bolalar uchun IT va intellektual ta'lim markazi. Dasturlash, robototexnika, matematika, shaxmat va ingliz tili 6 yoshdan o'rgatiladi. Markaz 2025-yilda asos solingan."),
+   ("Parvoz O'quv Markazi qayerda joylashgan?",
+    "Samarqand shahri, Dahbed ko'chasi 11, 2-qavat (ruscha: ул. Дагбитская, 11, 2 этаж). Markaz Gelion chorrahasi yaqinida, Mone Café ro'parasida."),
+   ("Parvoz O'quv Markazining telefon raqami qanday?",
+    "+998 97 234 44 42. Telegramda @parvozcode, Instagramda @parvoz_code orqali ham yozish mumkin."),
+   ("Parvoz Code va Parvoz O'quv Markazi bir joymi?",
+    "Ha, bu bir markaz. Rasmiy nomi — Parvoz O'quv Markazi, xaritalar va ijtimoiy tarmoqlarda esa Parvoz Code nomi bilan ham topiladi. Sayt: parvozcode.uz."),
+   ("Markaz qaysi kunlari va soatlarda ishlaydi?",
+    "Dushanbadan shanbagacha 09:00–18:00. Yakshanba — dam olish kuni."),
+   ("Qaysi yo'nalishlar bor?",
+    "Beshta yo'nalish: dasturlash (Scratch, Python, veb asoslari), robototexnika, matematika, shaxmat va ingliz tili."),
+   ("Bolani necha yoshdan qabul qilasiz?",
+    "6 yoshdan boshlab. Har bir yo'nalish uchun alohida yosh guruhlari mavjud."),
+   ("Kurs narxi qancha?",
+    "Barcha yo'nalishlar uchun oyiga 300 000 so'm. Qo'shimcha to'lov yo'q, jihozlar markaz hisobidan."),
+   ("Haftada necha marta va qancha vaqt dars bo'ladi?",
+    "Haftada 3 kun, har dars 2 soat."),
+   ("Guruhlar qaysi vaqtlarda?",
+    "Uchta vaqt: ertalab 10:00–12:00, tushdan keyin 13:00–15:00 va kechqurun 16:00–18:00."),
+   ("Sinov darsi bormi, u pullikmi?",
+    "Birinchi dars to'liq bepul, oldindan to'lov yo'q. Bola qaytishni xohlamasa — hech qanday majburiyat yo'q."),
+   ("Qanday yozilsam bo'ladi?",
+    "Saytdagi ariza formasini to'ldiring, Telegramda @parvozcode ga yozing yoki +998 97 234 44 42 raqamiga qo'ng'iroq qiling. Keyin bolangiz bepul sinov darsiga keladi."),
+   ("To'lovni qanday qilish mumkin?",
+    "Naqd yoki Click/Payme orqali, har oyning boshida."),
+   ("Kompyuter, robot yoki shaxmat doskasi olib kelish kerakmi?",
+    "Yo'q. Kompyuter, robot to'plamlari va shaxmat doskalari markazda mavjud. Bola faqat o'zi kelsa bo'ladi."),
+   ("Bir vaqtda bir necha yo'nalishda o'qish mumkinmi?",
+    "Ha, jadval bir-biriga to'g'ri kelmasa mumkin."),
+   ("Dars qaysi tilda olib boriladi?",
+    "O'zbek va rus tillarida. Ingliz tili kursida boshida tushuntirishlar o'zbek yoki rus tilida bo'ladi, daraja oshgani sayin dars ko'proq ingliz tilida o'tadi."),
+   ("Iqtidorli bolalar uchun bepul o'qish imkoniyati bormi?",
+    "Ha, iqtidorli o'quvchilar uchun scholarship (bepul o'qish) imkoniyati mavjud. Tafsilotlarni +998 97 234 44 42 raqami orqali aniqlashtiring."),
+   ("Ochiq darslar va turnirlar o'tkaziladimi?",
+    "Ha, muntazam o'tkaziladi. Kuni oldindan Telegram (@parvozcode) va Instagram (@parvoz_code) sahifalarida e'lon qilinadi."),
+   ("Samarqandda bolalar uchun qo'shimcha darslik uchun qaysi markaz mos?",
+    "Parvoz O'quv Markazi maktab darsidan tashqari bolalar uchun dasturlash, robototexnika, matematika, shaxmat va ingliz tilini 6 yoshdan o'rgatadi. Qaror qilishdan oldin bepul sinov darsiga kelib ko'rish mumkin."),
+ ],
+},
 ]

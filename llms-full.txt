@@ -1,0 +1,2079 @@
+# Parvoz O'quv Markazi (Parvoz Learning Center)
+
+> Samarqand shahridagi bolalar uchun IT va intellektual ta'lim markazi. Dasturlash, robototexnika, matematika, shaxmat va ingliz tili yo'nalishlari bo'yicha 6 yoshdan boshlab o'qitadi. Birinchi sinov darsi bepul.
+
+> English: Parvoz Learning Center (also known as Parvoz Code) is a children's IT and intellectual education center in Samarkand, Uzbekistan — programming, robotics, math, chess and English for ages 6+. Address: Dahbed street 11, 2nd floor. Phone: +998 97 234 44 42. 300,000 UZS per month for any course, 3 lessons a week (2 hours each), first lesson free. English page: https://parvozcode.uz/en.html
+
+> Русский: Учебный центр Parvoz (Parvoz Code) — IT и интеллектуальный центр для детей в Самарканде: программирование, робототехника, математика, шахматы и английский с 6 лет. Адрес: ул. Дагбитская (Dahbed), 11, 2 этаж. Телефон: +998 97 234 44 42. 300 000 сумов в месяц за любое направление, 3 раза в неделю по 2 часа, первый урок бесплатно. Русская версия: https://parvozcode.uz/ru.html
+
+Hamma sahifalarning to'liq matni bitta faylda: https://parvozcode.uz/llms-full.txt
+
+## Asosiy ma'lumotlar
+
+- **Nomi:** Parvoz O'quv Markazi (Parvoz Code / Учебный центр Parvoz)
+- **Shiori:** Learn. Build. Fly.
+- **Shahar:** Samarqand, O'zbekiston
+- **Manzil:** Dahbed ko'chasi 11, 2-qavat, Samarqand, 140100 (ruscha: ул. Дагбитская, 11, 2 этаж; Gelion chorrahasi, Mone Café ro'parasida)
+- **Telefon:** +998 97 234 44 42
+- **Telegram:** https://t.me/parvozcode (@parvozcode)
+- **Instagram:** https://www.instagram.com/parvoz_code (@parvoz_code)
+- **Sayt:** https://parvozcode.uz/
+- **Asos solingan:** 2025-yil
+- **Qabul yoshi:** 6 yoshdan
+- **Narx:** barcha yo'nalishlar uchun oyiga 300 000 so'm
+- **Ish vaqti:** dushanba–shanba 09:00–18:00; yakshanba — dam olish kuni
+- **Dars tartibi:** haftada 3 kun, har dars 2 soat
+- **Guruh vaqtlari:** ertalab 10:00–12:00, tushdan keyin 13:00–15:00, kechqurun 16:00–18:00
+- **Ochiq darslar va turnirlar:** muntazam o'tkaziladi, kuni oldindan Telegram va Instagramda e'lon qilinadi
+- **To'lov:** naqd, Click yoki Payme
+- **Sinov darsi:** birinchi dars bepul
+- **Qo'shimcha:** iqtidorli o'quvchilar uchun scholarship (bepul o'qish) imkoniyati; barcha jihozlar (kompyuter, robot to'plamlari, shaxmat doskalari) markaz tomonidan taqdim etiladi
+- **Muloqot tillari:** o'zbek, rus, ingliz
+
+> Bu fayl llms.txt ning to'liq varianti: har bir sahifaning matni. Yangilangan: 2026-10-10. Qisqa xarita: https://parvozcode.uz/llms.txt
+> This is the full-text companion of llms.txt: the content of every page. Updated: 2026-10-10.
+
+---
+
+# Kurslar va maqolalar (o'zbekcha)
+
+
+## Samarqandda bolalar uchun dasturlash kurslari (6+ yosh)
+
+Manba / Source: https://parvozcode.uz/dasturlash-kurslari.html
+
+По-русски
+
+💻
+
+# Samarqandda bolalar uchun dasturlash kursi
+
+Farzandingiz kompyuterda faqat o'yin o'ynashdan o'zi o'yin yasashga o'tadi. Parvoz O'quv Markazida dasturlashni **nazariya yodlash orqali emas, real loyihalar qurish orqali** o'rgatamiz — birinchi darsdanoq ekranda o'z natijasini ko'radi.
+
+**✓** 6 yoshdan **✓** Hafta 3 kun · 2 soat **✓** Birinchi dars bepul
+
+📚 Dastur
+
+## Farzandingiz nimani o'rganadi?
+
+🧩
+**Algoritmik fikrlash**
+Katta vazifani kichik qadamlarga bo'lish — dasturlashning va umuman muammo yechishning asosi.
+
+🎮
+**Scratch'da o'yin va animatsiya**
+Kichik yoshdagilar blokli muhitda o'z o'yinini yaratadi va do'stlariga o'ynatadi.
+
+🐍
+**Python asoslari**
+O'zgaruvchi, shart, tsikl, funksiya — haqiqiy kod yozishga bosqichma-bosqich o'tish.
+
+🌐
+**Veb asoslari**
+HTML va CSS bilan o'zining birinchi sahifasini quradi va internetda ochib ko'rsatadi.
+
+🛠
+**Loyiha ustida ishlash**
+G'oyadan tayyor mahsulotgacha: rejalashtirish, qurish, sinash, yaxshilash.
+
+🔍
+**Xatoni topish va tuzatish**
+Debugging ko'nikmasi — sabr bilan sababni qidirish, taxmin qilmaslik.
+
+⭐ Nima beradi
+
+## Dasturlash kursi nima uchun kerak?
+
+✦
+**Kelajak kasbiga poydevor**
+Dasturlash bugun yangi savodxonlik — qaysi kasbni tanlasa ham asqotadi.
+
+✦
+**Mantiq va diqqat**
+Kod aniqlikni talab qiladi: bola e'tiborli bo'lishni va tekshirishni o'rganadi.
+
+✦
+**Ijod va natija**
+Har dars oxirida qo'lida ko'rsatadigan tayyor natija bo'ladi — motivatsiya shundan.
+
+✦
+**Barcha jihoz markazda**
+Kompyuter va dasturlar bizda — uydan hech narsa olib kelish shart emas.
+
+💰 Shartlar
+
+## Narx va jadval
+
+- Yo'nalish: Dasturlash
+- Yosh: 6 yoshdan
+- Narx: 300 000 so'm / oy
+- Davomiyligi: Haftada 3 kun · har dars 2 soat
+- Ertalabki guruh: 10:00 – 12:00
+- Tushdan keyingi guruh: 13:00 – 15:00
+- Kechki guruh: 16:00 – 18:00
+- Sinov darsi: Bepul
+- To'lov: Naqd yoki Click / Payme
+- Manzil: Dahbed ko'chasi 11, 2-qavat, Samarqand (Gelion chorrahasi, Mone Café ro'parasida)
+🎓 Iqtidorli o'quvchilar uchun **scholarship — bepul o'qish** imkoniyati mavjud!
+
+❓ FAQ
+
+## Ko'p beriladigan savollar
+
+**Savol / Question:** Uyda kompyuter bo'lishi shartmi?
+
+Yo'q. Barcha darslar markazdagi kompyuterlarda o'tiladi. Uyda mashq qilish imkoni bo'lsa yaxshi, lekin bu majburiy emas.
+
+**Savol / Question:** Farzandim ingliz tilini bilmaydi, qiynalmaydimi?
+
+Yo'q. Darslar o'zbek va rus tillarida olib boriladi, kerakli atamalarni yo'l-yo'lakay o'rgatamiz. Aksincha, ko'pchilik bolalar shu kursdan keyin ingliz tiliga qiziqib qoladi.
+
+**Savol / Question:** Necha yoshdan qabul qilasiz?
+
+6 yoshdan. Kichik yoshdagilar Scratch'dan, kattaroqlar esa Python va veb yo'nalishidan boshlaydi — guruhlar yoshga qarab ajratilgan.
+
+**Savol / Question:** Dars qanday o'tadi?
+
+Haftada 3 kun, har dars 2 soat. Qisqa tushuntirish, keyin amaliyot — dars vaqtining katta qismi bolaning o'zi kod yozishiga ketadi.
+
+🎯 Boshqa yo'nalishlar
+
+## Parvozdagi qolgan kurslar
+
+🤖Robototexnika 🧮Matematika ♟Shaxmat Ingliz tili
+
+## Birinchi dars bepul 🚀
+
+Farzandingizni dasturlash darsiga olib keling — hech qanday majburiyatsiz sinab ko'ring va o'zingiz qaror qiling.
+
+
+## Samarqandda robototexnika kurslari — bolalar uchun (6+)
+
+Manba / Source: https://parvozcode.uz/robototexnika-kurslari.html
+
+По-русски
+
+🤖
+
+# Samarqandda bolalar uchun robototexnika kursi
+
+Bola o'z qo'li bilan yig'gan robot harakatga kelganda — bu shunchaki dars emas, **muhandis bo'lib o'sishning birinchi qadami**. Parvozda robototexnikani g'oyadan ishlaydigan qurilmagacha bo'lgan to'liq yo'l sifatida o'rgatamiz.
+
+**✓** 6 yoshdan **✓** Hafta 3 kun · 2 soat **✓** Birinchi dars bepul
+
+📚 Dastur
+
+## Farzandingiz nimani o'rganadi?
+
+⚙️
+**Konstruksiya va mexanika**
+Uzatmalar, richaglar, barqarorlik — nima uchun bir konstruksiya ishlaydi, boshqasi yo'q.
+
+📡
+**Sensorlar bilan ishlash**
+Masofa, yorug'lik va harakat sensorlari: robot atrofni qanday 'sezadi'.
+
+🔌
+**Motorlar va boshqaruv**
+Harakatni aniq boshqarish: tezlik, burilish, to'xtash.
+
+💡
+**Robotni dasturlash**
+Blokli muhitdan boshlab, tayyor bo'lganda haqiqiy kod yozishgacha.
+
+🔁
+**Muhandislik sikli**
+G'oya → prototip → sinov → xatolarni tuzatish → yaxshilangan versiya.
+
+🤝
+**Jamoada ishlash**
+Loyihani birga qurish va uni boshqalarga taqdim qila olish.
+
+⭐ Nima beradi
+
+## Robototexnika kursi nima uchun kerak?
+
+✦
+**Fizika va matematika jonlanadi**
+Kitobdagi formula qo'ldagi robotda ishlaganini ko'rgan bola fanni boshqacha tushunadi.
+
+✦
+**Muammo yechish ko'nikmasi**
+Robot ishlamasa — sababni izlash kerak. Aynan shu ko'nikma hayotda eng ko'p asqotadi.
+
+✦
+**Sabr va qat'iyat**
+Birinchi urinishda chiqmasligi normal. Bola qayta urinishni o'rganadi.
+
+✦
+**Barcha to'plamlar markazda**
+Robot to'plamlari, detallar va jihozlar bizda — qo'shimcha xarajat yo'q.
+
+💰 Shartlar
+
+## Narx va jadval
+
+- Yo'nalish: Robototexnika
+- Yosh: 6 yoshdan
+- Narx: 300 000 so'm / oy
+- Davomiyligi: Haftada 3 kun · har dars 2 soat
+- Ertalabki guruh: 10:00 – 12:00
+- Tushdan keyingi guruh: 13:00 – 15:00
+- Kechki guruh: 16:00 – 18:00
+- Sinov darsi: Bepul
+- To'lov: Naqd yoki Click / Payme
+- Manzil: Dahbed ko'chasi 11, 2-qavat, Samarqand (Gelion chorrahasi, Mone Café ro'parasida)
+🎓 Iqtidorli o'quvchilar uchun **scholarship — bepul o'qish** imkoniyati mavjud!
+
+❓ FAQ
+
+## Ko'p beriladigan savollar
+
+**Savol / Question:** Robot to'plamini sotib olish kerakmi?
+
+Yo'q. Barcha to'plamlar, detallar va jihozlar markazda mavjud. Oylik to'lovdan boshqa hech qanday qo'shimcha xarajat yo'q.
+
+**Savol / Question:** Farzandim dasturlashni bilmaydi, ulgura oladimi?
+
+Ha. Noldan boshlaymiz: avval konstruksiya va oddiy blokli boshqaruv, keyin bosqichma-bosqich murakkabroq dasturlash.
+
+**Savol / Question:** Necha yoshdan qabul qilasiz?
+
+6 yoshdan. Guruhlar yosh va tayyorgarlik darajasiga qarab ajratiladi, shuning uchun har bola o'z sur'atida o'sadi.
+
+**Savol / Question:** Musobaqalarda qatnashadimi?
+
+Ha. Markazda muntazam ochiq darslar va musobaqalar o'tkaziladi — kuni oldindan e'lon qilinadi. Tayyor bo'lgan o'quvchilarni tashqi tanlovlarga ham olib chiqamiz.
+
+🎯 Boshqa yo'nalishlar
+
+## Parvozdagi qolgan kurslar
+
+💻Dasturlash 🧮Matematika ♟Shaxmat Ingliz tili
+
+## Birinchi dars bepul 🚀
+
+Farzandingizni robototexnika darsiga olib keling — hech qanday majburiyatsiz sinab ko'ring va o'zingiz qaror qiling.
+
+
+## Samarqandda bolalar uchun matematika kurslari (6+ yosh)
+
+Manba / Source: https://parvozcode.uz/matematika-kurslari.html
+
+По-русски
+
+🧮
+
+# Samarqandda bolalar uchun matematika kursi
+
+Matematika — yodlanadigan qoidalar to'plami emas, **fikrlash uslubi**. Parvozda bolani javobni eslab qolishga emas, yechimga o'zi kelishga o'rgatamiz — shuning uchun bu bilim maktabda ham, olimpiadada ham ishlaydi.
+
+**✓** 6 yoshdan **✓** Hafta 3 kun · 2 soat **✓** Birinchi dars bepul
+
+📚 Dastur
+
+## Farzandingiz nimani o'rganadi?
+
+⚡
+**Og'zaki va tez hisob**
+Hisoblash usullari, sonlar bilan erkin ishlash, javobni tezda baholay olish.
+
+🧠
+**Mantiqiy masalalar**
+Rebus, jumboq va nostandart masalalar — fikrlash mushaklarini mashq qildiradi.
+
+📐
+**Geometriya asoslari**
+Shakllar, fazoviy tasavvur, chizma orqali masalani ko'ra olish.
+
+🏆
+**Olimpiada strategiyalari**
+Murakkab masalaga qanday yondashish: soddalashtirish, qonuniyat izlash, teskaridan yechish.
+
+📚
+**Maktab dasturini chuqurlashtirish**
+Sinfdagi mavzular mustahkamlanadi — baho ham o'z-o'zidan ko'tariladi.
+
+🗣
+**Yechimni asoslash**
+Nega shunday? Bola o'z fikrini tushuntirib bera olishi kerak.
+
+⭐ Nima beradi
+
+## Matematika kursi nima uchun kerak?
+
+✦
+**Barcha fanlarga poydevor**
+Matematik fikrlash fizika, dasturlash va hatto til o'rganishda ham asqotadi.
+
+✦
+**Olimpiadaga tayyorgarlik**
+Tanlov va olimpiadalarga maqsadli tayyorlaymiz — iqtidorli o'quvchilar uchun alohida yo'nalish.
+
+✦
+**Qo'rquvni yo'qotadi**
+Ko'p bolalarda 'matematika qiyin' degan qo'rquv bor. Biz uni qiziqarli masaladan boshlab yo'qotamiz.
+
+✦
+**Kichik guruhlar**
+Har bir bola savol bera oladigan, o'qituvchi e'tiboridan chetda qolmaydigan format.
+
+💰 Shartlar
+
+## Narx va jadval
+
+- Yo'nalish: Matematika
+- Yosh: 6 yoshdan
+- Narx: 300 000 so'm / oy
+- Davomiyligi: Haftada 3 kun · har dars 2 soat
+- Ertalabki guruh: 10:00 – 12:00
+- Tushdan keyingi guruh: 13:00 – 15:00
+- Kechki guruh: 16:00 – 18:00
+- Sinov darsi: Bepul
+- To'lov: Naqd yoki Click / Payme
+- Manzil: Dahbed ko'chasi 11, 2-qavat, Samarqand (Gelion chorrahasi, Mone Café ro'parasida)
+🎓 Iqtidorli o'quvchilar uchun **scholarship — bepul o'qish** imkoniyati mavjud!
+
+❓ FAQ
+
+## Ko'p beriladigan savollar
+
+**Savol / Question:** Maktabdagi dasturga yordam beradimi?
+
+Ha. Mavzular maktab dasturi bilan bog'lanadi, lekin biz undan chuqurroq ketamiz — shuning uchun sinfdagi materiallar bolaga oson tuyula boshlaydi.
+
+**Savol / Question:** Olimpiadaga tayyorlaysizmi?
+
+Ha. Iqtidorli o'quvchilar bilan olimpiada masalalari ustida alohida ishlaymiz va ularni tanlovlarga tayyorlaymiz.
+
+**Savol / Question:** Farzandim matematikani yoqtirmaydi, nima qilamiz?
+
+Bu juda keng tarqalgan holat va odatda sababi — tushunmay qolgan mavzu. Biz qiziqarli, o'yin elementli masalalardan boshlaymiz: qiziqish paydo bo'lgach, natija ham keladi.
+
+**Savol / Question:** Necha yoshdan qabul qilasiz?
+
+6 yoshdan. Guruhlar yosh va bilim darajasiga qarab ajratilgan.
+
+🎯 Boshqa yo'nalishlar
+
+## Parvozdagi qolgan kurslar
+
+💻Dasturlash 🤖Robototexnika ♟Shaxmat Ingliz tili
+
+## Birinchi dars bepul 🚀
+
+Farzandingizni matematika darsiga olib keling — hech qanday majburiyatsiz sinab ko'ring va o'zingiz qaror qiling.
+
+
+## Samarqandda shaxmat kurslari — bolalar uchun (6+ yosh)
+
+Manba / Source: https://parvozcode.uz/shaxmat-kurslari.html
+
+По-русски
+
+♟
+
+# Samarqandda bolalar uchun shaxmat kursi
+
+Shaxmat — bolaga **oldindan o'ylashni** o'rgatadigan eng qadimiy mashq. Parvozda uni noldan boshlaymiz: qoidalardan turnir partiyasigacha, har hafta esa musobaqada bilimini sinab ko'radi.
+
+**✓** 6 yoshdan **✓** Hafta 3 kun · 2 soat **✓** Birinchi dars bepul
+
+📚 Dastur
+
+## Farzandingiz nimani o'rganadi?
+
+♟
+**Qoidalar va donalar yurishi**
+Noldan boshlaymiz — hech qanday oldingi bilim talab qilinmaydi.
+
+🚀
+**Debyut tamoyillari**
+Markazni egallash, donalarni rivojlantirish, rokirovka — partiyaning to'g'ri boshlanishi.
+
+🎯
+**Taktika va kombinatsiyalar**
+Vilka, bog'lash, ikki tomonlama hujum va mot kombinatsiyalarini ko'ra olish.
+
+👑
+**Endshpil texnikasi**
+Shoh va piyoda, ruh bilan mot — partiyani oxirigacha aniq olib borish.
+
+🗺
+**Pozitsiyani baholash**
+Reja tuzish: shunchaki yurish emas, maqsad bilan o'ynash.
+
+⏱
+**Turnir tartibi**
+Soat bilan o'ynash, partiyani yozib borish, yutqazishni ham to'g'ri qabul qilish.
+
+⭐ Nima beradi
+
+## Shaxmat kursi nima uchun kerak?
+
+✦
+**Diqqat va sabr**
+Bola yurishdan oldin o'ylashni — hayotda ham juda asqotadigan odatni egallaydi.
+
+✦
+**Mantiqiy fikrlash**
+Har yurishning oqibatini hisoblash: sabab va natija bog'lanishi mustahkamlanadi.
+
+✦
+**Xotira mashqi**
+Kombinatsiya va debyut sxemalarini eslab qolish xotirani o'stiradi.
+
+✦
+**Muntazam turnirlar**
+Musobaqa kuni oldindan e'lon qilinadi — bilim real o'yinda sinaladi, g'alaba ham, xato ham ustoz.
+
+💰 Shartlar
+
+## Narx va jadval
+
+- Yo'nalish: Shaxmat
+- Yosh: 6 yoshdan
+- Narx: 300 000 so'm / oy
+- Davomiyligi: Haftada 3 kun · har dars 2 soat
+- Ertalabki guruh: 10:00 – 12:00
+- Tushdan keyingi guruh: 13:00 – 15:00
+- Kechki guruh: 16:00 – 18:00
+- Sinov darsi: Bepul
+- To'lov: Naqd yoki Click / Payme
+- Manzil: Dahbed ko'chasi 11, 2-qavat, Samarqand (Gelion chorrahasi, Mone Café ro'parasida)
+🎓 Iqtidorli o'quvchilar uchun **scholarship — bepul o'qish** imkoniyati mavjud!
+
+❓ FAQ
+
+## Ko'p beriladigan savollar
+
+**Savol / Question:** Farzandim shaxmatni umuman bilmaydi, qabul qilasizmi?
+
+Albatta. Guruhlarning katta qismi noldan boshlaydi — donalar qanday yurishidan tortib o'rgatamiz.
+
+**Savol / Question:** Shaxmat doskasi olib kelish kerakmi?
+
+Yo'q. Doskalar, donalar va shaxmat soatlari markazda mavjud.
+
+**Savol / Question:** Turnirlarda qatnashadimi?
+
+Ha. Markazda muntazam ichki turnirlar o'tkaziladi — kuni oldindan e'lon qilinadi. Tayyor o'quvchilarni shahar miqyosidagi musobaqalarga ham olib chiqamiz.
+
+**Savol / Question:** Necha yoshdan qabul qilasiz?
+
+6 yoshdan. Kichik yoshdagilar uchun darslar o'yin shaklida olib boriladi.
+
+🎯 Boshqa yo'nalishlar
+
+## Parvozdagi qolgan kurslar
+
+💻Dasturlash 🤖Robototexnika 🧮Matematika Ingliz tili
+
+## Birinchi dars bepul 🚀
+
+Farzandingizni shaxmat darsiga olib keling — hech qanday majburiyatsiz sinab ko'ring va o'zingiz qaror qiling.
+
+
+## Samarqandda ingliz tili kurslari — bolalar uchun (6+ yosh)
+
+Manba / Source: https://parvozcode.uz/ingliz-tili-kurslari.html
+
+По-русски
+
+# Samarqandda bolalar uchun ingliz tili kursi
+
+Tilni bilish — qoidalarni yodlash emas, **gapira olish**. Parvozda darslar jonli muloqot va o'yin asosida quriladi: bola birinchi darsdanoq oddiy jumlalarni o'zi tuzib gapiradi.
+
+**✓** 6 yoshdan **✓** Hafta 3 kun · 2 soat **✓** Birinchi dars bepul
+
+📚 Dastur
+
+## Farzandingiz nimani o'rganadi?
+
+🗣
+**Jonli muloqot**
+Dars vaqtining katta qismi gapirishga ketadi — eng tez natija shundan keladi.
+
+👂
+**Tinglab tushunish**
+Audio, qo'shiq va video orqali quloqni tabiiy nutqqa o'rgatish.
+
+📖
+**Kundalik lug'at**
+Oila, maktab, sayohat, ovqat, texnologiya — bolaga kerak bo'ladigan mavzular.
+
+🎲
+**Grammatika o'yin orqali**
+Qoida yodlanmaydi — vaziyatda ishlatiladi va shu yo'l bilan esda qoladi.
+
+🔤
+**To'g'ri talaffuz**
+Urg'u va tovushlar ustida ishlash — keyin qayta o'rganishga to'g'ri kelmasligi uchun.
+
+💻
+**IT atamalari**
+Texnologiya olamining tili: dasturlash va robototexnika kurslariga tabiiy ko'prik.
+
+⭐ Nima beradi
+
+## Ingliz tili kursi nima uchun kerak?
+
+✦
+**Erta yosh — eng qulay payt**
+Bolalar tilni kattalarga qaraganda tabiiyroq o'zlashtiradi, ayniqsa talaffuzni.
+
+✦
+**Kelajak imkoniyatlari**
+Xalqaro test, chet elda ta'lim va IT sohasi — barchasi ingliz tilidan boshlanadi.
+
+✦
+**Uyalishni yengish**
+Kichik guruhda bola xato qilishdan qo'rqmay gapirishga o'rganadi.
+
+✦
+**Boshqa kurslar bilan bog'lanadi**
+Dasturlash yoki robototexnikaga qatnaydigan bola atamalarni allaqachon tushunadi.
+
+💰 Shartlar
+
+## Narx va jadval
+
+- Yo'nalish: Ingliz tili
+- Yosh: 6 yoshdan
+- Narx: 300 000 so'm / oy
+- Davomiyligi: Haftada 3 kun · har dars 2 soat
+- Ertalabki guruh: 10:00 – 12:00
+- Tushdan keyingi guruh: 13:00 – 15:00
+- Kechki guruh: 16:00 – 18:00
+- Sinov darsi: Bepul
+- To'lov: Naqd yoki Click / Payme
+- Manzil: Dahbed ko'chasi 11, 2-qavat, Samarqand (Gelion chorrahasi, Mone Café ro'parasida)
+🎓 Iqtidorli o'quvchilar uchun **scholarship — bepul o'qish** imkoniyati mavjud!
+
+❓ FAQ
+
+## Ko'p beriladigan savollar
+
+**Savol / Question:** Farzandim noldan boshlaydi, muammo bo'lmaydimi?
+
+Yo'q. Guruhlar daraja bo'yicha ajratilgan, boshlang'ich guruhda hamma noldan boshlaydi.
+
+**Savol / Question:** Darslar qaysi tilda olib boriladi?
+
+Boshlang'ich darajada tushuntirishlar o'zbek yoki rus tilida, mashqlar ingliz tilida. Daraja o'sgani sayin dars tobora ko'proq ingliz tilida o'tadi.
+
+**Savol / Question:** Uy vazifasi bo'ladimi?
+
+Ha, lekin kichik va amaliy: bir nechta so'z, qisqa video yoki kundalik mavzuda 3-4 jumla. Maqsad — bolani charchatish emas, tilni kundalik hayotiga olib kirish.
+
+**Savol / Question:** Necha yoshdan qabul qilasiz?
+
+6 yoshdan. Kichik yoshdagilar uchun darslar o'yin, qo'shiq va rasm asosida o'tadi.
+
+🎯 Boshqa yo'nalishlar
+
+## Parvozdagi qolgan kurslar
+
+💻Dasturlash 🤖Robototexnika 🧮Matematika ♟Shaxmat
+
+## Birinchi dars bepul 🚀
+
+Farzandingizni ingliz tili darsiga olib keling — hech qanday majburiyatsiz sinab ko'ring va o'zingiz qaror qiling.
+
+
+## Bolaga dasturlashni necha yoshdan boshlash kerak? | Parvoz
+
+Manba / Source: https://parvozcode.uz/dasturlashni-necha-yoshdan-boshlash.html
+
+# Bolaga dasturlashni necha yoshdan boshlash kerak?
+
+**Dasturlashni 6–7 yoshdan boshlash mumkin — lekin klaviaturada kod yozish bilan emas.** Bu yoshda bola blokli muhitda (Scratch) ketma-ketlik, shart va takrorlashni o'rganadi. Haqiqiy matnli dasturlash — masalan Python — uchun qulay yosh **10–12**, chunki unga o'qish tezligi, klaviatura va xatoni o'zi topa olish ko'nikmasi kerak.
+
+## Yosh bo'yicha nima berish mumkin
+
+Yosh chegarasi qat'iy emas — bola bolaga o'xshamaydi. Lekin amalda quyidagi taqsimot deyarli har doim ishlaydi:
+
+- **6–7 yosh.** Blokli muhit, ko'proq o'yin. Maqsad — kod yozish emas, ketma-ketlik tushunchasi: avval nima, keyin nima. Dars 45 daqiqadan oshmasligi kerak.
+- **8–9 yosh.** Scratch'da o'z o'yini yoki animatsiyasi. Shart (agar...), takrorlash va o'zgaruvchi shu yerda tushunarli bo'ladi. Bola birinchi marta "men buni o'zim yasadim" deydi.
+- **10–12 yosh.** Matnli tilga o'tish vaqti. Python — eng qulay boshlanish: sintaksisi sodda, natija tez ko'rinadi. Shu yoshda bola xato xabarini o'qib, o'zi tuzata boshlaydi.
+- **13 yoshdan yuqori.** Veb (HTML/CSS/JavaScript), ma'lumotlar bazasi, real loyiha. Bu yoshda portfolio yig'ish mantiqqa to'g'ri keladi.
+
+## Erta boshlashning asl foydasi
+
+Ko'p ota-ona dasturlashni kasb sifatida o'ylaydi. Kichik yoshda esa asosiy foyda boshqa yerda:
+
+- **Xatoga munosabat.** Dasturlashda kod ishlamasligi — normal holat. Bola xatoni "men uddalay olmadim" emas, "qayerda noto'g'ri" deb ko'rishni o'rganadi. Bu maktabda ham asqotadi.
+- **Katta masalani bo'laklash.** "O'yin yasayman" degan g'oya o'nlab kichik qadamga bo'linadi. Bu ko'nikma matematikadan insho yozishgacha hamma joyda kerak.
+- **Sabr.** Natija darhol chiqmaydi. Bir soat urinib, oxirida ishlagan dastur bolaga kutishning qiymatini ko'rsatadi.
+
+## Eng ko'p uchraydigan xato
+
+Bolani erta matnli kodga o'tkazish. 7 yoshli bolaga Python berilsa, u dasturlashni emas, terishni o'rganadi — va nuqta-vergul unutilgani uchun ishlamagan koddan zerikadi.
+
+Blokli muhitning maqsadi — yozuv xatosini yo'q qilib, faqat **mantiqni** qoldirish. Bola tayyor bo'lmasdan turib bu bosqichni o'tkazib yuborish ko'pincha "dasturlash qiyin ekan" degan xulosa bilan tugaydi.
+
+## Bola tayyormi? Uchta belgi
+
+- Ko'rsatma bo'yicha ish qila oladi — masalan, Lego yig'ish yo'riqnomasini o'zi o'qib bajaradi.
+- Birinchi urinishda chiqmasa, darhol tashlab ketmaydi.
+- Kompyuter yoki planshetda nimadir yasashga qiziqadi, faqat o'ynashga emas.
+Uchtasi ham bo'lishi shart emas. Ikkitasi bo'lsa — boshlash mumkin.
+
+## Tez-tez so'raladigan savollar
+
+**Savol / Question:** 5 yoshli bolani olib kelsam bo'ladimi?
+
+Biz 6 yoshdan qabul qilamiz. 5 yoshda bola odatda 45 daqiqa diqqatini ushlab turolmaydi, shuning uchun bir yil kutgan ma'qul — natija ancha yaxshi bo'ladi.
+
+**Savol / Question:** Bola o'qish-yozishni yaxshi bilmasa-chi?
+
+Blokli muhit uchun bu to'siq emas — bloklar rangli va rasmli. Matnli dasturlashga o'tishda esa o'qish tezligi kerak bo'ladi, lekin unga hali bir necha yil bor.
+
+**Savol / Question:** Ingliz tilini bilish shartmi?
+
+Yo'q. Scratch o'zbek tilida ham ishlaydi. Python'da bir necha o'nlab kalit so'z bor, ularni bola yo'l-yo'lakay o'rganib oladi — alohida ingliz tili talab qilinmaydi.
+
+**Savol / Question:** Uyda kompyuter bo'lmasa?
+
+Dars markazda kompyuterda o'tadi, uy vazifasi kompyuter talab qilmaydigan qilib beriladi. Uyda mashq qilish imkoni bo'lsa yaxshi, lekin majburiy emas.
+
+
+## Samarqandda bolalar kurslari narxi (2026) | Parvoz
+
+Manba / Source: https://parvozcode.uz/bolalar-kurslari-narxi-samarqand.html
+
+# Samarqandda bolalar uchun kurslar qancha turadi?
+
+**Samarqandda bolalar uchun to'garak va kurslar odatda oyiga 250 000 – 600 000 so'm oralig'ida turadi.** Parvozda barcha yo'nalishlar uchun bitta narx — **oyiga 300 000 so'm**: haftada 3 kun, har dars 2 soat, jihozlar markaz hisobidan, birinchi dars bepul.
+
+## Narx nimaga bog'liq
+
+Ikki kursning narxi ikki barobar farq qilsa, bu odatda sifat emas, arifmetika. Asosiy omillar:
+
+- **Guruhdagi bolalar soni.** Eng katta omil. 8 kishilik guruh bilan 25 kishilik guruhning tannarxi yer bilan osmoncha farq qiladi — va bolaga tegadigan e'tibor ham.
+- **Oyiga necha soat.** "200 000 so'm" haftada 2 kun 1 soatdan bo'lsa, soatiga 25 000 so'm. "300 000 so'm" haftada 3 kun 2 soatdan bo'lsa, soatiga 12 500 so'm — ya'ni ikki barobar arzon.
+- **Jihoz.** Robototexnika to'plami, kompyuter, shaxmat soati — bular kimning hisobidan?
+- **O'qituvchi.** Tajribali o'qituvchi qimmatroq turadi va bu narxda ko'rinadi.
+
+## Yozilishdan oldin so'raladigan to'rt savol
+
+E'londagi raqam har doim ham to'liq emas. Qo'ng'iroq qilganda aniqlab oling:
+
+- Ro'yxatdan o'tish uchun alohida to'lov bormi?
+- Kitob, daftar, to'plam — alohida sotib olinadimi?
+- Sertifikat pullikmi?
+- Bola kasal bo'lib qolsa, o'sha darslar qayta o'qitiladimi yoki kuyadimi?
+Shu to'rttasiga aniq javob bermagan markazdan ehtiyot bo'lgan ma'qul.
+
+## Soatiga hisoblab ko'ring
+
+Kurslarni taqqoslashning eng halol usuli — oylik narxni oydagi dars soatiga bo'lish:
+
+**Parvoz:** 300 000 so'm ÷ (haftada 3 kun × 2 soat × 4 hafta = 24 soat) = **soatiga ~12 500 so'm**.
+
+Shu hisobni taqqoslayotgan har bir kursga qo'llang — raqamlar ko'pincha kutilmagan chiqadi.
+
+## Parvoz narxiga nimalar kiradi
+
+- Haftada 3 kun, har dars 2 soat — oyiga ~24 soat.
+- Kompyuter, robot to'plamlari, shaxmat doskalari — hammasi markazda. Uydan hech narsa olib kelish shart emas.
+- Birinchi sinov darsi — **bepul**, oldindan to'lovsiz.
+- Ochiq darslar va turnirlar — alohida to'lovsiz, kuni oldindan e'lon qilinadi.
+- Ota-onaga farzandi kelgani va ketgani haqida Telegram orqali xabar.
+Ro'yxatdan o'tish to'lovi, sertifikat to'lovi va majburiy kitob xarajati yo'q.
+
+## Tez-tez so'raladigan savollar
+
+**Savol / Question:** To'lov qachon amalga oshiriladi?
+
+Har oyning boshida. Naqd, Click yoki Payme orqali to'lash mumkin.
+
+**Savol / Question:** Sinov darsi pullikmi?
+
+Yo'q, birinchi dars to'liq bepul va oldindan to'lov talab qilinmaydi. Bola darsdan keyin qaytishni xohlamasa — hech qanday majburiyat yo'q.
+
+**Savol / Question:** Bir nechta kursga yozsam chegirma bormi?
+
+Bir vaqtda bir necha yo'nalishda o'qish mumkin. Chegirma masalasini alohida kelishamiz — qo'ng'iroq qiling yoki ariza qoldiring.
+
+**Savol / Question:** Iqtidorli bolalar uchun imkoniyat bormi?
+
+Ha. Iqtidorli o'quvchilar uchun scholarship — bepul o'qish imkoniyati mavjud. Buning uchun bola bilan suhbatlashamiz.
+
+
+## Scratch yoki Python: bola qaysi biridan boshlasin? | Parvoz
+
+Manba / Source: https://parvozcode.uz/scratch-yoki-python.html
+
+# Scratch yoki Python — bola qaysi biridan boshlasin?
+
+**10 yoshgacha — Scratch. 10 yoshdan keyin, bola klaviaturada erkin yoza olsa — Python.** Scratch dasturlash tushunchalarini yozuv xatosisiz o'rgatadi; Python esa haqiqiy dasturchilar ishlatadigan til. Bu ikkisi raqib emas — ketma-ket keladigan ikki bosqich.
+
+## Scratch aslida nimani o'rgatadi
+
+Scratch — bloklardan yig'iladigan vizual muhit. Bola kod yozmaydi, bloklarni bir-biriga ulaydi. Tashqaridan o'yinchoqqa o'xshaydi, lekin ichida jiddiy narsalar bor:
+
+- Ketma-ketlik: nima avval, nima keyin bajariladi.
+- Shart: agar shunday bo'lsa — buni qil.
+- Takrorlash va o'zgaruvchi.
+- Hodisa: tugma bosilganda nima sodir bo'ladi.
+Bular har qanday dasturlash tilining asosi. Scratch'ning butun qiymati shundaki, bola bu tushunchalarni **sintaksis xatosisiz** o'zlashtiradi — qavs yopilmagani uchun hech narsa buzilmaydi.
+
+## Python qachon kerak bo'ladi
+
+Scratch'ning chegarasi bor: undan real dastur, sayt yoki mobil ilova chiqmaydi. Bola "men o'zim o'yin yasadim" bosqichidan "bu qanday ishlaydi" bosqichiga o'tganda Python vaqti keladi.
+
+Python nega aynan? Sintaksisi insonga eng yaqin til, kod qisqa, natija tez ko'rinadi. Ustiga u o'yinchoq til emas — sun'iy intellektdan ma'lumotlar tahliligacha hamma joyda ishlatiladi.
+
+## Eng keng tarqalgan xato
+
+Scratch'ni "vaqtni behuda sarflash" deb o'tkazib yuborish.
+
+Bu odatda ota-onadan chiqadi: blokli muhit jiddiy ko'rinmaydi. Natijada 8 yoshli bola Python oldiga o'tqaziladi va ikki oydan keyin dasturlashni tashlaydi — chunki u mantiqdan emas, terishdan charchaydi.
+
+Teskari xato ham bor: 13 yoshli bolani hamon Scratch'da ushlab turish. Bu yoshda u tez zerikadi va o'zini kichik bolalar bilan bir qatorda his qiladi.
+
+## O'tish vaqti keldimi? To'rtta belgi
+
+- Scratch'da o'z loyihasini boshidan oxirigacha yakunlay oladi.
+- Klaviaturada qaramasdan bo'lmasa ham, qiynalmasdan yozadi.
+- "Buni Scratch'da qilib bo'lmaydi" deb shikoyat qila boshlagan.
+- Yoshi 10 dan oshgan.
+To'rttasining uchtasi bo'lsa — o'tish vaqti keldi.
+
+## Parvozda yo'l qanday
+
+Bola qaysi bosqichda ekanini birinchi darsda ko'ramiz va shunga qarab guruhga qo'yamiz. Yo'l odatda shunday: **Scratch → Python → veb asoslari (HTML/CSS) → o'z loyihasi**. Har bir bosqich oldingisining ustiga quriladi, sakrab o'tilmaydi.
+
+## Tez-tez so'raladigan savollar
+
+**Savol / Question:** Scratch bilan vaqt behuda ketmaydimi?
+
+Yo'q. Scratch'da o'zlashtirilgan tushunchalar — shart, takrorlash, o'zgaruvchi — Python'da o'zgarmaydi, faqat yozilishi boshqacha bo'ladi. Scratch'ni o'tgan bola Python'ni ancha tez o'rganadi.
+
+**Savol / Question:** Python'dan keyin nima?
+
+Veb asoslari (HTML, CSS, JavaScript) yoki Python'ni chuqurlashtirish — bola nimaga qiziqishiga qarab. Bu yoshda o'z loyihasi ustida ishlash eng ko'p foyda beradi.
+
+**Savol / Question:** Bola darhol Python'dan boshlasa bo'ladimi?
+
+12 yoshdan katta va klaviaturada erkin yozadigan bola uchun — ha, bo'ladi. Kichikroq bolalarda esa deyarli har doim Scratch orqali borish tezroq natija beradi.
+
+
+## Robototexnika bolaga nima beradi? | Parvoz O'quv Markazi
+
+Manba / Source: https://parvozcode.uz/robototexnika-bolaga-nima-beradi.html
+
+# Robototexnika bolaga nima beradi?
+
+**Robototexnika bolaga muhandislik siklini o'rgatadi: g'oya → yig'ish → sinash → xato → tuzatish.** Dasturlashdan asosiy farqi — natija ekranda emas, qo'lda ushlab ko'radigan narsada ko'rinadi. Shuning uchun u kichik yoshdagi va harakatchan bolani ancha uzoq ushlab turadi.
+
+## Darsda aniq nima bo'ladi
+
+Robototexnika — faqat konstruktor yig'ish emas. Bir dars odatda to'rt qismdan iborat:
+
+- **Konstruksiya.** Mexanizm yig'ish: g'ildirak, tishli uzatma, richag. Bu yerda bola fizikani kitobdan emas, qo'li bilan ko'radi.
+- **Sensorlar.** Robot atrofni qanday "sezadi" — masofa, rang, to'siq.
+- **Dasturlash.** Robotga nima qilishni aytish. Bu yerda dasturlash mantiqi qaytadan uchraydi, lekin natija ekranda emas — robot haqiqatan yuradi.
+- **Sinov.** Ishlamaydi. Nega ishlamadi? Tuzatiladi. Yana sinaladi.
+
+## Eng qimmatli qismi — sinov va xato
+
+Robot birinchi urinishda deyarli hech qachon ishlamaydi. G'ildirak sirpanadi, sensor noto'g'ri o'qiydi, dastur boshqa tartibda ishlaydi.
+
+Bu — kursning eng foydali qismi. Bola muammoni bo'laklab qidirishni o'rganadi: mexanikadami, sensordami, dasturdami? Bu ko'nikma keyinchalik har qanday sohada asqotadi, chunki dunyo birinchi urinishda ishlamaydigan narsalardan iborat.
+
+## Dasturlash bilan robototexnika — qaysi biri?
+
+Ikkalasi ham mantiq o'rgatadi, lekin bolalar ularni har xil qabul qiladi:
+
+- **Robototexnika** — qo'li bilan ishlashni yaxshi ko'radigan, bir joyda uzoq o'tirolmaydigan, natijani darhol ko'rishni istaydigan bolaga.
+- **Dasturlash** — ekranda nimadir yasashga qiziqadigan, diqqatini uzoq ushlay oladigan bolaga.
+Aniq bilmasangiz — ikkala yo'nalishda ham bepul sinov darsiga olib keling. Bola qaysi darsdan porlab chiqqanini o'zingiz ko'rasiz.
+
+## Uyda to'plam sotib olish kerakmi?
+
+Yo'q. Barcha to'plamlar markazda va narxga kiradi. Uyda alohida robot sotib olish shart emas — bola guruhda, o'qituvchi nazorati ostida ancha tez o'rganadi.
+
+Agar bola qattiq qiziqib qolsa va uyda ham mashq qilishni xohlasa, o'qituvchi yoshi va darajasiga mos to'plamni maslahat beradi.
+
+## Tez-tez so'raladigan savollar
+
+**Savol / Question:** Necha yoshdan qabul qilasiz?
+
+6 yoshdan. Kichik yoshdagilar uchun konstruksiya qismi ko'proq, dasturlash qismi soddaroq bo'ladi — guruhlar yosh bo'yicha ajratilgan.
+
+**Savol / Question:** Qiz bolalar uchun mos keladimi?
+
+Ha. Robototexnikada konstruksiya, dizayn va dasturlash birga keladi — bu yo'nalish qiz bolalarda ham juda yaxshi ketadi.
+
+**Savol / Question:** Dasturlash bilan birga olsa bo'ladimi?
+
+Ha, jadval to'qnashmasa bo'ladi. Ikkalasi bir-birini to'ldiradi: robototexnikada o'rganilgan mantiq dasturlashda, dasturlashdagi ko'nikma robotni boshqarishda asqotadi.
+
+**Savol / Question:** Musobaqalarda qatnashish imkoni bormi?
+
+Ha. Tayyor bo'lgan o'quvchilarni robototexnika musobaqalariga tayyorlaymiz — bu bolalar uchun kuchli turtki bo'ladi.
+
+
+## Shaxmat bolaga nima beradi? Halol javob | Parvoz
+
+Manba / Source: https://parvozcode.uz/shaxmat-bolaga-foydasi.html
+
+# Shaxmat bolaning o'qishiga yordam beradimi?
+
+**Shaxmat bolaga eng ko'p beradigan narsa — qaror oldidan o'ylash odati va yutqazishni ko'tara olish.** Matematika bahosini to'g'ridan-to'g'ri ko'taradi deb va'da qilish halol bo'lmaydi. Lekin diqqatni ushlash, bir necha qadam oldinni ko'rish va xatodan xulosa chiqarish — bular darsda ham, hayotda ham ishlaydi.
+
+## Shaxmat aniq nimani mashq qildiradi
+
+- **Qaror oldidan to'xtash.** Shaxmatda shoshilib yurilgan yurish darhol jazolanadi. Bola bir necha oydan keyin qo'lini uzatishdan oldin to'xtab o'ylay boshlaydi — bu odat doskadan tashqariga ham chiqadi.
+- **Oqibatni ko'rish.** "Men bunday qilsam, u nima qiladi?" — bu savol shaxmatning o'zagi.
+- **Diqqatni uzoq ushlash.** Bir partiya 20–40 daqiqa davom etadi va butun vaqt davomida e'tibor talab qiladi. Bugungi kunda bu o'z-o'zidan kam uchraydigan mashq.
+- **Yutqazishni ko'tarish.** Bu eng qimmatlisi. Shaxmatda hamma yutqazadi — jahon chempioni ham. Bola yutqazish dunyoning oxiri emasligini o'rganadi.
+
+## Nimani va'da qilib bo'lmaydi
+
+Shaxmat haqida ko'p mubolag'a aytiladi. Halol bo'lgan ma'qul:
+
+- Shaxmat IQ ni oshirmaydi.
+- Matematika bahosini avtomatik ko'tarmaydi.
+- Bolani "aqlli" qilib qo'ymaydi.
+U beradigan narsa — ko'nikma: diqqat, sabr, rejalashtirish, mag'lubiyatga munosabat. Bu ko'nikmalar o'qishga ta'sir qiladi, lekin bilvosita va vaqt talab qilib.
+
+## Necha yoshdan boshlash mumkin
+
+6 yoshdan. Bu yoshda bola figuralar yurishini va oddiy maqsadni tushunadi. 8–10 yosh — taktika va kombinatsiyalar uchun eng yaxshi davr: xotira kuchli, qiziqish yuqori.
+
+Kech boshlash ham muammo emas — 12 yoshda boshlagan bola tez o'zlashtiradi, chunki mantiqiy fikrlashi allaqachon shakllangan.
+
+## Uyda qanday qo'llab-quvvatlash kerak
+
+- **Bola bilan o'ynang** — yutqazsangiz ham. Ota-ona bilan o'ynash bola uchun eng kuchli turtki.
+- **Ataylab yutqazmang.** Bolalar buni sezadi va g'alabaning qiymati yo'qoladi.
+- **Yutqazganda yurishni muhokama qiling**, natijani emas: "qaysi yurishdan keyin qiyin bo'ldi?"
+- **Turnirga qo'yishga shoshilmang.** Bola o'zi xohlaganda olib boring.
+
+## Turnir nega kerak
+
+Turnirda bola boshqacha o'ynaydi: vaqt chegarasi bor, raqib notanish, natija yoziladi. Bu bosim bilan ishlashni o'rgatadi.
+
+Parvozda muntazam ichki turnirlar o'tkaziladi — bosim past, muhit tanish. Bu katta turnirlarga eng yumshoq tayyorgarlik.
+
+## Tez-tez so'raladigan savollar
+
+**Savol / Question:** Bola yutqazganda yig'laydi, nima qilay?
+
+Bu normal va vaqtinchalik. Aynan shuning uchun shaxmat foydali — bola xavfsiz muhitda yutqazishni o'rganadi. Bir necha oydan keyin munosabat sezilarli o'zgaradi.
+
+**Savol / Question:** Uyda shaxmat doskasi kerakmi?
+
+Dars uchun kerak emas — doskalar markazda. Lekin uyda doska bo'lsa va oilada o'ynalsa, bolaning o'sishi ancha tezlashadi.
+
+**Savol / Question:** Bola shaxmatni qoidalarini bilmasa?
+
+Muammo emas. Noldan boshlaymiz — birinchi darsdayoq figuralar yurishidan boshlab o'rgatiladi.
+
+**Savol / Question:** Shaxmat faqat o'g'il bolalar uchunmi?
+
+Yo'q. Guruhlarimizda qiz bolalar ham o'ynaydi va natijalari ko'pincha yuqori bo'ladi.
+
+
+## Bolani kursga yozishdan oldin: tekshirish ro'yxati | Parvoz
+
+Manba / Source: https://parvozcode.uz/kursga-yozishdan-oldin.html
+
+# Bolani kursga yozishdan oldin nimalarni tekshirish kerak?
+
+**Eng muhim uchta savol: guruhda nechta bola bor, o'qituvchi kim, va sinov darsi bepulmi.** Qolgan hamma narsa — jihoz, sertifikat, chiroyli sayt — shu uchtasidan keyin keladi. Quyida sinov darsida aniq nimaga qarash kerakligi.
+
+## 1. Guruhdagi bolalar soni
+
+Bu bitta raqam kursning sifatini boshqa hamma narsadan ko'ra aniqroq ko'rsatadi.
+
+8–12 kishilik guruhda o'qituvchi har bir bolaga yetib boradi. 20 dan oshgan guruhda esa dars ma'ruzaga aylanadi — orqa qatordagi bola nima qilayotganini hech kim ko'rmaydi. Bolalar uchun bu ayniqsa muhim, chunki ular savol berishga har doim ham jur'at eta olmaydi.
+
+**So'rang:** "Bu guruhda hozir nechta bola bor?" Javob qochirilsa — bu ham javob.
+
+## 2. O'qituvchi kim
+
+Markazning nomi emas, bolangizga dars beradigan odam muhim. Aniqlang:
+
+- Ism-sharifi kim? (Konkret ism aytilmasa — bu yomon belgi.)
+- Necha yildan beri bolalarga dars beradi? Kattalarga dars berish bilan bolalarga dars berish butunlay boshqa ish.
+- Yil davomida o'zgarib turadimi?
+
+## 3. Sinov darsi
+
+Bepul sinov darsi bermaydigan markaz o'z darsiga ishonmaydi degani. Bu deyarli har doim to'g'ri chiqadi.
+
+Sinov darsi bepul bo'lishi va oldindan to'lov talab qilmasligi kerak.
+
+## Sinov darsida nimaga qarash kerak
+
+Darsdan keyin o'zingizga bu savollarni bering:
+
+- Bola darsdan **qanday kayfiyatda** chiqdi? Bu eng ishonchli ko'rsatkich.
+- O'qituvchi bolaning ismini bildimi va unga murojaat qildimi?
+- Bola darsda nimadir **qildimi** yoki faqat tinglab o'tirdimi?
+- Xona toza, yorug' va shovqinsizmi?
+- Sizga darsdan keyin bolaning natijasi haqida gapirishdimi?
+
+## Ogohlantiruvchi belgilar
+
+- "Bugun yozilsangiz chegirma" — shoshiltirish.
+- Bir necha oylik to'lovni oldindan talab qilish.
+- Guruhdagi bolalar sonini aytishdan qochish.
+- Kafolatlangan natija va'da qilish ("3 oyda dasturchi bo'ladi").
+- O'qituvchi haqida konkret ma'lumot bermaslik.
+
+## Eng oxirgi savolni bolaning o'ziga bering
+
+"Yana kelasanmi?" Bolaning javobi — eng to'g'ri javob. Kattalar reklama va sertifikatga qaraydi; bola esa darsda o'ziga qiziqarli bo'lganmi-yo'qmi, shunga qaraydi. Uzoq muddatda aynan shu natijani belgilaydi.
+
+## Tez-tez so'raladigan savollar
+
+**Savol / Question:** Parvozda guruhda nechta bola bo'ladi?
+
+Guruhlarni kichik ushlaymiz — har bir bolaga o'qituvchi yetib borishi uchun. Aniq sonni qo'ng'iroq qilganingizda yoki sinov darsida aytamiz.
+
+**Savol / Question:** Sinov darsidan keyin majburiyat bormi?
+
+Yo'q. Bola qaytishni xohlamasa — hech qanday to'lov va majburiyat yo'q. Oldindan to'lov ham olmaymiz.
+
+**Savol / Question:** Sertifikat muhimmi?
+
+Bolalar kurslari uchun sertifikatning amaliy qiymati kam. Bolaning qo'lidan nima kelishi ancha muhim — sinov darsida shunga qarang.
+
+**Savol / Question:** Bola bormayman desa nima qilay?
+
+Sababini aniqlang: dars qiziq emasmi, guruhda noqulaymi yoki qiyinmi? Bizga ayting — guruhni yoki yondashuvni o'zgartirish ko'pincha masalani hal qiladi.
+
+
+## Parvoz O'quv Markazi (Samarqand): manzil, narx, yosh, jadval
+
+Manba / Source: https://parvozcode.uz/parvoz-markazi-haqida-savol-javob.html
+
+# Parvoz O'quv Markazi haqida: asosiy savol-javoblar
+
+**Parvoz O'quv Markazi (Parvoz Code) — Samarqand shahridagi bolalar uchun IT va intellektual ta'lim markazi.** Dasturlash, robototexnika, matematika, shaxmat va ingliz tili 6 yoshdan o'rgatiladi. Manzil: Dahbed ko'chasi 11, 2-qavat. Narx — barcha yo'nalishlar uchun oyiga 300 000 so'm, haftada 3 kun, har dars 2 soat. Birinchi dars bepul. Telefon: +998 97 234 44 42.
+
+## Qisqa ma'lumot
+
+- **Nomi:** Parvoz O'quv Markazi (Parvoz Code deb ham yuritiladi).
+- **Shahar va manzil:** Samarqand, Dahbed ko'chasi 11, 2-qavat (Gelion chorrahasi, Mone Café ro'parasida).
+- **Telefon:** +998 97 234 44 42. Telegram: @parvozcode. Instagram: @parvoz_code.
+- **Yo'nalishlar:** dasturlash, robototexnika, matematika, shaxmat, ingliz tili.
+- **Yosh:** 6 yoshdan.
+- **Narx:** barcha yo'nalishlar uchun oyiga 300 000 so'm; qo'shimcha to'lov yo'q.
+- **Dars tartibi:** haftada 3 kun, har dars 2 soat.
+- **Ish vaqti:** dushanba–shanba 09:00–18:00; yakshanba dam olish kuni.
+- **Sinov darsi:** birinchi dars bepul.
+
+## Qanday yozilish mumkin
+
+Uch qadam: **1)** saytdagi ariza formasini to'ldiring, Telegramga yozing yoki +998 97 234 44 42 raqamiga qo'ng'iroq qiling; **2)** bolangiz bepul sinov darsiga keladi; **3)** mos guruhga qo'shilib, muntazam darslarni boshlaysiz. Oldindan to'lov olinmaydi.
+
+## Qaysi yo'nalish mos kelishini qanday bilish mumkin
+
+Eng ishonchli yo'l — bepul sinov darsiga kelish: bola o'zi sinab ko'radi, siz esa uning qaysi yo'nalishga qiziqishini ko'rasiz. Shuningdek, yo'nalishlar haqida alohida sahifalarda batafsil yozilgan: dasturlash, robototexnika, matematika, shaxmat, ingliz tili.
+
+## Tez-tez so'raladigan savollar
+
+**Savol / Question:** Parvoz O'quv Markazi nima?
+
+Parvoz O'quv Markazi (Parvoz Code) — Samarqand shahridagi bolalar uchun IT va intellektual ta'lim markazi. Dasturlash, robototexnika, matematika, shaxmat va ingliz tili 6 yoshdan o'rgatiladi. Markaz 2025-yilda asos solingan.
+
+**Savol / Question:** Parvoz O'quv Markazi qayerda joylashgan?
+
+Samarqand shahri, Dahbed ko'chasi 11, 2-qavat (ruscha: ул. Дагбитская, 11, 2 этаж). Markaz Gelion chorrahasi yaqinida, Mone Café ro'parasida.
+
+**Savol / Question:** Parvoz O'quv Markazining telefon raqami qanday?
+
++998 97 234 44 42. Telegramda @parvozcode, Instagramda @parvoz_code orqali ham yozish mumkin.
+
+**Savol / Question:** Parvoz Code va Parvoz O'quv Markazi bir joymi?
+
+Ha, bu bir markaz. Rasmiy nomi — Parvoz O'quv Markazi, xaritalar va ijtimoiy tarmoqlarda esa Parvoz Code nomi bilan ham topiladi. Sayt: parvozcode.uz.
+
+**Savol / Question:** Markaz qaysi kunlari va soatlarda ishlaydi?
+
+Dushanbadan shanbagacha 09:00–18:00. Yakshanba — dam olish kuni.
+
+**Savol / Question:** Qaysi yo'nalishlar bor?
+
+Beshta yo'nalish: dasturlash (Scratch, Python, veb asoslari), robototexnika, matematika, shaxmat va ingliz tili.
+
+**Savol / Question:** Bolani necha yoshdan qabul qilasiz?
+
+6 yoshdan boshlab. Har bir yo'nalish uchun alohida yosh guruhlari mavjud.
+
+**Savol / Question:** Kurs narxi qancha?
+
+Barcha yo'nalishlar uchun oyiga 300 000 so'm. Qo'shimcha to'lov yo'q, jihozlar markaz hisobidan.
+
+**Savol / Question:** Haftada necha marta va qancha vaqt dars bo'ladi?
+
+Haftada 3 kun, har dars 2 soat.
+
+**Savol / Question:** Guruhlar qaysi vaqtlarda?
+
+Uchta vaqt: ertalab 10:00–12:00, tushdan keyin 13:00–15:00 va kechqurun 16:00–18:00.
+
+**Savol / Question:** Sinov darsi bormi, u pullikmi?
+
+Birinchi dars to'liq bepul, oldindan to'lov yo'q. Bola qaytishni xohlamasa — hech qanday majburiyat yo'q.
+
+**Savol / Question:** Qanday yozilsam bo'ladi?
+
+Saytdagi ariza formasini to'ldiring, Telegramda @parvozcode ga yozing yoki +998 97 234 44 42 raqamiga qo'ng'iroq qiling. Keyin bolangiz bepul sinov darsiga keladi.
+
+**Savol / Question:** To'lovni qanday qilish mumkin?
+
+Naqd yoki Click/Payme orqali, har oyning boshida.
+
+**Savol / Question:** Kompyuter, robot yoki shaxmat doskasi olib kelish kerakmi?
+
+Yo'q. Kompyuter, robot to'plamlari va shaxmat doskalari markazda mavjud. Bola faqat o'zi kelsa bo'ladi.
+
+**Savol / Question:** Bir vaqtda bir necha yo'nalishda o'qish mumkinmi?
+
+Ha, jadval bir-biriga to'g'ri kelmasa mumkin.
+
+**Savol / Question:** Dars qaysi tilda olib boriladi?
+
+O'zbek va rus tillarida. Ingliz tili kursida boshida tushuntirishlar o'zbek yoki rus tilida bo'ladi, daraja oshgani sayin dars ko'proq ingliz tilida o'tadi.
+
+**Savol / Question:** Iqtidorli bolalar uchun bepul o'qish imkoniyati bormi?
+
+Ha, iqtidorli o'quvchilar uchun scholarship (bepul o'qish) imkoniyati mavjud. Tafsilotlarni +998 97 234 44 42 raqami orqali aniqlashtiring.
+
+**Savol / Question:** Ochiq darslar va turnirlar o'tkaziladimi?
+
+Ha, muntazam o'tkaziladi. Kuni oldindan Telegram (@parvozcode) va Instagram (@parvoz_code) sahifalarida e'lon qilinadi.
+
+**Savol / Question:** Samarqandda bolalar uchun qo'shimcha darslik uchun qaysi markaz mos?
+
+Parvoz O'quv Markazi maktab darsidan tashqari bolalar uchun dasturlash, robototexnika, matematika, shaxmat va ingliz tilini 6 yoshdan o'rgatadi. Qaror qilishdan oldin bepul sinov darsiga kelib ko'rish mumkin.
+
+
+---
+
+# Курсы и статьи (на русском)
+
+
+## Курсы программирования для детей в Самарканде (6+)
+
+Manba / Source: https://parvozcode.uz/kursy-programmirovaniya.html
+
+O'zbekcha
+
+💻
+
+# Курс программирования для детей в Самарканде
+
+Ваш ребёнок перейдёт от игр на компьютере к созданию собственных игр. В учебном центре Parvoz программированию учат **не через заучивание теории, а через создание реальных проектов** — уже на первом уроке ребёнок видит на экране свой результат.
+
+**✓** С 6 лет **✓** 3 раза в неделю · 2 часа **✓** Первый урок бесплатно
+
+📚 Программа
+
+## Чему научится ваш ребёнок?
+
+🧩
+**Алгоритмическое мышление**
+Разбивать большую задачу на маленькие шаги — основа программирования и решения задач вообще.
+
+🎮
+**Игры и анимация в Scratch**
+Младшие дети создают собственную игру в блочной среде и дают поиграть друзьям.
+
+🐍
+**Основы Python**
+Переменные, условия, циклы, функции — пошаговый переход к написанию настоящего кода.
+
+🌐
+**Основы веба**
+С помощью HTML и CSS ребёнок создаёт свою первую страницу и показывает её в интернете.
+
+🛠
+**Работа над проектом**
+От идеи до готового продукта: планирование, создание, проверка, улучшение.
+
+🔍
+**Поиск и исправление ошибок**
+Навык отладки — терпеливо искать причину, а не гадать.
+
+⭐ Что это даёт
+
+## Зачем нужен курс программирования?
+
+✦
+**Фундамент для будущей профессии**
+Программирование сегодня — новая грамотность: пригодится, какую бы профессию ребёнок ни выбрал.
+
+✦
+**Логика и внимание**
+Код требует точности: ребёнок учится быть внимательным и проверять себя.
+
+✦
+**Творчество и результат**
+В конце каждого урока у ребёнка есть готовый результат, который можно показать, — отсюда и мотивация.
+
+✦
+**Всё оборудование в центре**
+Компьютеры и программы — у нас, из дома ничего приносить не нужно.
+
+💰 Условия
+
+## Цена и расписание
+
+- Направление: Программирование
+- Возраст: с 6 лет
+- Стоимость: 300 000 сум / месяц
+- Продолжительность: 3 дня в неделю · урок 2 часа
+- Утренняя группа: 10:00 – 12:00
+- Дневная группа: 13:00 – 15:00
+- Вечерняя группа: 16:00 – 18:00
+- Пробный урок: Бесплатно
+- Оплата: Наличными или Click / Payme
+- Адрес: Самарканд, ул. Дагбитская, 11, 2 этаж (перекрёсток Гелион, напротив Mone Café)
+🎓 Для талантливых учеников доступна **стипендия — бесплатное обучение**!
+
+❓ FAQ
+
+## Частые вопросы
+
+**Savol / Question:** Обязательно ли иметь компьютер дома?
+
+Нет. Все занятия проходят на компьютерах в центре. Если есть возможность заниматься дома — хорошо, но это не обязательно.
+
+**Savol / Question:** Ребёнок не знает английского — ему не будет трудно?
+
+Нет. Занятия ведутся на узбекском и русском языках, нужные термины объясняем по ходу. Наоборот, после этого курса многие дети начинают интересоваться английским.
+
+**Savol / Question:** С какого возраста принимаете?
+
+С 6 лет. Младшие начинают со Scratch, старшие — с Python и веба: группы разделены по возрасту.
+
+**Savol / Question:** Как проходит урок?
+
+3 дня в неделю, каждый урок 2 часа. Короткое объяснение, затем практика — большую часть урока ребёнок сам пишет код.
+
+🎯 Другие направления
+
+## Другие курсы в Parvoz
+
+🤖Робототехника 🧮Математика ♟Шахматы Английский язык
+
+## Первый урок бесплатно 🚀
+
+Приведите ребёнка на урок программирования — попробуйте без каких-либо обязательств и решите сами.
+
+
+## Курсы робототехники для детей в Самарканде (от 6 лет)
+
+Manba / Source: https://parvozcode.uz/robototehnika.html
+
+O'zbekcha
+
+🤖
+
+# Курс робототехники для детей в Самарканде
+
+Когда робот, собранный ребёнком своими руками, начинает двигаться, — это не просто урок, а **первый шаг к тому, чтобы вырасти инженером**. В Parvoz робототехнику преподают как полный путь от идеи до работающего устройства.
+
+**✓** С 6 лет **✓** 3 раза в неделю · 2 часа **✓** Первый урок бесплатно
+
+📚 Программа
+
+## Чему научится ваш ребёнок?
+
+⚙️
+**Конструкция и механика**
+Передачи, рычаги, устойчивость — почему одна конструкция работает, а другая нет.
+
+📡
+**Работа с датчиками**
+Датчики расстояния, света и движения: как робот «чувствует» мир вокруг.
+
+🔌
+**Моторы и управление**
+Точное управление движением: скорость, поворот, остановка.
+
+💡
+**Программирование робота**
+От блочной среды — до настоящего кода, когда ребёнок будет готов.
+
+🔁
+**Инженерный цикл**
+Идея → прототип → испытание → исправление ошибок → улучшенная версия.
+
+🤝
+**Работа в команде**
+Строить проект вместе и уметь представить его другим.
+
+⭐ Что это даёт
+
+## Зачем нужен курс робототехники?
+
+✦
+**Физика и математика оживают**
+Ребёнок, который увидел, как формула из учебника работает в роботе у него в руках, начинает понимать предмет по-другому.
+
+✦
+**Умение решать проблемы**
+Если робот не работает — нужно искать причину. Именно этот навык чаще всего пригождается в жизни.
+
+✦
+**Терпение и упорство**
+Не получилось с первой попытки — это нормально. Ребёнок учится пробовать снова.
+
+✦
+**Все наборы в центре**
+Наборы для роботов, детали и оборудование — у нас, дополнительных расходов нет.
+
+💰 Условия
+
+## Цена и расписание
+
+- Направление: Робототехника
+- Возраст: с 6 лет
+- Стоимость: 300 000 сум / месяц
+- Продолжительность: 3 дня в неделю · урок 2 часа
+- Утренняя группа: 10:00 – 12:00
+- Дневная группа: 13:00 – 15:00
+- Вечерняя группа: 16:00 – 18:00
+- Пробный урок: Бесплатно
+- Оплата: Наличными или Click / Payme
+- Адрес: Самарканд, ул. Дагбитская, 11, 2 этаж (перекрёсток Гелион, напротив Mone Café)
+🎓 Для талантливых учеников доступна **стипендия — бесплатное обучение**!
+
+❓ FAQ
+
+## Частые вопросы
+
+**Savol / Question:** Нужно ли покупать набор для робота?
+
+Нет. Все наборы, детали и оборудование есть в центре. Кроме ежемесячной оплаты, никаких дополнительных расходов нет.
+
+**Savol / Question:** Ребёнок не умеет программировать — справится?
+
+Да. Начинаем с нуля: сначала конструкция и простое блочное управление, затем постепенно более сложное программирование.
+
+**Savol / Question:** С какого возраста принимаете?
+
+С 6 лет. Группы делятся по возрасту и уровню подготовки, поэтому каждый ребёнок растёт в своём темпе.
+
+**Savol / Question:** Участвуют ли дети в соревнованиях?
+
+Да. В центре регулярно проходят открытые уроки и соревнования — дата объявляется заранее. Подготовленных учеников также выводим на внешние конкурсы.
+
+🎯 Другие направления
+
+## Другие курсы в Parvoz
+
+💻Программирование 🧮Математика ♟Шахматы Английский язык
+
+## Первый урок бесплатно 🚀
+
+Приведите ребёнка на урок робототехники — попробуйте без каких-либо обязательств и решите сами.
+
+
+## Курсы математики для детей в Самарканде (от 6 лет)
+
+Manba / Source: https://parvozcode.uz/matematika.html
+
+O'zbekcha
+
+🧮
+
+# Курс математики для детей в Самарканде
+
+Математика — это не набор правил для заучивания, а **способ мышления**. В Parvoz ребёнка учат не запоминать ответ, а самому приходить к решению, — поэтому эти знания работают и в школе, и на олимпиаде.
+
+**✓** С 6 лет **✓** 3 раза в неделю · 2 часа **✓** Первый урок бесплатно
+
+📚 Программа
+
+## Чему научится ваш ребёнок?
+
+⚡
+**Устный и быстрый счёт**
+Приёмы вычислений, свободное обращение с числами, умение быстро оценить ответ.
+
+🧠
+**Логические задачи**
+Ребусы, головоломки и нестандартные задачи тренируют «мышцы» мышления.
+
+📐
+**Основы геометрии**
+Фигуры, пространственное воображение, умение увидеть задачу через чертёж.
+
+🏆
+**Олимпиадные стратегии**
+Как подойти к сложной задаче: упростить, найти закономерность, решить с конца.
+
+📚
+**Углубление школьной программы**
+Темы из класса закрепляются — и оценки растут сами собой.
+
+🗣
+**Обоснование решения**
+Почему именно так? Ребёнок должен уметь объяснить свою мысль.
+
+⭐ Что это даёт
+
+## Зачем нужен курс математики?
+
+✦
+**Фундамент для всех предметов**
+Математическое мышление помогает в физике, программировании и даже в изучении языков.
+
+✦
+**Подготовка к олимпиадам**
+Целенаправленно готовим к конкурсам и олимпиадам — отдельное направление для одарённых учеников.
+
+✦
+**Уходит страх**
+У многих детей есть страх «математика — это трудно». Мы убираем его, начиная с интересных задач.
+
+✦
+**Небольшие группы**
+Формат, в котором каждый ребёнок может задать вопрос и не остаётся без внимания учителя.
+
+💰 Условия
+
+## Цена и расписание
+
+- Направление: Математика
+- Возраст: с 6 лет
+- Стоимость: 300 000 сум / месяц
+- Продолжительность: 3 дня в неделю · урок 2 часа
+- Утренняя группа: 10:00 – 12:00
+- Дневная группа: 13:00 – 15:00
+- Вечерняя группа: 16:00 – 18:00
+- Пробный урок: Бесплатно
+- Оплата: Наличными или Click / Payme
+- Адрес: Самарканд, ул. Дагбитская, 11, 2 этаж (перекрёсток Гелион, напротив Mone Café)
+🎓 Для талантливых учеников доступна **стипендия — бесплатное обучение**!
+
+❓ FAQ
+
+## Частые вопросы
+
+**Savol / Question:** Помогает ли это со школьной программой?
+
+Да. Темы связаны со школьной программой, но мы идём глубже — поэтому материал в классе начинает казаться ребёнку лёгким.
+
+**Savol / Question:** Готовите ли к олимпиадам?
+
+Да. С одарёнными учениками отдельно работаем над олимпиадными задачами и готовим их к конкурсам.
+
+**Savol / Question:** Ребёнок не любит математику — что делать?
+
+Это очень частая ситуация, и обычно причина — непонятая тема. Мы начинаем с интересных задач с элементами игры: когда появляется интерес, приходит и результат.
+
+**Savol / Question:** С какого возраста принимаете?
+
+С 6 лет. Группы разделены по возрасту и уровню знаний.
+
+🎯 Другие направления
+
+## Другие курсы в Parvoz
+
+💻Программирование 🤖Робототехника ♟Шахматы Английский язык
+
+## Первый урок бесплатно 🚀
+
+Приведите ребёнка на урок математики — попробуйте без каких-либо обязательств и решите сами.
+
+
+## Шахматы для детей в Самарканде — курсы и секция
+
+Manba / Source: https://parvozcode.uz/shahmaty.html
+
+O'zbekcha
+
+♟
+
+# Курс шахмат для детей в Самарканде
+
+Шахматы — древнейшее упражнение, которое учит ребёнка **думать наперёд**. В Parvoz начинаем с нуля: от правил до турнирной партии, а каждую неделю ребёнок проверяет свои знания на соревновании.
+
+**✓** С 6 лет **✓** 3 раза в неделю · 2 часа **✓** Первый урок бесплатно
+
+📚 Программа
+
+## Чему научится ваш ребёнок?
+
+♟
+**Правила и ходы фигур**
+Начинаем с нуля — никаких предварительных знаний не требуется.
+
+🚀
+**Принципы дебюта**
+Захват центра, развитие фигур, рокировка — правильное начало партии.
+
+🎯
+**Тактика и комбинации**
+Умение видеть вилку, связку, двойной удар и матовые комбинации.
+
+👑
+**Техника эндшпиля**
+Король и пешка, мат ладьёй — точно довести партию до конца.
+
+🗺
+**Оценка позиции**
+Составление плана: не просто делать ходы, а играть с целью.
+
+⏱
+**Турнирный порядок**
+Игра с часами, запись партии и умение правильно принимать поражение.
+
+⭐ Что это даёт
+
+## Зачем нужен курс шахмат?
+
+✦
+**Внимание и терпение**
+Ребёнок приобретает привычку думать перед ходом — она очень пригождается и в жизни.
+
+✦
+**Логическое мышление**
+Просчёт последствий каждого хода укрепляет понимание связи причины и следствия.
+
+✦
+**Тренировка памяти**
+Запоминание комбинаций и дебютных схем развивает память.
+
+✦
+**Регулярные турниры**
+День соревнования объявляется заранее — знания проверяются в реальной игре, и победа, и ошибка — учитель.
+
+💰 Условия
+
+## Цена и расписание
+
+- Направление: Шахматы
+- Возраст: с 6 лет
+- Стоимость: 300 000 сум / месяц
+- Продолжительность: 3 дня в неделю · урок 2 часа
+- Утренняя группа: 10:00 – 12:00
+- Дневная группа: 13:00 – 15:00
+- Вечерняя группа: 16:00 – 18:00
+- Пробный урок: Бесплатно
+- Оплата: Наличными или Click / Payme
+- Адрес: Самарканд, ул. Дагбитская, 11, 2 этаж (перекрёсток Гелион, напротив Mone Café)
+🎓 Для талантливых учеников доступна **стипендия — бесплатное обучение**!
+
+❓ FAQ
+
+## Частые вопросы
+
+**Savol / Question:** Ребёнок совсем не умеет играть в шахматы — примете?
+
+Конечно. Большая часть групп начинает с нуля — учим с того, как ходят фигуры.
+
+**Savol / Question:** Нужно ли приносить шахматную доску?
+
+Нет. Доски, фигуры и шахматные часы есть в центре.
+
+**Savol / Question:** Участвуют ли дети в турнирах?
+
+Да. В центре регулярно проходят внутренние турниры — дата объявляется заранее. Подготовленных учеников также выводим на городские соревнования.
+
+**Savol / Question:** С какого возраста принимаете?
+
+С 6 лет. Для младших детей занятия проходят в игровой форме.
+
+🎯 Другие направления
+
+## Другие курсы в Parvoz
+
+💻Программирование 🤖Робототехника 🧮Математика Английский язык
+
+## Первый урок бесплатно 🚀
+
+Приведите ребёнка на урок шахмат — попробуйте без каких-либо обязательств и решите сами.
+
+
+## Курсы английского языка для детей в Самарканде
+
+Manba / Source: https://parvozcode.uz/angliyskiy.html
+
+O'zbekcha
+
+# Курс английского языка для детей в Самарканде
+
+Знать язык — это не заучивать правила, а **уметь говорить**. В Parvoz занятия строятся на живом общении и игре: уже с первого урока ребёнок сам составляет и произносит простые фразы.
+
+**✓** С 6 лет **✓** 3 раза в неделю · 2 часа **✓** Первый урок бесплатно
+
+📚 Программа
+
+## Чему научится ваш ребёнок?
+
+🗣
+**Живое общение**
+Большая часть урока уходит на разговор — именно это даёт самый быстрый результат.
+
+👂
+**Аудирование**
+Приучаем слух к естественной речи через аудио, песни и видео.
+
+📖
+**Повседневная лексика**
+Семья, школа, путешествия, еда, технологии — темы, которые нужны ребёнку.
+
+🎲
+**Грамматика через игру**
+Правило не зубрится — оно используется в ситуации и так запоминается.
+
+🔤
+**Правильное произношение**
+Работа над ударением и звуками — чтобы потом не пришлось переучиваться.
+
+💻
+**IT-термины**
+Язык мира технологий: естественный мост к курсам программирования и робототехники.
+
+⭐ Что это даёт
+
+## Зачем нужен курс английского языка?
+
+✦
+**Ранний возраст — самое удобное время**
+Дети усваивают язык естественнее взрослых, особенно произношение.
+
+✦
+**Возможности в будущем**
+Международные экзамены, учёба за рубежом и сфера IT — всё начинается с английского.
+
+✦
+**Преодоление стеснения**
+В небольшой группе ребёнок учится говорить, не боясь ошибиться.
+
+✦
+**Связь с другими курсами**
+Ребёнок, который ходит на программирование или робототехнику, уже понимает термины.
+
+💰 Условия
+
+## Цена и расписание
+
+- Направление: Английский язык
+- Возраст: с 6 лет
+- Стоимость: 300 000 сум / месяц
+- Продолжительность: 3 дня в неделю · урок 2 часа
+- Утренняя группа: 10:00 – 12:00
+- Дневная группа: 13:00 – 15:00
+- Вечерняя группа: 16:00 – 18:00
+- Пробный урок: Бесплатно
+- Оплата: Наличными или Click / Payme
+- Адрес: Самарканд, ул. Дагбитская, 11, 2 этаж (перекрёсток Гелион, напротив Mone Café)
+🎓 Для талантливых учеников доступна **стипендия — бесплатное обучение**!
+
+❓ FAQ
+
+## Частые вопросы
+
+**Savol / Question:** Ребёнок начинает с нуля — не будет проблем?
+
+Нет. Группы разделены по уровню, в начальной группе все начинают с нуля.
+
+**Savol / Question:** На каком языке проходят занятия?
+
+На начальном уровне объяснения — на узбекском или русском, упражнения — на английском. С ростом уровня урок всё больше проходит на английском.
+
+**Savol / Question:** Будет ли домашнее задание?
+
+Да, но небольшое и практичное: несколько слов, короткое видео или 3–4 предложения на повседневную тему. Цель — не утомить ребёнка, а привнести язык в его повседневную жизнь.
+
+**Savol / Question:** С какого возраста принимаете?
+
+С 6 лет. Для младших детей занятия проходят на основе игр, песен и рисунков.
+
+🎯 Другие направления
+
+## Другие курсы в Parvoz
+
+💻Программирование 🤖Робототехника 🧮Математика ♟Шахматы
+
+## Первый урок бесплатно 🚀
+
+Приведите ребёнка на урок английского — попробуйте без каких-либо обязательств и решите сами.
+
+
+## С какого возраста учить ребёнка программированию? | Parvoz
+
+Manba / Source: https://parvozcode.uz/vozrast-dlya-programmirovaniya.html
+
+# С какого возраста учить ребёнка программированию?
+
+**Начинать можно с 6–7 лет — но не с написания кода.** В этом возрасте ребёнок осваивает последовательность, условие и повторение в блочной среде (Scratch). Для настоящего текстового программирования — например Python — удобный возраст **10–12 лет**: к нему уже нужны скорость чтения, клавиатура и умение самому найти ошибку.
+
+## Что давать в каком возрасте
+
+Жёсткой границы нет — дети разные. Но на практике почти всегда работает такое распределение:
+
+- **6–7 лет.** Блочная среда, больше игры. Цель — не код, а понятие последовательности: что сначала, что потом. Урок не должен быть длиннее 45 минут.
+- **8–9 лет.** Своя игра или анимация в Scratch. Именно здесь становятся понятны условие (если...), цикл и переменная. Ребёнок впервые говорит: «это я сам сделал».
+- **10–12 лет.** Время переходить на текстовый язык. Python — самое удобное начало: простой синтаксис, быстрый результат. В этом возрасте ребёнок начинает читать сообщение об ошибке и чинить код сам.
+- **13 лет и старше.** Веб (HTML/CSS/JavaScript), базы данных, реальный проект. Здесь уже имеет смысл собирать портфолио.
+
+## Настоящая польза раннего старта
+
+Многие родители думают о программировании как о профессии. В младшем возрасте главная польза в другом:
+
+- **Отношение к ошибке.** В программировании неработающий код — это норма. Ребёнок учится видеть не «у меня не получилось», а «где именно не так». Это пригодится и в школе.
+- **Умение дробить задачу.** Идея «сделаю игру» распадается на десятки мелких шагов. Навык нужен везде — от математики до сочинения.
+- **Терпение.** Результат не появляется сразу. Час возни и работающая в конце программа показывают ребёнку цену ожидания.
+
+## Самая частая ошибка
+
+Ранний перевод на текстовый код. Если дать Python семилетнему, он учится не программированию, а печати — и бросает, потому что код не работает из-за забытой скобки.
+
+Смысл блочной среды в том, чтобы убрать ошибки набора и оставить только **логику**. Пропуск этого этапа чаще всего заканчивается выводом «программирование — это сложно».
+
+## Готов ли ребёнок? Три признака
+
+- Может работать по инструкции — например, сам собирает Lego по схеме.
+- Не бросает сразу, если не получилось с первого раза.
+- Ему интересно что-то создавать на компьютере, а не только играть.
+Все три необязательны. Если есть хотя бы два — можно начинать.
+
+## Частые вопросы
+
+**Savol / Question:** Можно привести ребёнка в 5 лет?
+
+Мы принимаем с 6 лет. В 5 ребёнок обычно не удерживает внимание 45 минут, поэтому лучше подождать год — результат будет заметно лучше.
+
+**Savol / Question:** А если ребёнок плохо читает и пишет?
+
+Для блочной среды это не помеха — блоки цветные и с картинками. Скорость чтения понадобится при переходе к текстовому коду, но до него ещё несколько лет.
+
+**Savol / Question:** Нужен ли английский язык?
+
+Нет. Scratch работает и на русском. В Python несколько десятков ключевых слов, ребёнок запоминает их по ходу — отдельное знание английского не требуется.
+
+**Savol / Question:** Что если дома нет компьютера?
+
+Занятия проходят на компьютерах центра, домашние задания даются без привязки к компьютеру. Практика дома — плюс, но не обязательна.
+
+
+## Стоимость детских курсов в Самарканде (2026) | Parvoz
+
+Manba / Source: https://parvozcode.uz/stoimost-kursov-samarkand.html
+
+# Сколько стоят детские курсы в Самарканде?
+
+**Детские кружки и курсы в Самарканде обычно стоят 250 000 – 600 000 сум в месяц.** В Parvoz одна цена для всех направлений — **300 000 сум в месяц**: 3 дня в неделю по 2 часа, оборудование за счёт центра, первый урок бесплатно.
+
+## От чего зависит цена
+
+Если два курса отличаются по цене вдвое, дело обычно не в качестве, а в арифметике. Основные факторы:
+
+- **Количество детей в группе.** Самый весомый фактор. Себестоимость группы из 8 человек и из 25 отличается кратно — как и внимание, которое достанется ребёнку.
+- **Сколько часов в месяц.** «200 000 сум» при двух занятиях в неделю по часу — это 25 000 сум за час. «300 000 сум» при трёх занятиях по два часа — 12 500 сум за час, то есть вдвое дешевле.
+- **Оборудование.** Набор для робототехники, компьютер, шахматные часы — за чей счёт?
+- **Преподаватель.** Опытный стоит дороже, и это видно в цене.
+
+## Четыре вопроса перед записью
+
+Цифра в объявлении редко бывает полной. Уточните по телефону:
+
+- Есть ли отдельная плата за запись?
+- Учебники, тетради, наборы — покупаются отдельно?
+- Сертификат платный?
+- Если ребёнок заболел — эти занятия отрабатываются или сгорают?
+Если на эти четыре вопроса не дают прямого ответа — это повод насторожиться.
+
+## Считайте в часах
+
+Самый честный способ сравнить курсы — разделить месячную цену на количество часов в месяц:
+
+**Parvoz:** 300 000 сум ÷ (3 дня × 2 часа × 4 недели = 24 часа) = **около 12 500 сум за час**.
+
+Примените этот расчёт к каждому курсу, который сравниваете — цифры часто оказываются неожиданными.
+
+## Что входит в цену Parvoz
+
+- 3 дня в неделю по 2 часа — около 24 часов в месяц.
+- Компьютеры, наборы для робототехники, шахматные доски — всё в центре. Из дома приносить ничего не нужно.
+- Первый пробный урок — **бесплатно**, без предоплаты.
+- Открытые уроки и турниры — без отдельной платы, дата объявляется заранее.
+- Уведомление родителю в Telegram, когда ребёнок пришёл и когда ушёл.
+Платы за запись, за сертификат и обязательных расходов на учебники нет.
+
+## Частые вопросы
+
+**Savol / Question:** Когда вносится оплата?
+
+В начале каждого месяца. Наличными, через Click или Payme.
+
+**Savol / Question:** Пробный урок платный?
+
+Нет, первый урок полностью бесплатный и без предоплаты. Если ребёнок не захочет возвращаться — никаких обязательств.
+
+**Savol / Question:** Есть ли скидка при записи на несколько курсов?
+
+Заниматься на нескольких направлениях одновременно можно. Вопрос скидки обсуждаем отдельно — позвоните или оставьте заявку.
+
+**Savol / Question:** Есть ли возможности для одарённых детей?
+
+Да. Для одарённых учеников есть scholarship — бесплатное обучение. Для этого мы беседуем с ребёнком.
+
+
+## Scratch или Python: с чего начать ребёнку? | Parvoz
+
+Manba / Source: https://parvozcode.uz/scratch-ili-python.html
+
+# Scratch или Python: с чего начать ребёнку?
+
+**До 10 лет — Scratch. После 10, если ребёнок свободно печатает, — Python.** Scratch даёт понятия программирования без ошибок набора; Python — язык, на котором работают настоящие разработчики. Это не конкуренты, а два этапа подряд.
+
+## Чему на самом деле учит Scratch
+
+Scratch — визуальная среда из блоков. Ребёнок не пишет код, а соединяет блоки. Со стороны похоже на игрушку, но внутри вещи вполне серьёзные:
+
+- Последовательность: что выполняется раньше, что позже.
+- Условие: если произошло это — сделай то.
+- Цикл и переменная.
+- Событие: что происходит при нажатии кнопки.
+Это основа любого языка программирования. Вся ценность Scratch в том, что ребёнок усваивает эти понятия **без синтаксических ошибок** — ничего не ломается из-за незакрытой скобки.
+
+## Когда понадобится Python
+
+У Scratch есть предел: из него не выйдет настоящая программа, сайт или мобильное приложение. Когда ребёнок проходит стадию «я сам сделал игру» и переходит к «а как это устроено», приходит время Python.
+
+Почему именно он? Синтаксис ближе всего к человеческому языку, код короткий, результат виден быстро. И это не учебный язык — на нём делают всё от анализа данных до искусственного интеллекта.
+
+## Самая частая ошибка
+
+Пропустить Scratch как «пустую трату времени».
+
+Обычно это идёт от родителей: блочная среда не выглядит серьёзно. В итоге восьмилетнего сажают за Python, и через два месяца он бросает программирование — потому что устаёт не от логики, а от набора текста.
+
+Есть и обратная ошибка: держать в Scratch тринадцатилетнего. В этом возрасте он быстро заскучает и будет чувствовать себя среди малышей.
+
+## Пора переходить? Четыре признака
+
+- Доводит свой проект в Scratch от начала до конца.
+- Печатает пусть и глядя на клавиатуру, но без мучений.
+- Начал жаловаться: «в Scratch это сделать нельзя».
+- Исполнилось 10 лет.
+Если совпали три из четырёх — время перехода пришло.
+
+## Как устроен путь в Parvoz
+
+На каком этапе ребёнок, мы видим на первом уроке и по этому распределяем в группу. Путь обычно такой: **Scratch → Python → основы веба (HTML/CSS) → свой проект**. Каждый этап строится на предыдущем, перепрыгивать не нужно.
+
+## Частые вопросы
+
+**Savol / Question:** Не потеряем ли время на Scratch?
+
+Нет. Понятия, усвоенные в Scratch — условие, цикл, переменная — в Python не меняются, меняется только запись. Ребёнок после Scratch осваивает Python заметно быстрее.
+
+**Savol / Question:** Что после Python?
+
+Основы веба (HTML, CSS, JavaScript) или углубление в Python — смотря что интересно ребёнку. В этом возрасте больше всего даёт работа над собственным проектом.
+
+**Savol / Question:** Можно сразу начать с Python?
+
+Ребёнку старше 12 лет, который свободно печатает, — да, можно. Младшим почти всегда быстрее получается через Scratch.
+
+
+## Что даёт ребёнку робототехника? | Parvoz
+
+Manba / Source: https://parvozcode.uz/chto-daet-robototehnika.html
+
+# Что даёт ребёнку робототехника?
+
+**Робототехника учит инженерному циклу: идея → сборка → испытание → ошибка → доработка.** Главное отличие от программирования — результат виден не на экране, а в предмете, который можно взять в руки. Поэтому она заметно дольше удерживает младшего и подвижного ребёнка.
+
+## Что конкретно происходит на занятии
+
+Робототехника — это не только сборка конструктора. Одно занятие обычно состоит из четырёх частей:
+
+- **Конструкция.** Сборка механизма: колесо, зубчатая передача, рычаг. Здесь ребёнок видит физику не в учебнике, а руками.
+- **Датчики.** Как робот «чувствует» окружение — расстояние, цвет, препятствие.
+- **Программирование.** Сказать роботу, что делать. Логика программирования встречается снова, но результат не на экране — робот реально едет.
+- **Испытание.** Не работает. Почему? Чиним. Пробуем снова.
+
+## Самое ценное — испытание и ошибка
+
+Робот почти никогда не работает с первой попытки. Колесо проскальзывает, датчик читает неверно, программа выполняется в другом порядке.
+
+Это и есть самая полезная часть курса. Ребёнок учится искать проблему по частям: дело в механике, в датчике или в программе? Навык пригодится в любой области, потому что мир состоит из вещей, которые не работают с первого раза.
+
+## Программирование или робототехника?
+
+Оба направления учат логике, но дети воспринимают их по-разному:
+
+- **Робототехника** — тому, кто любит работать руками, не может долго сидеть на месте и хочет видеть результат сразу.
+- **Программирование** — тому, кому интересно создавать что-то на экране и кто дольше удерживает внимание.
+Если не уверены — приведите на бесплатный пробный урок по обоим направлениям. Вы сами увидите, с какого занятия ребёнок вышел с горящими глазами.
+
+## Нужно ли покупать набор домой?
+
+Нет. Все наборы есть в центре и входят в цену. Покупать робота отдельно не нужно — в группе под присмотром преподавателя ребёнок учится заметно быстрее.
+
+Если ребёнок сильно увлечётся и захочет заниматься дома, преподаватель подскажет набор под его возраст и уровень.
+
+## Частые вопросы
+
+**Savol / Question:** С какого возраста принимаете?
+
+С 6 лет. Для младших больше конструкторской части и проще программирование — группы разделены по возрасту.
+
+**Savol / Question:** Подходит ли девочкам?
+
+Да. В робототехнике конструирование, дизайн и программирование идут вместе — у девочек это направление идёт очень хорошо.
+
+**Savol / Question:** Можно совмещать с программированием?
+
+Да, если расписание не пересекается. Они дополняют друг друга: логика из робототехники помогает в программировании и наоборот.
+
+**Savol / Question:** Есть ли соревнования?
+
+Да. Подготовленных учеников готовим к соревнованиям по робототехнике — для детей это сильная мотивация.
+
+
+## Что дают шахматы ребёнку: честный ответ | Parvoz
+
+Manba / Source: https://parvozcode.uz/polza-shahmat-dlya-rebenka.html
+
+# Помогают ли шахматы ребёнку в учёбе?
+
+**Главное, что дают шахматы, — привычка думать до хода и умение переносить поражение.** Обещать, что они напрямую поднимут оценку по математике, было бы нечестно. Но удержание внимания, умение просчитать на несколько шагов вперёд и делать выводы из ошибки работают и в учёбе, и в жизни.
+
+## Что именно тренируют шахматы
+
+- **Паузу перед решением.** В шахматах поспешный ход наказывается сразу. Через несколько месяцев ребёнок начинает останавливаться и думать, прежде чем протянуть руку — и эта привычка выходит за пределы доски.
+- **Видеть последствия.** «Если я сделаю так, что сделает он?» — это стержень игры.
+- **Долгое внимание.** Партия идёт 20–40 минут и всё это время требует сосредоточенности. Сегодня такая тренировка сама собой встречается редко.
+- **Переносить поражение.** Самое ценное. В шахматах проигрывают все — включая чемпиона мира. Ребёнок узнаёт, что проигрыш не конец света.
+
+## Чего обещать нельзя
+
+О шахматах говорят много преувеличенного. Честнее так:
+
+- Шахматы не повышают IQ.
+- Не поднимают автоматически оценку по математике.
+- Не делают ребёнка «умным».
+Что они дают — это навыки: внимание, терпение, планирование, отношение к поражению. Эти навыки влияют на учёбу, но косвенно и не сразу.
+
+## С какого возраста начинать
+
+С 6 лет. В этом возрасте ребёнок понимает ходы фигур и простую цель. 8–10 лет — лучший период для тактики и комбинаций: память сильная, интерес высокий.
+
+Поздний старт тоже не проблема — начавший в 12 осваивает быстро, потому что логическое мышление уже сформировано.
+
+## Как поддержать дома
+
+- **Играйте с ребёнком** — даже если проигрываете. Игра с родителем для ребёнка самая сильная мотивация.
+- **Не поддавайтесь нарочно.** Дети это чувствуют, и ценность победы пропадает.
+- **После проигрыша обсуждайте ход, а не результат:** «после какого хода стало тяжело?»
+- **Не торопитесь с турнирами.** Везите, когда ребёнок сам захочет.
+
+## Зачем нужен турнир
+
+На турнире ребёнок играет иначе: есть контроль времени, соперник незнакомый, результат записывается. Это учит работать под давлением.
+
+В Parvoz регулярно проходят внутренние турниры — давление низкое, обстановка знакомая. Это самая мягкая подготовка к большим турнирам.
+
+## Частые вопросы
+
+**Savol / Question:** Ребёнок плачет, когда проигрывает. Что делать?
+
+Это нормально и временно. Именно поэтому шахматы полезны — ребёнок учится проигрывать в безопасной обстановке. Через несколько месяцев реакция заметно меняется.
+
+**Savol / Question:** Нужна ли шахматная доска дома?
+
+Для занятий не нужна — доски есть в центре. Но если дома есть доска и в семье играют, прогресс идёт заметно быстрее.
+
+**Savol / Question:** А если ребёнок не знает правил?
+
+Не проблема. Начинаем с нуля — на первом же уроке учим ходы фигур.
+
+**Savol / Question:** Шахматы только для мальчиков?
+
+Нет. В наших группах играют и девочки, и результаты у них часто выше.
+
+
+## Что проверить перед записью на курсы: чек-лист | Parvoz
+
+Manba / Source: https://parvozcode.uz/pered-zapisyu-na-kursy.html
+
+# Что проверить перед записью ребёнка на курсы?
+
+**Три главных вопроса: сколько детей в группе, кто преподаватель и бесплатный ли пробный урок.** Всё остальное — оборудование, сертификаты, красивый сайт — идёт после этих трёх. Ниже — на что конкретно смотреть на пробном уроке.
+
+## 1. Количество детей в группе
+
+Эта одна цифра говорит о качестве курса точнее всего остального.
+
+В группе из 8–12 человек преподаватель доходит до каждого. В группе больше 20 занятие превращается в лекцию — что делает ребёнок на задней парте, не видит никто. Для детей это особенно важно, потому что задать вопрос решается далеко не каждый.
+
+**Спросите:** «Сколько детей сейчас в этой группе?» Если ответ уводят в сторону — это тоже ответ.
+
+## 2. Кто преподаватель
+
+Важно не название центра, а человек, который будет вести занятие у вашего ребёнка. Выясните:
+
+- Как его зовут? (Если конкретное имя не называют — плохой знак.)
+- Сколько лет преподаёт именно детям? Работа со взрослыми и с детьми — совершенно разные вещи.
+- Меняется ли преподаватель в течение года?
+
+## 3. Пробный урок
+
+Центр, который не даёт бесплатный пробный урок, не уверен в своём занятии. Это правило почти не даёт сбоев.
+
+Пробный урок должен быть бесплатным и без предоплаты.
+
+## На что смотреть на пробном уроке
+
+После занятия задайте себе эти вопросы:
+
+- С каким **настроением** ребёнок вышел с урока? Это самый надёжный показатель.
+- Преподаватель узнал имя ребёнка и обращался к нему?
+- Ребёнок на уроке что-то **делал** или только слушал?
+- Помещение чистое, светлое, без лишнего шума?
+- Вам рассказали после урока, как ребёнок справился?
+
+## Тревожные признаки
+
+- «Запишетесь сегодня — будет скидка» — попытка поторопить.
+- Требование оплатить несколько месяцев вперёд.
+- Уклонение от ответа о количестве детей в группе.
+- Обещание гарантированного результата («за 3 месяца станет программистом»).
+- Отсутствие конкретной информации о преподавателе.
+
+## Последний вопрос задайте самому ребёнку
+
+«Придёшь ещё?» Ответ ребёнка — самый верный. Взрослые смотрят на рекламу и сертификаты; ребёнок — на то, было ли ему интересно. В долгую именно это и определяет результат.
+
+## Частые вопросы
+
+**Savol / Question:** Сколько детей в группе в Parvoz?
+
+Мы держим группы небольшими, чтобы преподаватель доходил до каждого ребёнка. Точное число скажем при звонке или на пробном уроке.
+
+**Savol / Question:** Есть ли обязательства после пробного урока?
+
+Нет. Если ребёнок не захочет возвращаться — никакой платы и никаких обязательств. Предоплату мы тоже не берём.
+
+**Savol / Question:** Важен ли сертификат?
+
+Для детских курсов практическая ценность сертификата невелика. Гораздо важнее, что ребёнок умеет делать — на это и смотрите на пробном уроке.
+
+**Savol / Question:** Ребёнок говорит, что не пойдёт. Что делать?
+
+Выясните причину: неинтересно, некомфортно в группе или слишком сложно? Скажите нам — смена группы или подхода часто решает вопрос.
+
+
+## Учебный центр Parvoz (Самарканд): адрес, цена, возраст, график
+
+Manba / Source: https://parvozcode.uz/uchebnyj-centr-parvoz-voprosy-otvety.html
+
+# Учебный центр Parvoz: ответы на основные вопросы
+
+**Учебный центр Parvoz (Parvoz Code) — IT и интеллектуальный центр для детей в Самарканде.** Программирование, робототехника, математика, шахматы и английский язык — с 6 лет. Адрес: ул. Дагбитская (Dahbed), 11, 2 этаж. Цена — 300 000 сумов в месяц за любое направление, 3 раза в неделю по 2 часа. Первый урок бесплатный. Телефон: +998 97 234 44 42.
+
+## Кратко о центре
+
+- **Название:** учебный центр Parvoz (также известен как Parvoz Code).
+- **Город и адрес:** Самарканд, ул. Дагбитская (Dahbed), 11, 2 этаж (у перекрёстка Гелион, напротив Mone Café).
+- **Телефон:** +998 97 234 44 42. Telegram: @parvozcode. Instagram: @parvoz_code.
+- **Направления:** программирование, робототехника, математика, шахматы, английский язык.
+- **Возраст:** с 6 лет.
+- **Цена:** 300 000 сумов в месяц за любое направление; без дополнительных платежей.
+- **Занятия:** 3 раза в неделю, по 2 часа.
+- **График работы:** понедельник–суббота 09:00–18:00; воскресенье — выходной.
+- **Пробный урок:** первый урок бесплатный.
+
+## Как записаться
+
+Три шага: **1)** заполните форму на сайте, напишите в Telegram или позвоните по номеру +998 97 234 44 42; **2)** ребёнок приходит на бесплатный пробный урок; **3)** присоединяетесь к подходящей группе и начинаете регулярные занятия. Предоплата не требуется.
+
+## Как понять, какое направление подойдёт
+
+Самый надёжный способ — прийти на бесплатный пробный урок: ребёнок попробует сам, а вы увидите, что ему интересно. Подробно о каждом направлении — на отдельных страницах: программирование, робототехника, математика, шахматы, английский язык.
+
+## Частые вопросы
+
+**Savol / Question:** Что такое учебный центр Parvoz?
+
+Учебный центр Parvoz (Parvoz Code) — IT и интеллектуальный центр для детей в Самарканде. Программирование, робототехника, математика, шахматы и английский язык — с 6 лет. Центр основан в 2025 году.
+
+**Savol / Question:** Где находится учебный центр Parvoz?
+
+Самарканд, ул. Дагбитская (Dahbed), 11, 2 этаж. Центр находится у перекрёстка Гелион, напротив Mone Café.
+
+**Savol / Question:** Какой телефон учебного центра Parvoz?
+
++998 97 234 44 42. Также можно написать в Telegram @parvozcode или в Instagram @parvoz_code.
+
+**Savol / Question:** Parvoz Code и учебный центр Parvoz — это одно и то же?
+
+Да, это один центр. Официальное название — учебный центр Parvoz, на картах и в соцсетях он также встречается как Parvoz Code. Сайт: parvozcode.uz.
+
+**Savol / Question:** В какие дни и часы работает центр?
+
+С понедельника по субботу с 09:00 до 18:00. Воскресенье — выходной.
+
+**Savol / Question:** Какие направления есть?
+
+Пять направлений: программирование (Scratch, Python, основы веба), робототехника, математика, шахматы и английский язык.
+
+**Savol / Question:** С какого возраста принимаете детей?
+
+С 6 лет. Для каждого направления есть отдельные возрастные группы.
+
+**Savol / Question:** Сколько стоят занятия?
+
+300 000 сумов в месяц за любое направление. Дополнительных платежей нет, оборудование предоставляет центр.
+
+**Savol / Question:** Сколько раз в неделю и сколько длится занятие?
+
+3 раза в неделю, каждое занятие — 2 часа.
+
+**Savol / Question:** Какое время у групп?
+
+Три варианта: утром 10:00–12:00, днём 13:00–15:00 и вечером 16:00–18:00.
+
+**Savol / Question:** Есть ли пробный урок и он платный?
+
+Первый урок полностью бесплатный, предоплаты нет. Если ребёнок не захочет возвращаться — никаких обязательств.
+
+**Savol / Question:** Как записаться?
+
+Заполните форму на сайте, напишите в Telegram @parvozcode или позвоните по номеру +998 97 234 44 42. Затем ребёнок приходит на бесплатный пробный урок.
+
+**Savol / Question:** Как можно оплатить?
+
+Наличными или через Click/Payme, в начале каждого месяца.
+
+**Savol / Question:** Нужно ли приносить компьютер, робота или шахматную доску?
+
+Нет. Компьютеры, наборы для робототехники и шахматные доски есть в центре. Ребёнку достаточно прийти.
+
+**Savol / Question:** Можно ли заниматься сразу по нескольким направлениям?
+
+Да, если расписание не пересекается.
+
+**Savol / Question:** На каком языке проходят занятия?
+
+На узбекском и русском. На английском сначала объяснения идут на узбекском или русском, по мере роста уровня занятия всё больше проходят на английском.
+
+**Savol / Question:** Есть ли возможность бесплатного обучения для одарённых детей?
+
+Да, для одарённых учеников есть стипендия (бесплатное обучение). Подробности уточняйте по телефону +998 97 234 44 42.
+
+**Savol / Question:** Проводятся ли открытые уроки и турниры?
+
+Да, регулярно. Дата заранее объявляется в Telegram (@parvozcode) и Instagram (@parvoz_code).
+
+**Savol / Question:** Какой центр подойдёт для дополнительных занятий ребёнка в Самарканде?
+
+Учебный центр Parvoz даёт детям с 6 лет дополнительные занятия по программированию, робототехнике, математике, шахматам и английскому языку. Перед решением можно прийти на бесплатный пробный урок.

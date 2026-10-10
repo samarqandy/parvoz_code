@@ -5,8 +5,9 @@
     <loc>https://parvozcode.uz/</loc>
     <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/ru.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://parvozcode.uz/en.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/"/>
-    <lastmod>2026-10-09</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -14,8 +15,19 @@
     <loc>https://parvozcode.uz/ru.html</loc>
     <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/ru.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://parvozcode.uz/en.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/"/>
-    <lastmod>2026-10-09</lastmod>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/en.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/ru.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://parvozcode.uz/en.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/"/>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -114,7 +126,7 @@
     <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/maqolalar.html"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/stati.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/maqolalar.html"/>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -123,7 +135,7 @@
     <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/maqolalar.html"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/stati.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/maqolalar.html"/>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -162,6 +174,24 @@
     <lastmod>2026-10-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/parvoz-markazi-haqida-savol-javob.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/parvoz-markazi-haqida-savol-javob.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/uchebnyj-centr-parvoz-voprosy-otvety.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/parvoz-markazi-haqida-savol-javob.html"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://parvozcode.uz/uchebnyj-centr-parvoz-voprosy-otvety.html</loc>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://parvozcode.uz/parvoz-markazi-haqida-savol-javob.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://parvozcode.uz/uchebnyj-centr-parvoz-voprosy-otvety.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/parvoz-markazi-haqida-savol-javob.html"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://parvozcode.uz/scratch-yoki-python.html</loc>
@@ -237,7 +267,7 @@
   </url>
   <url>
     <loc>https://parvozcode.uz/maxfiylik.html</loc>
-    <lastmod>2026-10-09</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
