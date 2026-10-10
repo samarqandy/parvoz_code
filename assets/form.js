@@ -126,6 +126,9 @@
       page: location.pathname + location.hash,
       source: 'website',
     };
+    // Reklama manbasi (UTM, gclid, ...) — analytics.js eslab qolgan; server uni manba kanaliga aylantiradi
+    var attr = window.parvozAttribution && window.parvozAttribution();
+    if (attr && Object.keys(attr).length) payload.attribution = attr;
 
     if (payload.full_name.length < 2) return showErr(T().errName, form.elements.full_name);
     if (payload.phone.replace(/\D/g, '').length < 9) return showErr(T().errPhone, form.elements.phone);
