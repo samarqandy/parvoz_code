@@ -7,7 +7,7 @@ kurs sahifalari o'rnini bosadigan "Courses in detail" bo'limi (faktlar o'zbekcha
 """
 from urllib.parse import quote
 
-TITLE = "Kids' Coding, Robotics, Chess & Math Courses in Samarkand | Parvoz"
+TITLE = "Kids' Courses in Samarkand: Coding, Robotics, Chess | Parvoz"
 DESC = ('After-school courses for kids in Samarkand: programming, robotics, math, chess and English. '
         'Ages 6+, first lesson free. Dahbed St. 11, +998 97 234 44 42.')
 OG_TITLE = 'Parvoz Learning Center — Learn. Build. Fly.'

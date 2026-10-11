@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Inglizcha bosh sahifani (en.html) index.html dan yaratadi.
+"""Inglizcha bosh sahifani (en.html) tools/home_src.html dan yaratadi.
 
     python3 tools/gen_home_en.py
 
-gen_home_ru.py bilan bir xil usul: index.html (uch tilli, qo'lda tahrirlanadi) manba;
+gen_home_ru.py bilan bir xil usul: tools/home_src.html (uch tilli, qo'lda tahrirlanadi) manba;
 generator <span data-lang="en"> lardan faqat inglizchasini qoldiradi, <head>, JSON-LD va atributlarni
 inglizcha qiladi. Inglizcha kurs sahifalari yo'q, shuning uchun kurs kartalari en.html ichidagi
 "What each course teaches" bo'limiga olib boradi (matn home_en.py da), FAQ ga esa
 home_en.EXTRA_FAQ qo'shiladi (JSON-LD sahifadagi savol-javob bilan doim mos).
 
-en.html qo'lda tahrirlanmaydi: matnni index.html dagi inglizcha spanda (yoki home_en.py da)
+en.html qo'lda tahrirlanmaydi: matnni home_src.html dagi inglizcha spanda (yoki home_en.py da)
 o'zgartiring va shu buyruqni qayta ishga tushiring.
 """
 import html
@@ -26,8 +26,8 @@ ROOT, BASE = G.ROOT, G.BASE
 URL = BASE + 'en.html'
 G.KEEP = 'en'             # G.keep_lang() qaysi tilni qoldirishini shu belgilaydi
 BOOT = "<script>\ntry { localStorage.setItem('parvoz-lang', 'en'); } catch (e) {}\n</script>"
-NOTE = ('<!-- Bu fayl tools/gen_home_en.py tomonidan index.html dan yaratiladi — qo\'lda tahrirlamang.\n'
-        '     Matnni index.html dagi inglizcha spanlarda (yoki tools/home_en.py da) o\'zgartirib, generatorni qayta ishga tushiring. -->\n')
+NOTE = ('<!-- Bu fayl tools/gen_home_en.py tomonidan tools/home_src.html dan yaratiladi — qo\'lda tahrirlamang.\n'
+        '     Matnni tools/home_src.html dagi inglizcha spanlarda (yoki tools/home_en.py da) o\'zgartirib, generatorni qayta ishga tushiring. -->\n')
 esc = html.escape
 
 
@@ -215,10 +215,10 @@ def check(page):
 
 
 def main():
-    for key, lim in (('TITLE', 70), ('DESC', 160)):
+    for key, lim in (('TITLE', 60), ('DESC', 155)):
         if len(getattr(E, key)) > lim:
             raise SystemExit(f'{key}: {len(getattr(E, key))} > {lim}')
-    src = (ROOT / 'index.html').read_text()
+    src = G.SRC.read_text()
     i = src.index('<body>')
     head, body = src[:i], src[i:]
     page = en_head(head, body) + en_body(body)

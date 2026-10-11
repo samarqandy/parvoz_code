@@ -48,21 +48,23 @@ so'ng xabardagi yangi `SRC_HASH` qiymatini yozing. Nav, footer yoki narx kabi
 umumiy qismlar o'zgarsa, tarjimasini `courses_ru.py` dagi `SHARED` ga yoki
 `gen_articles.py` dagi `CHROME_RU` ga qo'shing.
 
-## Ruscha bosh sahifa
+## Bosh sahifa (uz / ru / en)
 
-- `home_ru.py` — `ru.html` uchun `<head>`, JSON-LD va atribut (aria-label, alt)
-  tarjimalari. Sahifa matnining o'zi `index.html` dagi `<span data-lang="ru">`
-  lardan olinadi.
-- `gen_home_ru.py` — `index.html` dan `ru.html` ni yozadi.
+**Manba — `tools/home_src.html`** (uch tilli: `<span data-lang="uz|ru|en">`, qo'lda tahrirlanadi).
+`index.html`, `ru.html` va `en.html` undan yaratiladi va qo'lda tahrirlanmaydi — har til alohida
+fayl, shuning uchun qidiruv va AI robotlar bir sahifada bir tilni ko'radi.
+
+- `gen_home_uz.py` — `index.html` (faqat o'zbekcha).
+- `gen_home_ru.py` + `home_ru.py` — `ru.html`; `home_ru.py` da `<head>`, JSON-LD va atribut tarjimalari.
+- `gen_home_en.py` + `home_en.py` — `en.html` (quyida).
 
 ```
-python3 tools/gen_home_ru.py
+python3 tools/gen_home_uz.py && python3 tools/gen_home_ru.py && python3 tools/gen_home_en.py
 ```
 
-`index.html` — manba, qo'lda tahrirlanadi; `ru.html` qo'lda tahrirlanmaydi.
-Bosh sahifa matnini o'zgartirganda ruscha spanni ham yangilang va generatorni
-ishga tushiring. Generator ruscha sahifada o'zbekcha so'z qolsa yoki `index.html`
-dagi FAQ JSON-LD savoli sahifada topilmasa to'xtaydi.
+Bosh sahifa matnini o'zgartirganda `home_src.html` dagi uchala til spanini yangilang va uchala
+generatorni ishga tushiring. Generator ruscha/inglizcha sahifada boshqa til so'zi qolsa yoki
+FAQ JSON-LD savoli sahifada topilmasa to'xtaydi.
 
 Til tanlovi (`localStorage` dagi `parvoz-lang`) oxirgi ko'rilgan sahifa tiliga
 teng: ruscha sahifalar `ru`, o'zbekcha sahifalar (ruscha tanlov bo'lsa) `uz`
@@ -74,7 +76,7 @@ ga o'tkazadi ("Orqaga" bilan qaytganda o'tkazmaydi). Qidiruv robotlarida
 
 - `home_en.py` — `en.html` uchun `<head>`, JSON-LD, atribut tarjimalari, kurslar
   haqida batafsil bo'lim (`DETAILS`) va qo'shimcha savol-javoblar (`EXTRA_FAQ`).
-- `gen_home_en.py` — `index.html` dan `en.html` ni yozadi (`gen_home_ru.py` bilan bir xil usul).
+- `gen_home_en.py` — `home_src.html` dan `en.html` ni yozadi (`gen_home_ru.py` bilan bir xil usul).
 
 ```
 python3 tools/gen_home_en.py
@@ -82,10 +84,10 @@ python3 tools/gen_home_en.py
 
 Inglizcha kurs sahifalari yo'q: kurs kartalari `en.html` ichidagi bo'limlarga olib boradi.
 `EXTRA_FAQ` va `DETAILS` ga faqat tasdiqlangan faktlarni yozing (manzil, narx, jadval — `llms.txt`
-va o'zbekcha kurs sahifalaridagi bilan bir xil). Hreflang uchligi (uz / ru / en) `index.html`
-`<head>` ida, `sitemap.xml` yozuvlarini `gen_home_ru.py` yangilaydi.
+va o'zbekcha kurs sahifalaridagi bilan bir xil). Hreflang to'plami (uz / ru / en / x-default)
+`home_src.html` `<head>` ida, `sitemap.xml` yozuvlarini `gen_home_ru.py` yangilaydi.
 Tilni tanlash: `index.html` dagi RU va EN — havola; oldin `ru` yoki `en` tanlagan odamni
-`index.html` o'sha sahifaga o'tkazadi.
+`index.html` o'sha sahifaga o'tkazadi ("Orqaga" bilan qaytganda o'tkazmaydi).
 
 ## AI assistentlar uchun (GEO)
 
@@ -100,6 +102,6 @@ python3 tools/gen_llms_full.py
 ```
 
 Hamma generatorni qayta ishga tushirish xavfsiz — o'zgarish bo'lmasa fayllar bir xil qoladi.
-Tartib: `gen_articles.py`, `gen_courses_ru.py`, `gen_home_ru.py`, `gen_home_en.py`, `gen_llms_full.py`.
+Tartib: `gen_articles.py`, `gen_courses_ru.py`, `gen_home_uz.py`, `gen_home_ru.py`, `gen_home_en.py`, `gen_llms_full.py`.
 
 `llms.txt` hali qo'lda yangilanadi — mazmun o'zgarsa, uni ham tekshiring.

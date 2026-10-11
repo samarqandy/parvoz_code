@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+
+<title>Samarqandda bolalar uchun IT kurslari — Parvoz O'quv Markazi</title>
+<meta name="yandex-verification" content="af2a342adcba838e">
+<meta name="description" content="Samarqandda bolalar uchun dasturlash, robototexnika, matematika, shaxmat va ingliz tili kurslari. Birinchi dars bepul, 6 yoshdan qabul qilamiz.">
+<link rel="canonical" href="https://parvozcode.uz/">
+<link rel="alternate" hreflang="uz" href="https://parvozcode.uz/">
+<link rel="alternate" hreflang="ru" href="https://parvozcode.uz/ru.html">
+<link rel="alternate" hreflang="en" href="https://parvozcode.uz/en.html">
+<link rel="alternate" hreflang="x-default" href="https://parvozcode.uz/">
+
+<!-- SEO / Open Graph -->
+<meta property="og:site_name" content="Parvoz O'quv Markazi">
+<meta property="og:title" content="Parvoz O'quv Markazi — Learn. Build. Fly.">
+<meta property="og:description" content="Samarqandda bolalar uchun IT kurslari: Dasturlash, Robototexnika, Matematika, Shaxmat, Ingliz tili. Birinchi dars bepul!">
+<meta property="og:image" content="https://parvozcode.uz/assets/preview.jpg">
+<meta property="og:url" content="https://parvozcode.uz/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="uz_UZ">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Parvoz O'quv Markazi — Learn. Build. Fly.">
+<meta name="twitter:description" content="Samarqandda bolalar uchun IT kurslari: Dasturlash, Robototexnika, Matematika, Shaxmat, Ingliz tili. Birinchi dars bepul!">
+<meta name="twitter:image" content="https://parvozcode.uz/assets/preview.jpg">
+
+<!-- PWA -->
+<meta name="theme-color" content="#071029" id="themeColorMeta">
+<link rel="manifest" href="manifest.json">
+
+<!-- Til: avval ruscha yoki inglizcha tanlagan odam bosh sahifaga kirsa — o'sha tildagi bosh sahifaga (ru.html, en.html).
+     Qidiruv robotlarida localStorage bo'sh, ular doim shu o'zbekcha sahifani ko'radi.
+     "Orqaga" tugmasi bilan qaytganda o'tkazmaymiz — aks holda odam o'zbekchaga qaytolmasdi. -->
+<script id="langRoute">
+(function () {
+  try {
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    var back = nav ? nav.type === 'back_forward' : (performance.navigation && performance.navigation.type === 2);
+    var l = localStorage.getItem('parvoz-lang');
+    var to = l === 'ru' ? 'ru.html' : l === 'en' ? 'en.html' : '';
+    if (!back && to) {
+      window.__toRu = true;
+      document.documentElement.style.visibility = 'hidden';
+      location.replace(to + location.search + location.hash);
+    }
+  } catch (e) {}
+})();
+</script>
+
+<!-- Tema (yorug'/qorong'i) — sahifa chizilishidan oldin qo'llanadi -->
+<script>
+(function () {
+  var t;
+  try { t = localStorage.getItem('parvoz-theme'); } catch (e) {}
+  if (t !== 'light' && t !== 'dark') {
+    t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  document.documentElement.setAttribute('data-theme', t);
+  var l = document.createElement('link');
+  l.rel = 'preload'; l.as = 'image'; l.type = 'image/webp';
+  l.href = t === 'light' ? 'assets/logo.webp' : 'assets/logo-dark.webp';
+  document.head.appendChild(l);
+})();
+</script>
+
+<!-- Icons -->
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": [
+        "EducationalOrganization",
+        "LocalBusiness"
+      ],
+      "@id": "https://parvozcode.uz/#organization",
+      "name": "Parvoz O'quv Markazi",
+      "alternateName": [
+        "Parvoz Code",
+        "Parvoz Learning Center",
+        "Учебный центр Parvoz"
+      ],
+      "description": "Samarqandda bolalar uchun IT va intellektual ta'lim markazi: dasturlash, robototexnika, matematika, shaxmat va ingliz tili kurslari. 6 yoshdan qabul, birinchi dars bepul.",
+      "url": "https://parvozcode.uz/",
+      "logo": "https://parvozcode.uz/assets/icon-512.png",
+      "image": "https://parvozcode.uz/assets/preview.jpg",
+      "slogan": "Learn. Build. Fly.",
+      "telephone": "+998972344442",
+      "priceRange": "300000 UZS",
+      "currenciesAccepted": "UZS",
+      "paymentAccepted": "Cash, Click, Payme",
+      "foundingDate": "2025",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Dahbed ko'chasi, 11, 2-qavat",
+        "postalCode": "140100",
+        "addressLocality": "Samarqand",
+        "addressRegion": "Samarqand viloyati",
+        "addressCountry": "UZ"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 39.6738357,
+        "longitude": 66.9690537
+      },
+      "hasMap": "https://www.google.com/maps/place/Parvoz+Code/@39.6738356,66.9641774,17z",
+      "areaServed": [
+        {
+          "@type": "City",
+          "name": "Samarqand"
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Samarqand viloyati"
+        }
+      ],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          "opens": "09:00",
+          "closes": "18:00"
+        }
+      ],
+      "sameAs": [
+        "https://t.me/parvozcode",
+        "https://www.instagram.com/parvoz_code",
+        "https://www.google.com/maps?cid=6515438824910425245",
+        "https://yandex.com/maps/org/parvoz_code/73446931151/"
+      ],
+      "knowsLanguage": [
+        "uz",
+        "ru",
+        "en"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Kurslar",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "price": "300000",
+            "priceCurrency": "UZS",
+            "url": "https://parvozcode.uz/dasturlash-kurslari.html",
+            "itemOffered": {
+              "@type": "Course",
+              "name": "Dasturlash kursi (bolalar uchun)",
+              "url": "https://parvozcode.uz/dasturlash-kurslari.html",
+              "provider": {
+                "@id": "https://parvozcode.uz/#organization"
+              }
+            }
+          },
+          {
+            "@type": "Offer",
+            "price": "300000",
+            "priceCurrency": "UZS",
+            "url": "https://parvozcode.uz/robototexnika-kurslari.html",
+            "itemOffered": {
+              "@type": "Course",
+              "name": "Robototexnika kursi (bolalar uchun)",
+              "url": "https://parvozcode.uz/robototexnika-kurslari.html",
+              "provider": {
+                "@id": "https://parvozcode.uz/#organization"
+              }
+            }
+          },
+          {
+            "@type": "Offer",
+            "price": "300000",
+            "priceCurrency": "UZS",
+            "url": "https://parvozcode.uz/matematika-kurslari.html",
+            "itemOffered": {
+              "@type": "Course",
+              "name": "Matematika kursi (bolalar uchun)",
+              "url": "https://parvozcode.uz/matematika-kurslari.html",
+              "provider": {
+                "@id": "https://parvozcode.uz/#organization"
+              }
+            }
+          },
+          {
+            "@type": "Offer",
+            "price": "300000",
+            "priceCurrency": "UZS",
+            "url": "https://parvozcode.uz/shaxmat-kurslari.html",
+            "itemOffered": {
+              "@type": "Course",
+              "name": "Shaxmat kursi (bolalar uchun)",
+              "url": "https://parvozcode.uz/shaxmat-kurslari.html",
+              "provider": {
+                "@id": "https://parvozcode.uz/#organization"
+              }
+            }
+          },
+          {
+            "@type": "Offer",
+            "price": "300000",
+            "priceCurrency": "UZS",
+            "url": "https://parvozcode.uz/ingliz-tili-kurslari.html",
+            "itemOffered": {
+              "@type": "Course",
+              "name": "Ingliz tili kursi (bolalar uchun)",
+              "url": "https://parvozcode.uz/ingliz-tili-kurslari.html",
+              "provider": {
+                "@id": "https://parvozcode.uz/#organization"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://parvozcode.uz/#website",
+      "url": "https://parvozcode.uz/",
+      "name": "Parvoz O'quv Markazi",
+      "inLanguage": [
+        "uz",
+        "ru",
+        "en"
+      ],
+      "publisher": {
+        "@id": "https://parvozcode.uz/#organization"
+      }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type":"Question","name":"Necha yoshdan qabul qilinadi?","acceptedAnswer":{"@type":"Answer","text":"6 yoshdan boshlab qabul qilamiz. Har bir yo'nalish uchun alohida yosh guruhlari mavjud."}},
+    {"@type":"Question","name":"Kompyuter yoki shaxmat doskasi kerakmi?","acceptedAnswer":{"@type":"Answer","text":"Yo'q! Barcha kerakli jihozlar markazda mavjud. Farzandingiz faqat o'zi kelishi kifoya."}},
+    {"@type":"Question","name":"Sinov darsi bormi?","acceptedAnswer":{"@type":"Answer","text":"Ha! Birinchi dars to'liq bepul. Saytdagi \"Yozilish\" tugmasi orqali ariza qoldiring."}},
+    {"@type":"Question","name":"Bir vaqtda bir necha kurs olsa bo'ladimi?","acceptedAnswer":{"@type":"Answer","text":"Ha, mumkin! Jadval bir-biriga to'g'ri kelmasa, bir vaqtda bir necha yo'nalishda o'qish mumkin."}},
+    {"@type":"Question","name":"To'lovni qanday amalga oshirish mumkin?","acceptedAnswer":{"@type":"Answer","text":"To'lov naqd yoki Click/Payme orqali amalga oshiriladi. Har oyning boshida to'lanadi."}}
+  ]
+}
+</script>
+
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/config.js"></script>
+<script src="assets/analytics.js" defer></script>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=107153329', 'ym');
+    ym(107153329, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/107153329" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+</head>
+<body>
+<script>document.documentElement.classList.add('js');</script>
+
+<a class="skip-link" href="#main">
+  <span data-lang="uz" class="show">Asosiy kontentga o'tish</span><span data-lang="ru">Перейти к содержимому</span><span data-lang="en">Skip to content</span>
+</a>
+
+<!-- BACKGROUND -->
+<div class="bg-pattern" aria-hidden="true">
+  <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <pattern id="islamic" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+        <polygon points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35" fill="none" stroke="#ffffff" stroke-width="0.8"/>
+        <polygon points="50,20 57,42 80,42 62,55 69,78 50,65 31,78 38,55 20,42 43,42" fill="none" stroke="#ffb300" stroke-width="0.5"/>
+        <circle cx="50" cy="50" r="8" fill="none" stroke="#ffffff" stroke-width="0.4"/>
+        <line x1="0" y1="50" x2="100" y2="50" stroke="#ffffff" stroke-width="0.3"/>
+        <line x1="50" y1="0" x2="50" y2="100" stroke="#ffffff" stroke-width="0.3"/>
+      </pattern>
+    </defs>
+    <rect width="800" height="800" fill="url(#islamic)"/>
+  </svg>
+</div>
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="stars" id="stars" aria-hidden="true"></div>
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+
+<!-- ============================ NAVBAR ============================ -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#" aria-label="Parvoz — bosh sahifa">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span>PARV<em>O</em>Z</span>
+    </a>
+
+    <nav aria-label="Asosiy menyu" style="display:contents">
+      <ul class="nav-links">
+        <li><a href="#kurslar"><span data-lang="uz" class="show">Kurslar</span><span data-lang="ru">Курсы</span><span data-lang="en">Courses</span></a></li>
+        <li><a href="#nega-parvoz"><span data-lang="uz" class="show">Nega Parvoz?</span><span data-lang="ru">Почему мы?</span><span data-lang="en">Why us?</span></a></li>
+        <li><a href="#narxlar"><span data-lang="uz" class="show">Narxlar</span><span data-lang="ru">Цены</span><span data-lang="en">Pricing</span></a></li>
+        <li><a href="#jadval"><span data-lang="uz" class="show">Jadval</span><span data-lang="ru">Расписание</span><span data-lang="en">Schedule</span></a></li>
+        <li><a href="#natijalar"><span data-lang="uz" class="show">Fikrlar</span><span data-lang="ru">Отзывы</span><span data-lang="en">Reviews</span></a></li>
+        <li><a href="#galereya"><span data-lang="uz" class="show">Galereya</span><span data-lang="ru">Галерея</span><span data-lang="en">Gallery</span></a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#aloqa"><span data-lang="uz" class="show">Aloqa</span><span data-lang="ru">Контакты</span><span data-lang="en">Contact</span></a></li>
+      </ul>
+    </nav>
+
+    <div class="lang-btns" role="group" aria-label="Til tanlash">
+      <button class="lang-btn active" data-set-lang="uz" type="button">UZ</button>
+      <a class="lang-btn" href="ru.html" hreflang="ru" lang="ru" data-set-lang="ru">RU</a>
+      <a class="lang-btn" href="en.html" hreflang="en" lang="en" data-set-lang="en">EN</a>
+    </div>
+
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Rejimni almashtirish">
+      <span class="theme-ico-dark" aria-hidden="true">🌙</span><span class="theme-ico-light" aria-hidden="true">☀️</span>
+    </button>
+
+    <a class="nav-cta" href="#yozilish">
+      🎁 <span data-lang="uz" class="show">Bepul dars</span><span data-lang="ru">Бесплатный урок</span><span data-lang="en">Free lesson</span>
+    </a>
+
+    <button class="nav-burger" id="burger" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Menyuni ochish">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#kurslar"><span data-lang="uz" class="show">📚 Kurslar</span><span data-lang="ru">📚 Курсы</span><span data-lang="en">📚 Courses</span></a>
+  <a href="#nega-parvoz"><span data-lang="uz" class="show">⭐ Nega Parvoz?</span><span data-lang="ru">⭐ Почему мы?</span><span data-lang="en">⭐ Why us?</span></a>
+  <a href="#narxlar"><span data-lang="uz" class="show">💰 Narxlar</span><span data-lang="ru">💰 Цены</span><span data-lang="en">💰 Pricing</span></a>
+  <a href="#jadval"><span data-lang="uz" class="show">📅 Dars jadvali</span><span data-lang="ru">📅 Расписание</span><span data-lang="en">📅 Schedule</span></a>
+  <a href="#natijalar"><span data-lang="uz" class="show">🌟 Fikrlar</span><span data-lang="ru">🌟 Отзывы</span><span data-lang="en">🌟 Reviews</span></a>
+  <a href="#galereya"><span data-lang="uz" class="show">📸 Galereya</span><span data-lang="ru">📸 Галерея</span><span data-lang="en">📸 Gallery</span></a>
+  <a href="#faq">❓ FAQ</a>
+  <a href="#aloqa"><span data-lang="uz" class="show">📍 Aloqa</span><span data-lang="ru">📍 Контакты</span><span data-lang="en">📍 Contact</span></a>
+  <button class="mm-theme" id="themeBtnMobile" type="button"></button>
+  <a class="nav-cta" href="#yozilish">
+    🎁 <span data-lang="uz" class="show">Bepul sinov darsiga yozilish</span><span data-lang="ru">Записаться на бесплатный урок</span><span data-lang="en">Book a free trial lesson</span>
+  </a>
+</div>
+
+<main id="main">
+
+<!-- ============================ HERO ============================ -->
+<div class="wrap">
+  <section class="hero" style="padding-top:calc(var(--nav-h) + 24px)">
+    <div class="hero-grid">
+      <div>
+        <span class="hero-badge"><span class="pulse-dot" aria-hidden="true"></span>
+          <span data-lang="uz" class="show">Samarqand · Qabul ochiq — joylar cheklangan!</span>
+          <span data-lang="ru">Самарканд · Набор открыт — мест ограничено!</span>
+          <span data-lang="en">Samarkand · Enrollment open — limited spots!</span>
+        </span>
+        <h1>
+          <span data-lang="uz" class="show">Farzandingiz kelajagi <span class="grad">bugun boshlanadi</span></span>
+          <span data-lang="ru">Будущее вашего ребёнка <span class="grad">начинается сегодня</span></span>
+          <span data-lang="en">Your child's future <span class="grad">starts today</span></span>
+        </h1>
+        <p class="hero-desc">
+          <span data-lang="uz" class="show">Farzandingiz <strong>matematika, shaxmat yoki texnologiyaga</strong> qiziqadimi? Parvoz O'quv Markazida uning <strong>iqtidorini professional darajada rivojlantiramiz</strong> — dasturlash, robototexnika, matematika, shaxmat va ingliz tili.</span>
+          <span data-lang="ru">Ваш ребёнок увлекается <strong>математикой, шахматами или технологиями</strong>? В учебном центре Parvoz мы <strong>профессионально развиваем его талант</strong> — программирование, робототехника, математика, шахматы и английский.</span>
+          <span data-lang="en">Is your child passionate about <strong>math, chess, or technology</strong>? At Parvoz Learning Center we <strong>develop their talent professionally</strong> — coding, robotics, math, chess, and English.</span>
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#yozilish">
+            📝 <span data-lang="uz" class="show">Bepul sinov darsiga yozilish</span><span data-lang="ru">Записаться на бесплатный урок</span><span data-lang="en">Book a free trial lesson</span>
+          </a>
+          <a class="btn btn-ghost" href="https://t.me/parvozcode" target="_blank" rel="noopener">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z" fill="#64b5f6"/></svg>
+            Telegram
+          </a>
+        </div>
+        <div class="trust-chips">
+          <span class="chip"><b>✓</b> <span data-lang="uz" class="show">Birinchi dars bepul</span><span data-lang="ru">Первый урок бесплатно</span><span data-lang="en">First lesson free</span></span>
+          <span class="chip"><b>✓</b> <span data-lang="uz" class="show">6 yoshdan qabul</span><span data-lang="ru">Принимаем с 6 лет</span><span data-lang="en">From age 6</span></span>
+          <span class="chip"><b>✓</b> <span data-lang="uz" class="show">Scholarship imkoniyati</span><span data-lang="ru">Стипендии талантам</span><span data-lang="en">Scholarships available</span></span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="orbit-wrap">
+          <div class="logo-ring"></div>
+          <div class="logo-ring r2"></div>
+          <div class="logo-card">
+            <span class="logo-img"></span>
+          </div>
+          <div class="orbit-item oi1" style="--bd:0s">♟</div>
+          <div class="orbit-item oi2" style="--bd:.7s">🧮</div>
+          <div class="orbit-item oi3" style="--bd:1.4s">💻</div>
+          <div class="orbit-item oi4" style="--bd:2.1s">🤖</div>
+          <div class="orbit-item oi5" style="--bd:2.8s">
+            <svg viewBox="0 0 60 30" width="30" height="15" style="border-radius:3px;display:block">
+              <clipPath id="uk1a"><path d="M0 0v30h60V0z"/></clipPath>
+              <clipPath id="uk1b"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath>
+              <g clip-path="url(#uk1a)">
+                <path d="M0 0v30h60V0z" fill="#012169"/>
+                <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
+                <path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk1b)" stroke="#c8102e" stroke-width="4"/>
+                <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
+                <path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a class="scroll-hint" href="#stats" aria-hidden="true" tabindex="-1">
+      <span class="mouse"><i></i></span>
+      <span data-lang="uz" class="show">Pastga</span><span data-lang="ru">Вниз</span><span data-lang="en">Scroll</span>
+    </a>
+  </section>
+</div>
+
+<!-- ============================ STATS ============================ -->
+<div class="wrap">
+  <section class="stats-band" id="stats">
+    <div class="stats" data-reveal>
+      <div class="stat">
+        <span class="stat-n" data-count="2025">2025</span>
+        <div class="stat-l"><span data-lang="uz" class="show">Asos solingan</span><span data-lang="ru">Основан</span><span data-lang="en">Founded</span></div>
+      </div>
+      <div class="stat">
+        <span class="stat-n" data-count="5" data-suffix="+">5+</span>
+        <div class="stat-l"><span data-lang="uz" class="show">Yo'nalish</span><span data-lang="ru">Направлений</span><span data-lang="en">Courses</span></div>
+      </div>
+      <div class="stat">
+        <span class="stat-n" data-count="100" data-suffix="%">100%</span>
+        <div class="stat-l"><span data-lang="uz" class="show">Amaliy ta'lim</span><span data-lang="ru">Практика</span><span data-lang="en">Hands-on</span></div>
+      </div>
+      <div class="stat">
+        <span class="stat-n">∞</span>
+        <div class="stat-l"><span data-lang="uz" class="show">Imkoniyat</span><span data-lang="ru">Возможностей</span><span data-lang="en">Opportunities</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ COURSES ============================ -->
+<div class="wrap">
+  <section id="kurslar">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">📚 <span data-lang="uz" class="show">Yo'nalishlar</span><span data-lang="ru">Направления</span><span data-lang="en">Courses</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Har bir bola uchun o'z parvozi</span>
+        <span data-lang="ru">Свой полёт для каждого ребёнка</span>
+        <span data-lang="en">A flight path for every child</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">5 ta yo'nalish — bitta maqsad: mustaqil fikrlaydigan, muammolarni o'zi yecha oladigan avlod.</span>
+        <span data-lang="ru">5 направлений — одна цель: поколение, которое мыслит самостоятельно и решает любые задачи.</span>
+        <span data-lang="en">5 tracks — one goal: a generation that thinks independently and solves problems on its own.</span>
+      </p>
+    </div>
+
+    <div class="courses-grid">
+      <a class="course-card c-code" href="dasturlash-kurslari.html" data-href-ru="kursy-programmirovaniya.html" data-reveal style="--rd:.05s">
+        <div class="cc-icon" aria-hidden="true">💻</div>
+        <h3 class="cc-name"><span data-lang="uz" class="show">Dasturlash</span><span data-lang="ru">Программирование</span><span data-lang="en">Programming</span></h3>
+        <p class="cc-desc">
+          <span data-lang="uz" class="show">O'yinlar va real loyihalar yaratish orqali dasturlash asoslari. Kod yozish — bu yangi davr savodxonligi.</span>
+          <span data-lang="ru">Основы программирования через создание игр и реальных проектов. Код — грамотность новой эпохи.</span>
+          <span data-lang="en">Coding fundamentals through building games and real projects. Code is the literacy of a new era.</span>
+        </p>
+        <div class="cc-meta">
+          <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
+          <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
+        </div>
+          <div class="cc-more"><span data-lang="uz" class="show">Dasturlash kursi haqida</span><span data-lang="ru">О курсе программирования</span><span data-lang="en">About the programming course</span> →</div>
+        </a>
+
+      <a class="course-card c-robot" href="robototexnika-kurslari.html" data-href-ru="robototehnika.html" data-reveal style="--rd:.1s">
+        <div class="cc-icon" aria-hidden="true">🤖</div>
+        <h3 class="cc-name"><span data-lang="uz" class="show">Robototexnika</span><span data-lang="ru">Робототехника</span><span data-lang="en">Robotics</span></h3>
+        <p class="cc-desc">
+          <span data-lang="uz" class="show">Robotlarni yig'ish va dasturlash. Muhandislik fikrlash — g'oyadan tayyor qurilmagacha bo'lgan yo'l.</span>
+          <span data-lang="ru">Сборка и программирование роботов. Инженерное мышление — путь от идеи до готового устройства.</span>
+          <span data-lang="en">Building and programming robots. Engineering thinking — from idea to working device.</span>
+        </p>
+        <div class="cc-meta">
+          <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
+          <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
+        </div>
+          <div class="cc-more"><span data-lang="uz" class="show">Robototexnika kursi haqida</span><span data-lang="ru">О курсе робототехники</span><span data-lang="en">About the robotics course</span> →</div>
+        </a>
+
+      <a class="course-card c-math" href="matematika-kurslari.html" data-href-ru="matematika.html" data-reveal style="--rd:.15s">
+        <div class="cc-icon" aria-hidden="true">🧮</div>
+        <h3 class="cc-name"><span data-lang="uz" class="show">Matematika</span><span data-lang="ru">Математика</span><span data-lang="en">Mathematics</span></h3>
+        <p class="cc-desc">
+          <span data-lang="uz" class="show">Mantiqiy fikrlash va masala yechish san'ati. Olimpiadalar va tanlovlarga tayyorgarlik.</span>
+          <span data-lang="ru">Логическое мышление и искусство решения задач. Подготовка к олимпиадам и конкурсам.</span>
+          <span data-lang="en">Logical thinking and the art of problem solving. Preparation for olympiads and competitions.</span>
+        </p>
+        <div class="cc-meta">
+          <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
+          <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
+        </div>
+          <div class="cc-more"><span data-lang="uz" class="show">Matematika kursi haqida</span><span data-lang="ru">О курсе математики</span><span data-lang="en">About the math course</span> →</div>
+        </a>
+
+      <a class="course-card c-chess" href="shaxmat-kurslari.html" data-href-ru="shahmaty.html" data-reveal style="--rd:.2s">
+        <div class="cc-icon" aria-hidden="true">♟</div>
+        <h3 class="cc-name"><span data-lang="uz" class="show">Shaxmat</span><span data-lang="ru">Шахматы</span><span data-lang="en">Chess</span></h3>
+        <p class="cc-desc">
+          <span data-lang="uz" class="show">Strategiya, sabr va xotira maktabi. Turnirlar va musobaqalarda qatnashish imkoniyati.</span>
+          <span data-lang="ru">Школа стратегии, терпения и памяти. Участие в турнирах и соревнованиях.</span>
+          <span data-lang="en">A school of strategy, patience, and memory. Opportunities to compete in tournaments.</span>
+        </p>
+        <div class="cc-meta">
+          <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
+          <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
+        </div>
+          <div class="cc-more"><span data-lang="uz" class="show">Shaxmat kursi haqida</span><span data-lang="ru">О курсе шахмат</span><span data-lang="en">About the chess course</span> →</div>
+        </a>
+
+      <a class="course-card c-eng" href="ingliz-tili-kurslari.html" data-href-ru="angliyskiy.html" data-reveal style="--rd:.25s">
+        <div class="cc-icon" aria-hidden="true">
+          <svg viewBox="0 0 60 30" width="40" height="20" style="border-radius:4px;display:block">
+            <clipPath id="uk2a"><path d="M0 0v30h60V0z"/></clipPath>
+            <clipPath id="uk2b"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath>
+            <g clip-path="url(#uk2a)">
+              <path d="M0 0v30h60V0z" fill="#012169"/>
+              <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
+              <path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk2b)" stroke="#c8102e" stroke-width="4"/>
+              <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
+              <path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/>
+            </g>
+          </svg>
+        </div>
+        <h3 class="cc-name"><span data-lang="uz" class="show">Ingliz tili</span><span data-lang="ru">Английский язык</span><span data-lang="en">English</span></h3>
+        <p class="cc-desc">
+          <span data-lang="uz" class="show">Jonli muloqot va o'yin orqali til o'rganish. Texnologiya olamining xalqaro tili.</span>
+          <span data-lang="ru">Изучение языка через живое общение и игру. Международный язык мира технологий.</span>
+          <span data-lang="en">Learning through live conversation and play. The international language of technology.</span>
+        </p>
+        <div class="cc-meta">
+          <span class="cc-tag">6+ <span data-lang="uz" class="show">yosh</span><span data-lang="ru">лет</span><span data-lang="en">age</span></span>
+          <span class="cc-tag"><span data-lang="uz" class="show">Hafta 3 kun</span><span data-lang="ru">3 раза/нед</span><span data-lang="en">3x/week</span></span>
+        </div>
+          <div class="cc-more"><span data-lang="uz" class="show">Ingliz tili kursi haqida</span><span data-lang="ru">О курсе английского языка</span><span data-lang="en">About the English course</span> →</div>
+        </a>
+
+      <article class="course-card" data-reveal style="--rd:.3s; --acc:var(--gold); display:flex; flex-direction:column; justify-content:center; text-align:center;">
+        <div style="font-size:2rem; margin-bottom:12px;" aria-hidden="true">🎯</div>
+        <h3 class="cc-name">
+          <span data-lang="uz" class="show">Qaysi kurs mos?</span>
+          <span data-lang="ru">Какой курс подойдёт?</span>
+          <span data-lang="en">Which course fits?</span>
+        </h3>
+        <p class="cc-desc" style="min-height:0">
+          <span data-lang="uz" class="show">Bepul sinov darsiga keling — birga aniqlaymiz!</span>
+          <span data-lang="ru">Приходите на бесплатный урок — определим вместе!</span>
+          <span data-lang="en">Come to a free trial lesson — we'll find out together!</span>
+        </p>
+        <a class="btn btn-primary" style="align-self:center" href="#yozilish">
+          <span data-lang="uz" class="show">Yozilish</span><span data-lang="ru">Записаться</span><span data-lang="en">Enroll</span> →
+        </a>
+      </article>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ WHY PARVOZ ============================ -->
+<div class="wrap">
+  <section id="nega-parvoz">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">⭐ <span data-lang="uz" class="show">Afzalliklar</span><span data-lang="ru">Преимущества</span><span data-lang="en">Advantages</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Nega aynan Parvoz?</span>
+        <span data-lang="ru">Почему именно Parvoz?</span>
+        <span data-lang="en">Why Parvoz?</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">Biz dasturlashni emas — <strong>fikrlashni</strong> o'rgatamiz. Bilim yodlash uchun emas, dunyoni o'zgartirish uchun.</span>
+        <span data-lang="ru">Мы учим не программированию — а <strong>мышлению</strong>. Знания не для зубрёжки, а чтобы менять мир.</span>
+        <span data-lang="en">We don't just teach coding — we teach <strong>thinking</strong>. Knowledge isn't for memorizing, it's for changing the world.</span>
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feat" data-reveal style="--rd:.05s">
+        <div class="feat-ico" aria-hidden="true">🏆</div>
+        <div>
+          <strong><span data-lang="uz" class="show">Natijaga yo'naltirilgan</span><span data-lang="ru">Ориентация на результат</span><span data-lang="en">Result-oriented</span></strong>
+          <p><span data-lang="uz" class="show">Olimpiadalar, tanlovlar va real loyihalar — har bir o'quvchi natija bilan o'sadi.</span><span data-lang="ru">Олимпиады, конкурсы и реальные проекты — каждый ученик растёт через результат.</span><span data-lang="en">Olympiads, competitions, and real projects — every student grows through results.</span></p>
+        </div>
+      </div>
+      <div class="feat" data-reveal style="--rd:.1s">
+        <div class="feat-ico" aria-hidden="true">🏅</div>
+        <div>
+          <strong><span data-lang="uz" class="show">Scholarship dasturi</span><span data-lang="ru">Стипендиальная программа</span><span data-lang="en">Scholarship program</span></strong>
+          <p><span data-lang="uz" class="show">Iqtidorli o'quvchilarga bepul ta'lim imkoniyati — talant hech qachon chetda qolmaydi.</span><span data-lang="ru">Бесплатное обучение для талантливых учеников — талант никогда не остаётся в стороне.</span><span data-lang="en">Free education for talented students — talent never gets left behind.</span></p>
+        </div>
+      </div>
+      <div class="feat" data-reveal style="--rd:.15s">
+        <div class="feat-ico" aria-hidden="true">🤝</div>
+        <div>
+          <strong><span data-lang="uz" class="show">Kuchli hamjamiyat</span><span data-lang="ru">Сильное сообщество</span><span data-lang="en">Strong community</span></strong>
+          <p><span data-lang="uz" class="show">O'quvchilar birgalikda o'sadi, jamoa bo'lib loyihalar quradi va bir-birini qo'llab-quvvatlaydi.</span><span data-lang="ru">Ученики растут вместе, создают проекты в команде и поддерживают друг друга.</span><span data-lang="en">Students grow together, build team projects, and support each other.</span></p>
+        </div>
+      </div>
+      <div class="feat" data-reveal style="--rd:.2s">
+        <div class="feat-ico" aria-hidden="true">⚡</div>
+        <div>
+          <strong><span data-lang="uz" class="show">100% amaliy ko'nikmalar</span><span data-lang="ru">100% практические навыки</span><span data-lang="en">100% practical skills</span></strong>
+          <p><span data-lang="uz" class="show">Kelajakda ishga yaraydigan bilim va tajriba — nazariya emas, amaliyot birinchi o'rinda.</span><span data-lang="ru">Знания и опыт для реальной жизни — практика важнее теории.</span><span data-lang="en">Knowledge and experience that work in real life — practice comes first.</span></p>
+        </div>
+      </div>
+      <div class="feat" data-reveal style="--rd:.25s">
+        <div class="feat-ico" aria-hidden="true">🖥️</div>
+        <div>
+          <strong><span data-lang="uz" class="show">Barcha jihozlar markazda</span><span data-lang="ru">Всё оборудование в центре</span><span data-lang="en">All equipment provided</span></strong>
+          <p><span data-lang="uz" class="show">Kompyuter, shaxmat doskasi, robot to'plamlari — hammasi bizda. Farzandingiz faqat kelishi kifoya.</span><span data-lang="ru">Компьютеры, шахматные доски, наборы роботов — всё у нас. Ребёнку нужно только прийти.</span><span data-lang="en">Computers, chess boards, robot kits — we have it all. Your child just needs to show up.</span></p>
+        </div>
+      </div>
+      <div class="feat" data-reveal style="--rd:.3s">
+        <div class="feat-ico" aria-hidden="true">🎁</div>
+        <div>
+          <strong><span data-lang="uz" class="show">Birinchi dars bepul</span><span data-lang="ru">Первый урок бесплатно</span><span data-lang="en">First lesson free</span></strong>
+          <p><span data-lang="uz" class="show">Avval kelib ko'ring, keyin qaror qiling — hech qanday majburiyatsiz sinov darsi.</span><span data-lang="ru">Сначала попробуйте, потом решайте — пробный урок без обязательств.</span><span data-lang="en">Try first, decide later — a trial lesson with no obligations.</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ STEPS ============================ -->
+<div class="wrap">
+  <section id="qanday">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">🚀 <span data-lang="uz" class="show">Qanday boshlanadi?</span><span data-lang="ru">Как начать?</span><span data-lang="en">How it works</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">3 qadam — va parvoz boshlanadi</span>
+        <span data-lang="ru">3 шага — и полёт начинается</span>
+        <span data-lang="en">3 steps — and the flight begins</span>
+      </h2>
+    </div>
+    <div class="steps">
+      <div class="step" data-reveal style="--rd:.05s">
+        <div class="step-num">1</div>
+        <strong><span data-lang="uz" class="show">Ariza qoldiring</span><span data-lang="ru">Оставьте заявку</span><span data-lang="en">Submit a request</span></strong>
+        <p><span data-lang="uz" class="show">Onlayn forma orqali 1 daqiqada yoziling yoki qo'ng'iroq qiling.</span><span data-lang="ru">Запишитесь за 1 минуту через онлайн-форму или позвоните.</span><span data-lang="en">Sign up in 1 minute via the online form or give us a call.</span></p>
+        <span class="step-arrow" aria-hidden="true">➜</span>
+      </div>
+      <div class="step" data-reveal style="--rd:.15s">
+        <div class="step-num">2</div>
+        <strong><span data-lang="uz" class="show">Bepul sinov darsi</span><span data-lang="ru">Бесплатный пробный урок</span><span data-lang="en">Free trial lesson</span></strong>
+        <p><span data-lang="uz" class="show">Farzandingiz darsda qatnashadi, siz markaz bilan tanishasiz.</span><span data-lang="ru">Ребёнок посещает урок, вы знакомитесь с центром.</span><span data-lang="en">Your child joins a lesson while you get to know the center.</span></p>
+        <span class="step-arrow" aria-hidden="true">➜</span>
+      </div>
+      <div class="step" data-reveal style="--rd:.25s">
+        <div class="step-num">3</div>
+        <strong><span data-lang="uz" class="show">Parvoz boshlanadi!</span><span data-lang="ru">Полёт начинается!</span><span data-lang="en">The flight begins!</span></strong>
+        <p><span data-lang="uz" class="show">Mos guruhga qo'shilib, muntazam darslarni boshlaysiz.</span><span data-lang="ru">Присоединяетесь к подходящей группе и начинаете занятия.</span><span data-lang="en">Join the right group and start regular lessons.</span></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ PRICING ============================ -->
+<div class="wrap">
+  <section id="narxlar">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">💰 <span data-lang="uz" class="show">Narxlar</span><span data-lang="ru">Цены</span><span data-lang="en">Pricing</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Oddiy va shaffof narx</span>
+        <span data-lang="ru">Простая и прозрачная цена</span>
+        <span data-lang="en">Simple, transparent pricing</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">Barcha yo'nalishlar uchun yagona narx — yashirin to'lovlar yo'q.</span>
+        <span data-lang="ru">Единая цена для всех направлений — без скрытых платежей.</span>
+        <span data-lang="en">One price for every course — no hidden fees.</span>
+      </p>
+    </div>
+
+    <div class="pricing-wrap" data-reveal>
+      <div class="price-card">
+        <div class="price-ribbon">🎁 <span data-lang="uz" class="show">Birinchi dars BEPUL</span><span data-lang="ru">Первый урок БЕСПЛАТНО</span><span data-lang="en">First lesson FREE</span></div>
+        <div class="price-name"><span data-lang="uz" class="show">Istalgan yo'nalish</span><span data-lang="ru">Любое направление</span><span data-lang="en">Any course</span></div>
+        <div class="price-value">300 000 <small><span data-lang="uz" class="show">so'm/oy</span><span data-lang="ru">сум/мес</span><span data-lang="en">UZS/mo</span></small></div>
+        <ul class="price-list">
+          <li><span class="ok">✓</span> <span><span data-lang="uz" class="show">Haftasiga 3 kun · har dars 2 soat</span><span data-lang="ru">3 раза в неделю · по 2 часа</span><span data-lang="en">3 days a week · 2 hours each</span></span></li>
+          <li><span class="ok">✓</span> <span><span data-lang="uz" class="show">Barcha jihozlar markaz tomonidan</span><span data-lang="ru">Всё оборудование предоставляется</span><span data-lang="en">All equipment provided</span></span></li>
+          <li><span class="ok">✓</span> <span><span data-lang="uz" class="show">Shaxmat · Matematika · Dasturlash · Robototexnika · Ingliz tili</span><span data-lang="ru">Шахматы · Математика · Программирование · Робототехника · Английский</span><span data-lang="en">Chess · Math · Coding · Robotics · English</span></span></li>
+          <li><span class="ok">✓</span> <span><span data-lang="uz" class="show">Bir nechta kursga birga yozilish mumkin</span><span data-lang="ru">Можно посещать несколько курсов</span><span data-lang="en">Multiple courses allowed</span></span></li>
+          <li><span class="ok">✓</span> <span><span data-lang="uz" class="show">To'lov: naqd yoki Click / Payme</span><span data-lang="ru">Оплата: наличные или Click / Payme</span><span data-lang="en">Payment: cash or Click / Payme</span></span></li>
+        </ul>
+        <a class="btn btn-primary" href="#yozilish">
+          📝 <span data-lang="uz" class="show">Hoziroq yozilish</span><span data-lang="ru">Записаться сейчас</span><span data-lang="en">Enroll now</span>
+        </a>
+      </div>
+
+      <div class="scholarship" data-reveal>
+        <span class="s-ico" aria-hidden="true">🎓</span>
+        <span>
+          <span data-lang="uz" class="show">Iqtidorli o'quvchilar uchun <strong>scholarship — bepul o'qish</strong> imkoniyati mavjud!</span>
+          <span data-lang="ru">Для талантливых учеников доступна <strong>стипендия — бесплатное обучение</strong>!</span>
+          <span data-lang="en"><strong>Scholarships — free study</strong> available for talented students!</span>
+        </span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ EARLY BIRD ============================ -->
+<div class="wrap">
+  <section style="padding-top:0">
+    <div class="early" data-reveal>
+      <div class="early-ico" aria-hidden="true">🐣</div>
+      <div class="early-body">
+        <strong>
+          <span data-lang="uz" class="show">Birinchi o'quvchilardan bo'ling!</span>
+          <span data-lang="ru">Будьте первыми учениками!</span>
+          <span data-lang="en">Be among the first students!</span>
+        </strong>
+        <p>
+          <span data-lang="uz" class="show">Biz yangi ochilgan markazmiz — birinchi o'quvchilar <strong style="color:var(--gold2-ink)">maxsus imtiyozlar</strong> va hamjamiyat asoschisi maqomiga ega bo'ladi!</span>
+          <span data-lang="ru">Мы только открылись — первые ученики получат <strong style="color:var(--gold2-ink)">особые привилегии</strong> и статус основателей сообщества!</span>
+          <span data-lang="en">We just opened — first students get <strong style="color:var(--gold2-ink)">special benefits</strong> and founding-member status!</span>
+        </p>
+      </div>
+      <span class="early-badge"><span data-lang="uz" class="show">YANGI 🔥</span><span data-lang="ru">НОВОЕ 🔥</span><span data-lang="en">NEW 🔥</span></span>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ SCHEDULE ============================ -->
+<div class="wrap">
+  <section id="jadval">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">📅 <span data-lang="uz" class="show">Jadval</span><span data-lang="ru">Расписание</span><span data-lang="en">Schedule</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Dars jadvali</span>
+        <span data-lang="ru">Расписание занятий</span>
+        <span data-lang="en">Class schedule</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">Oilangizga qulay vaqtni tanlang — ertalabki yoki tushdan keyingi guruhlar.</span>
+        <span data-lang="ru">Выберите удобное время — утренние или дневные группы.</span>
+        <span data-lang="en">Pick what suits your family — morning or afternoon groups.</span>
+      </p>
+    </div>
+
+    <div class="sched-grid">
+      <div class="sched-card" data-reveal style="--rd:.05s">
+        <div class="sched-days">
+          <span data-lang="uz" class="show">Dushanba · Chorshanba · Juma</span>
+          <span data-lang="ru">Понедельник · Среда · Пятница</span>
+          <span data-lang="en">Monday · Wednesday · Friday</span>
+        </div>
+        <div class="sched-time">🌅 <span><span data-lang="uz" class="show">Ertalab 10:00 – 12:00</span><span data-lang="ru">Утро 10:00 – 12:00</span><span data-lang="en">Morning 10:00 – 12:00</span></span></div>
+        <div class="sched-time">☀️ <span><span data-lang="uz" class="show">Tushdan keyin 13:00 – 15:00</span><span data-lang="ru">День 13:00 – 15:00</span><span data-lang="en">Afternoon 13:00 – 15:00</span></span></div>
+        <div class="sched-time">🌆 <span><span data-lang="uz" class="show">Kechqurun 16:00 – 18:00</span><span data-lang="ru">Вечер 16:00 – 18:00</span><span data-lang="en">Evening 16:00 – 18:00</span></span></div>
+      </div>
+      <div class="sched-card" data-reveal style="--rd:.15s">
+        <div class="sched-days">
+          <span data-lang="uz" class="show">Seshanba · Payshanba · Shanba</span>
+          <span data-lang="ru">Вторник · Четверг · Суббота</span>
+          <span data-lang="en">Tuesday · Thursday · Saturday</span>
+        </div>
+        <div class="sched-time">🌅 <span><span data-lang="uz" class="show">Ertalab 10:00 – 12:00</span><span data-lang="ru">Утро 10:00 – 12:00</span><span data-lang="en">Morning 10:00 – 12:00</span></span></div>
+        <div class="sched-time">☀️ <span><span data-lang="uz" class="show">Tushdan keyin 13:00 – 15:00</span><span data-lang="ru">День 13:00 – 15:00</span><span data-lang="en">Afternoon 13:00 – 15:00</span></span></div>
+        <div class="sched-time">🌆 <span><span data-lang="uz" class="show">Kechqurun 16:00 – 18:00</span><span data-lang="ru">Вечер 16:00 – 18:00</span><span data-lang="en">Evening 16:00 – 18:00</span></span></div>
+      </div>
+      <div class="sched-card sched-special" data-reveal style="--rd:.25s">
+        <div class="sched-days">
+          <span data-lang="uz" class="show">🌟 Maxsus kunlar</span>
+          <span data-lang="ru">🌟 Особые дни</span>
+          <span data-lang="en">🌟 Special days</span>
+        </div>
+        <div class="sched-time">🎪 <span><span data-lang="uz" class="show">Ochiq darslar va ochiq eshiklar kuni</span><span data-lang="ru">Открытые уроки и день открытых дверей</span><span data-lang="en">Open lessons & open house</span></span></div>
+        <div class="sched-time">🏆 <span><span data-lang="uz" class="show">Musobaqalar va turnirlar</span><span data-lang="ru">Соревнования и турниры</span><span data-lang="en">Competitions & tournaments</span></span></div>
+        <div class="sched-note"><span data-lang="uz" class="show">Vaqti-vaqti bilan o'tkaziladi — kuni oldindan e'lon qilinadi</span><span data-lang="ru">Проводятся периодически — дата объявляется заранее</span><span data-lang="en">Held periodically — the date is announced in advance</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ RESULTS + TESTIMONIALS ============================ -->
+<div class="wrap">
+  <section id="natijalar">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">🌟 <span data-lang="uz" class="show">Natijalar va fikrlar</span><span data-lang="ru">Результаты и отзывы</span><span data-lang="en">Results &amp; reviews</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Bizning g'ururimiz — o'quvchilarimiz</span>
+        <span data-lang="ru">Наша гордость — наши ученики</span>
+        <span data-lang="en">Our pride — our students</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">Har bir bola o'z sur'atida o'sadi — biz esa har bir qadamni natijaga aylantiramiz.</span>
+        <span data-lang="ru">Каждый ребёнок растёт в своём темпе — а мы превращаем каждый шаг в результат.</span>
+        <span data-lang="en">Every child grows at their own pace — we turn every step into a result.</span>
+      </p>
+    </div>
+
+    <div class="results-grid">
+      <div class="res-card" data-reveal style="--rd:.05s">
+        <div class="res-ico" aria-hidden="true">🏆</div>
+        <strong><span data-lang="uz" class="show">Musobaqa va turnirlar</span><span data-lang="ru">Соревнования и турниры</span><span data-lang="en">Competitions & tournaments</span></strong>
+        <p><span data-lang="uz" class="show">Turnirlar, ochiq darslar va ochiq eshiklar kuni — vaqti oldindan e'lon qilinadi.</span><span data-lang="ru">Турниры, открытые уроки и день открытых дверей — дата объявляется заранее.</span><span data-lang="en">Tournaments, open lessons and open house — dates announced in advance.</span></p>
+      </div>
+      <div class="res-card" data-reveal style="--rd:.1s">
+        <div class="res-ico" aria-hidden="true">🚀</div>
+        <strong><span data-lang="uz" class="show">Real loyihalar</span><span data-lang="ru">Реальные проекты</span><span data-lang="en">Real projects</span></strong>
+        <p><span data-lang="uz" class="show">O'quvchilarimiz o'yinlar, robotlar va o'z loyihalarini yaratib o'rganadi.</span><span data-lang="ru">Наши ученики учатся, создавая игры, роботов и собственные проекты.</span><span data-lang="en">Our students learn by building games, robots, and their own projects.</span></p>
+      </div>
+      <div class="res-card" data-reveal style="--rd:.15s">
+        <div class="res-ico" aria-hidden="true">🎓</div>
+        <strong><span data-lang="uz" class="show">Scholarship dasturi</span><span data-lang="ru">Стипендиальная программа</span><span data-lang="en">Scholarship program</span></strong>
+        <p><span data-lang="uz" class="show">Iqtidorli o'quvchilar uchun bepul o'qish imkoniyati doimiy faol.</span><span data-lang="ru">Возможность бесплатного обучения для талантливых учеников.</span><span data-lang="en">Free study opportunities for talented students, always active.</span></p>
+      </div>
+    </div>
+
+    <!-- Haqiqiy ota-onalar fikrlari to'plangach, quyidagi shablonni nusxalab,
+         izohdan chiqarib to'ldiring (har bir fikr uchun bitta <article>):
+
+    <div class="testi-grid">
+      <article class="testi" data-reveal>
+        <div class="testi-stars" aria-label="5 yulduz">★★★★★</div>
+        <p class="testi-text">
+          <span data-lang="uz" class="show">FIKR MATNI (uz)</span>
+          <span data-lang="ru">FIKR MATNI (ru)</span>
+          <span data-lang="en">FIKR MATNI (en)</span>
+        </p>
+        <div class="testi-who">
+          <div class="testi-ava" aria-hidden="true">ISMNING BOSH HARFI</div>
+          <div>
+            <div class="testi-name">ISM F.</div>
+            <div class="testi-role"><span data-lang="uz" class="show">KURS o'quvchisining onasi/otasi</span><span data-lang="ru">RU</span><span data-lang="en">EN</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+    -->
+
+    <!-- Sharhlar bloki.
+         Google Business Profile'dagi qisqa sharh havolangizni (g.page/r/.../review)
+         olganingizda quyidagi data-google-review qiymatini o'shanga almashtiring. -->
+    <div class="reviews-hub" data-reveal
+         data-google-review="https://www.google.com/maps?cid=6515438824910425245"
+         data-google-view="https://www.google.com/maps?cid=6515438824910425245">
+      <div class="rh-head">
+        <h3>
+          <span data-lang="uz" class="show">⭐ Sizning fikringiz muhim</span>
+          <span data-lang="ru">⭐ Ваше мнение важно</span>
+          <span data-lang="en">⭐ Your feedback matters</span>
+        </h3>
+        <p>
+          <span data-lang="uz" class="show">Farzandingiz Parvozda o'qiydimi? Bir daqiqa vaqt ajratib sharh qoldiring — bu boshqa ota-onalarga to'g'ri tanlov qilishda yordam beradi.</span>
+          <span data-lang="ru">Ваш ребёнок учится в Parvoz? Оставьте отзыв — это поможет другим родителям сделать правильный выбор.</span>
+          <span data-lang="en">Does your child study at Parvoz? Leave a review — it helps other parents make the right choice.</span>
+        </p>
+      </div>
+      <div class="rh-grid">
+        <div class="rh-card">
+          <span class="rh-logo"><svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span>
+          <span class="rh-name">Google</span>
+          <span class="rh-note">
+            <span data-lang="uz" class="show">Google Xarita va qidiruvda</span>
+            <span data-lang="ru">В Google Картах и поиске</span>
+            <span data-lang="en">On Google Maps and Search</span>
+          </span>
+          <span class="rh-btns">
+            <a class="btn btn-primary btn-xs" href="https://www.google.com/maps?cid=6515438824910425245" target="_blank" rel="noopener">
+              <span data-lang="uz" class="show">Sharh qoldirish</span><span data-lang="ru">Оставить отзыв</span><span data-lang="en">Leave a review</span>
+            </a>
+          </span>
+        </div>
+        <div class="rh-card">
+          <span class="rh-logo"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#fc3f1d"/><path d="M13.2 18.4V6.9h-1.1c-1.5 0-2.4.8-2.4 2.1 0 1.4.6 2.1 1.9 3l1 .7-3 4.7H7.3l2.8-4.2c-1.6-1.1-2.5-2.2-2.5-4.1 0-2.3 1.6-3.9 4.6-3.9h3v13.2h-2z" fill="#fff"/></svg></span>
+          <span class="rh-name">Yandex</span>
+          <span class="rh-note">
+            <span data-lang="uz" class="show">Yandex Xaritada</span>
+            <span data-lang="ru">В Яндекс Картах</span>
+            <span data-lang="en">On Yandex Maps</span>
+          </span>
+          <span class="rh-btns">
+            <a class="btn btn-ghost btn-xs" href="https://yandex.com/maps/-/CPq-BUYQ" target="_blank" rel="noopener">
+              <span data-lang="uz" class="show">Sharh qoldirish</span><span data-lang="ru">Оставить отзыв</span><span data-lang="en">Leave a review</span>
+            </a>
+          </span>
+        </div>
+        <div class="rh-card">
+          <span class="rh-logo"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z" fill="#2ea6da"/></svg></span>
+          <span class="rh-name">Telegram</span>
+          <span class="rh-note">
+            <span data-lang="uz" class="show">To'g'ridan-to'g'ri bizga</span>
+            <span data-lang="ru">Написать нам напрямую</span>
+            <span data-lang="en">Message us directly</span>
+          </span>
+          <span class="rh-btns">
+            <a class="btn btn-ghost btn-xs" href="https://t.me/parvozcode" target="_blank" rel="noopener">
+              <span data-lang="uz" class="show">Yozish</span><span data-lang="ru">Написать</span><span data-lang="en">Write</span>
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Haqiqiy sharhlar assets/reviews.json dan yuklanadi; bo'sh bo'lsa bu blok ko'rinmaydi -->
+    <div class="testi-grid" id="reviewsList" style="margin-top:22px" hidden></div>
+  </section>
+</div>
+
+<!-- ============================ GALLERY ============================ -->
+<div class="wrap">
+  <section id="galereya">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">📸 <span data-lang="uz" class="show">Galereya</span><span data-lang="ru">Галерея</span><span data-lang="en">Gallery</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Markazdagi hayot</span>
+        <span data-lang="ru">Жизнь в центре</span>
+        <span data-lang="en">Life at the center</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">Darslarimizdan va o'quvchilarimizning yorqin lahzalaridan lavhalar.</span>
+        <span data-lang="ru">Кадры с наших занятий и яркие моменты наших учеников.</span>
+        <span data-lang="en">Glimpses of our lessons and our students' brightest moments.</span>
+      </p>
+    </div>
+
+    <div class="gallery-grid" data-reveal>
+      <button class="g-item g-wide" type="button" data-full="assets/gallery/chess-class-board.webp">
+        <img src="assets/gallery/chess-class-board-tile.webp" alt="Shaxmat darsi: ustoz namoyish taxtasida o'quvchilarga yurishni ko'rsatmoqda" loading="lazy" width="640" height="640">
+      </button>
+      <button class="g-item" type="button" data-full="assets/gallery/building.webp">
+        <img src="assets/gallery/building-tile.webp" alt="Parvoz O'quv Markazi binosi va kirish eshigi, Samarqand" loading="lazy" width="640" height="640">
+      </button>
+      <button class="g-item g-video" type="button" data-video="assets/gallery/robotics-lesson.mp4" data-poster="assets/gallery/robotics-poster.webp">
+        <img src="assets/gallery/robotics-tile.webp" alt="Robototexnika darsi: o'quvchilar kompyuter va elektron sxemalar bilan ishlamoqda (video)" loading="lazy" width="640" height="640">
+        <span class="g-play" aria-hidden="true"><svg viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="27" fill="rgba(4,8,20,.55)" stroke="#fff" stroke-width="2"/><path d="M23 18.5v19l16-9.5z" fill="#fff"/></svg></span>
+      </button>
+      <button class="g-item" type="button" data-full="assets/gallery/chess-class-tables.webp">
+        <img src="assets/gallery/chess-class-tables-tile.webp" alt="Shaxmat darsi: o'quvchilar shaxmat taxtalari oldida ustozni tinglamoqda" loading="lazy" width="640" height="640">
+      </button>
+      <button class="g-item g-video" type="button" data-video="assets/gallery/lessons-promo.mp4" data-poster="assets/gallery/promo-poster.webp">
+        <img src="assets/gallery/promo-tile.webp" alt="Parvoz markazi darslaridan lavhalar: o'quvchilar kompyuterda ishlamoqda (video)" loading="lazy" width="640" height="640">
+        <span class="g-play" aria-hidden="true"><svg viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="27" fill="rgba(4,8,20,.55)" stroke="#fff" stroke-width="2"/><path d="M23 18.5v19l16-9.5z" fill="#fff"/></svg></span>
+      </button>
+      <button class="g-item" type="button" data-full="assets/gallery/chess-teacher-board.webp">
+        <img src="assets/gallery/chess-teacher-board-tile.webp" alt="Shaxmat ustozi namoyish taxtasi yonida" loading="lazy" width="640" height="640">
+      </button>
+      <a class="g-item g-ig" href="https://www.instagram.com/parvoz_code" target="_blank" rel="noopener">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="ig_g2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#fd5"/><stop offset="50%" stop-color="#ff543e"/><stop offset="100%" stop-color="#c837ab"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" stroke="url(#ig_g2)" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="url(#ig_g2)" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="url(#ig_g2)"/></svg>
+        <strong>@parvoz_code</strong>
+        <span><span data-lang="uz" class="show">Barcha suratlar Instagram'da</span><span data-lang="ru">Все фото в Instagram</span><span data-lang="en">All photos on Instagram</span></span>
+      </a>
+    </div>
+  </section>
+</div>
+
+<dialog class="lightbox" id="lightbox" aria-label="Foto yoki video kattalashtirilgan ko'rinishda">
+  <img src="" alt="" id="lightboxImg">
+  <video id="lightboxVideo" controls playsinline preload="none" hidden></video>
+  <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Yopish">✕</button>
+</dialog>
+
+<!-- ============================ FAQ ============================ -->
+<div class="wrap">
+  <section id="faq">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">❓ FAQ</span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Ko'p beriladigan savollar</span>
+        <span data-lang="ru">Частые вопросы</span>
+        <span data-lang="en">Frequently asked questions</span>
+      </h2>
+    </div>
+
+    <div class="faq-list" data-reveal>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span><span data-lang="uz" class="show">Necha yoshdan qabul qilinadi?</span><span data-lang="ru">С какого возраста принимают?</span><span data-lang="en">From what age do you accept students?</span></span>
+          <span class="faq-plus" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          <span data-lang="uz" class="show">6 yoshdan boshlab qabul qilamiz. Har bir yo'nalish uchun alohida yosh guruhlari mavjud.</span>
+          <span data-lang="ru">Принимаем с 6 лет. Для каждого направления есть отдельные возрастные группы.</span>
+          <span data-lang="en">We accept students from age 6. Each course has separate age groups.</span>
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span><span data-lang="uz" class="show">Kompyuter yoki shaxmat doskasi kerakmi?</span><span data-lang="ru">Нужен ли компьютер или шахматная доска?</span><span data-lang="en">Do I need to bring a computer or chess board?</span></span>
+          <span class="faq-plus" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          <span data-lang="uz" class="show">Yo'q! Barcha kerakli jihozlar markazda mavjud. Farzandingiz faqat o'zi kelishi kifoya.</span>
+          <span data-lang="ru">Нет! Всё необходимое оборудование есть в центре. Ребёнку нужно только прийти.</span>
+          <span data-lang="en">No! All necessary equipment is available at the center. Your child just needs to show up.</span>
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span><span data-lang="uz" class="show">Sinov darsi bormi?</span><span data-lang="ru">Есть ли пробный урок?</span><span data-lang="en">Is there a trial lesson?</span></span>
+          <span class="faq-plus" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          <span data-lang="uz" class="show">Ha! Birinchi dars to'liq bepul. Saytdagi "Yozilish" tugmasi orqali ariza qoldiring.</span>
+          <span data-lang="ru">Да! Первый урок абсолютно бесплатный. Оставьте заявку через кнопку на сайте.</span>
+          <span data-lang="en">Yes! The first lesson is completely free. Sign up using the button on this site.</span>
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span><span data-lang="uz" class="show">Bir vaqtda bir necha kurs olsa bo'ladimi?</span><span data-lang="ru">Можно ли посещать несколько курсов?</span><span data-lang="en">Can a student take multiple courses?</span></span>
+          <span class="faq-plus" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          <span data-lang="uz" class="show">Ha, mumkin! Jadval bir-biriga to'g'ri kelmasa, bir vaqtda bir necha yo'nalishda o'qish mumkin.</span>
+          <span data-lang="ru">Да, можно! Если расписание не пересекается, можно учиться по нескольким направлениям.</span>
+          <span data-lang="en">Yes! If schedules don't overlap, students can take multiple courses simultaneously.</span>
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">
+          <span><span data-lang="uz" class="show">To'lovni qanday amalga oshirish mumkin?</span><span data-lang="ru">Как можно оплатить?</span><span data-lang="en">How can I make the payment?</span></span>
+          <span class="faq-plus" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          <span data-lang="uz" class="show">To'lov naqd yoki Click/Payme orqali amalga oshiriladi. Har oyning boshida to'lanadi.</span>
+          <span data-lang="ru">Оплата наличными или через Click/Payme. Оплачивается в начале каждого месяца.</span>
+          <span data-lang="en">Payment by cash or via Click/Payme. Paid at the beginning of each month.</span>
+        </div></div>
+      </div>
+    </div>
+  
+    <p style="text-align:center;margin-top:26px">
+      <span data-lang="uz" class="show"><a class="btn btn-ghost" href="maqolalar.html">📖 Ota-onalar uchun batafsil maqolalar</a></span>
+      <span data-lang="ru"><a class="btn btn-ghost" href="stati.html" lang="ru">📖 Подробные статьи для родителей</a></span>
+      <span data-lang="en"><a class="btn btn-ghost" href="maqolalar.html">📖 Articles for parents (in Uzbek)</a></span>
+    </p>
+  </section>
+</div>
+
+<!-- ============================ ARIZA FORMASI ============================ -->
+<div class="wrap">
+  <section id="yozilish">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">📝 <span data-lang="uz" class="show">Ariza</span><span data-lang="ru">Заявка</span><span data-lang="en">Apply</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Bepul sinov darsiga yozilish</span>
+        <span data-lang="ru">Записаться на бесплатный урок</span>
+        <span data-lang="en">Book a free trial lesson</span>
+      </h2>
+      <p class="sec-sub">
+        <span data-lang="uz" class="show">Formani to'ldiring — bir ish kuni ichida qo'ng'iroq qilamiz.</span>
+        <span data-lang="ru">Заполните форму — перезвоним в течение рабочего дня.</span>
+        <span data-lang="en">Fill in the form — we'll call you back within one business day.</span>
+      </p>
+    </div>
+
+    <div class="lead-wrap" data-reveal id="leadBox">
+      <div class="lead-side">
+        <h3>
+          <span data-lang="uz" class="show">Keyin nima bo'ladi?</span>
+          <span data-lang="ru">Что будет дальше?</span>
+          <span data-lang="en">What happens next?</span>
+        </h3>
+        <p>
+          <span data-lang="uz" class="show">Ariza qoldirish hech qanday majburiyat yuklamaydi — avval tanishasiz, keyin qaror qilasiz.</span>
+          <span data-lang="ru">Заявка ни к чему не обязывает — сначала знакомитесь, потом решаете.</span>
+          <span data-lang="en">Sending a request commits you to nothing — you visit first, then decide.</span>
+        </p>
+        <ul class="lead-points">
+          <li><span class="lp-ico">1</span><span data-lang="uz" class="show">Qo'ng'iroq qilamiz va farzandingizga mos yo'nalishni birga tanlaymiz</span><span data-lang="ru">Мы звоним и вместе подбираем подходящее направление</span><span data-lang="en">We call and pick the right course together</span></li>
+          <li><span class="lp-ico">2</span><span data-lang="uz" class="show">Sizga qulay kun va vaqtga bepul sinov darsini belgilaymiz</span><span data-lang="ru">Назначаем бесплатный пробный урок на удобное время</span><span data-lang="en">We schedule a free trial lesson at a time that suits you</span></li>
+          <li><span class="lp-ico">3</span><span data-lang="uz" class="show">Farzandingiz darsda qatnashadi, siz markaz bilan tanishasiz</span><span data-lang="ru">Ребёнок участвует в уроке, вы знакомитесь с центром</span><span data-lang="en">Your child joins the lesson while you get to know the centre</span></li>
+        </ul>
+        <div class="lead-alt">
+          <a class="btn btn-ghost" href="tel:+998972344442">📞 +998 97 234 44 42</a>
+          <a class="btn btn-ghost" href="https://wa.me/998972344442?text=Assalomu%20alaykum!%20Bepul%20sinov%20darsi%20haqida%20ma%27lumot%20olmoqchiman." target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.6-2.1-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5 0-.2 0-.4-.1-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4z"/><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
+            WhatsApp
+          </a>
+          <a class="btn btn-ghost" href="https://t.me/parvozcode" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z" fill="#64b5f6"/></svg>
+            Telegram
+          </a>
+        </div>
+      </div>
+
+      <form id="leadForm" novalidate>
+        <div class="f-row">
+          <label class="f-field">
+            <span><span data-lang="uz" class="show">Ismingiz *</span><span data-lang="ru">Ваше имя *</span><span data-lang="en">Your name *</span></span>
+            <input class="f-inp ym-disable-keys" name="full_name" autocomplete="name" required>
+          </label>
+          <label class="f-field">
+            <span><span data-lang="uz" class="show">Telefon *</span><span data-lang="ru">Телефон *</span><span data-lang="en">Phone *</span></span>
+            <input class="f-inp ym-disable-keys" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___ __ __" required>
+          </label>
+        </div>
+        <div class="f-row">
+          <label class="f-field">
+            <span><span data-lang="uz" class="show">Yo'nalish</span><span data-lang="ru">Направление</span><span data-lang="en">Course</span></span>
+            <select class="f-inp" name="course_name" id="leadCourse"></select>
+          </label>
+          <label class="f-field">
+            <span><span data-lang="uz" class="show">Qulay vaqt</span><span data-lang="ru">Удобное время</span><span data-lang="en">Preferred time</span></span>
+            <select class="f-inp" name="preferred_time" id="leadTime"></select>
+          </label>
+        </div>
+        <label class="f-field">
+          <span><span data-lang="uz" class="show">Izoh</span><span data-lang="ru">Комментарий</span><span data-lang="en">Comment</span></span>
+          <input class="f-inp ym-disable-keys" name="note" id="leadNote">
+        </label>
+
+        <input class="f-hp ym-disable-keys" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <label class="f-consent">
+          <input type="checkbox" required>
+          <span>
+            <span data-lang="uz" class="show">Ma'lumotlarim <a href="maxfiylik.html">maxfiylik siyosati</a> asosida qayta ishlanishiga roziman.</span>
+            <span data-lang="ru">Согласен(на) на обработку данных согласно <a href="maxfiylik.html#ru">политике конфиденциальности</a>.</span>
+            <span data-lang="en">I agree to my data being processed per the <a href="maxfiylik.html">privacy policy</a>.</span>
+          </span>
+        </label>
+
+        <button class="btn btn-primary btn-block" id="leadBtn" type="submit">
+          <span data-lang="uz" class="show">Ariza yuborish</span><span data-lang="ru">Отправить заявку</span><span data-lang="en">Send request</span>
+        </button>
+        <div class="f-msg" id="leadMsg" role="alert"></div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ CONTACT ============================ -->
+<div class="wrap">
+  <section id="aloqa">
+    <div class="sec-head" data-reveal>
+      <span class="sec-eyebrow">📍 <span data-lang="uz" class="show">Aloqa</span><span data-lang="ru">Контакты</span><span data-lang="en">Contact</span></span>
+      <h2 class="sec-title">
+        <span data-lang="uz" class="show">Biz bilan bog'laning</span>
+        <span data-lang="ru">Свяжитесь с нами</span>
+        <span data-lang="en">Get in touch</span>
+      </h2>
+    </div>
+
+    <div class="contact-grid" data-reveal>
+      <a class="ci" href="tel:+998972344442">
+        <div class="ci-ico" aria-hidden="true">📞</div>
+        <div>
+          <div class="ci-lbl"><span data-lang="uz" class="show">Telefon</span><span data-lang="ru">Телефон</span><span data-lang="en">Phone</span></div>
+          <div class="ci-val">+998 97 234 44 42</div>
+        </div>
+      </a>
+      <a class="ci" href="https://t.me/parvozcode" target="_blank" rel="noopener">
+        <div class="ci-ico" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z" fill="#64b5f6"/></svg>
+        </div>
+        <div>
+          <div class="ci-lbl">Telegram</div>
+          <div class="ci-val">@parvozcode</div>
+        </div>
+      </a>
+      <a class="ci" href="https://www.instagram.com/parvoz_code" target="_blank" rel="noopener">
+        <div class="ci-ico" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig_grad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#fd5"/><stop offset="50%" stop-color="#ff543e"/><stop offset="100%" stop-color="#c837ab"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" stroke="url(#ig_grad)" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="url(#ig_grad)" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="url(#ig_grad)"/></svg>
+        </div>
+        <div>
+          <div class="ci-lbl">Instagram</div>
+          <div class="ci-val">@parvoz_code</div>
+        </div>
+      </a>
+      <div class="ci">
+        <div class="ci-ico" aria-hidden="true">🕐</div>
+        <div>
+          <div class="ci-lbl"><span data-lang="uz" class="show">Ish vaqti</span><span data-lang="ru">Время работы</span><span data-lang="en">Hours</span></div>
+          <div class="ci-val"><span data-lang="uz" class="show">Dushanba–Shanba 09:00 – 18:00<br><small>Yakshanba — dam olish kuni</small></span><span data-lang="ru">Пн–Сб 09:00 – 18:00<br><small>Воскресенье — выходной</small></span><span data-lang="en">Mon–Sat 09:00 – 18:00<br><small>Sunday — closed</small></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-card" data-reveal>
+      <div class="m-info">
+        <span class="m-ico" aria-hidden="true">🗺</span>
+        <div>
+          <strong><span data-lang="uz" class="show">Dahbed ko'chasi 11, 2-qavat · Gelion chorrahasi, Mone Café ro'parasida</span><span data-lang="ru">ул. Дагбитская, 11, 2 этаж · перекрёсток Гелион, напротив Mone Café</span><span data-lang="en">Dahbed street 11, 2nd floor · Gelion crossroads, opposite Mone Café</span></strong>
+          <p><span data-lang="uz" class="show">Samarqand, O'zbekiston</span><span data-lang="ru">Самарканд, Узбекистан</span><span data-lang="en">Samarkand, Uzbekistan</span></p>
+        </div>
+      </div>
+      <div class="map-btns">
+        <a class="map-btn" href="https://yandex.com/maps/-/CPq-BUYQ" target="_blank" rel="noopener">🗺 Yandex Maps</a>
+        <a class="map-btn" href="https://www.google.com/maps/place/Parvoz+Code/@39.6738356,66.9641774,17z/data=!3m1!4b1!4m9!1m2!2m1!1sMXF9+GJ+Samarkand+Uzbekistan!3m5!1s0x3f4d19054d439087:0x5a6b7d174a930c9d!8m2!3d39.6738357!4d66.9690537!16s%2Fg%2F11yyxj4v4x?entry=ttu" target="_blank" rel="noopener">📍 Google Maps</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ CTA BANNER ============================ -->
+<div class="wrap">
+  <section style="padding-top:8px">
+    <div class="cta-banner" data-reveal>
+      <h2>
+        <span data-lang="uz" class="show">Parvozga tayyormisiz? 🚀</span>
+        <span data-lang="ru">Готовы к полёту? 🚀</span>
+        <span data-lang="en">Ready for takeoff? 🚀</span>
+      </h2>
+      <p>
+        <span data-lang="uz" class="show">Birinchi dars bepul — hech narsa yo'qotmaysiz. Farzandingizning iqtidorini birga kashf qilamiz!</span>
+        <span data-lang="ru">Первый урок бесплатный — вы ничего не теряете. Откроем талант вашего ребёнка вместе!</span>
+        <span data-lang="en">The first lesson is free — you have nothing to lose. Let's discover your child's talent together!</span>
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#yozilish">
+          📝 <span data-lang="uz" class="show">Hoziroq yozilish</span><span data-lang="ru">Записаться сейчас</span><span data-lang="en">Enroll now</span>
+        </a>
+        <a class="btn btn-ghost" href="tel:+998972344442">
+          📞 <span data-lang="uz" class="show">Qo'ng'iroq qilish</span><span data-lang="ru">Позвонить</span><span data-lang="en">Call us</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<!-- ============================ FOOTER ============================ -->
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <span class="f-logo" role="img" aria-label="Parvoz O'quv Markazi"></span>
+        <p>
+          <span data-lang="uz" class="show">Samarqanddagi bolalar uchun zamonaviy ta'lim markazi. Biz fikrlashni o'rgatamiz — bilim yodlash uchun emas, dunyoni o'zgartirish uchun.</span>
+          <span data-lang="ru">Современный учебный центр для детей в Самарканде. Мы учим мыслить — знания не для зубрёжки, а чтобы менять мир.</span>
+          <span data-lang="en">A modern learning center for kids in Samarkand. We teach thinking — knowledge to change the world, not to memorize.</span>
+        </p>
+      </div>
+      <div class="f-col">
+        <h3><span data-lang="uz" class="show">Sahifalar</span><span data-lang="ru">Разделы</span><span data-lang="en">Pages</span></h3>
+        <ul>
+          <li><a href="#kurslar"><span data-lang="uz" class="show">Kurslar</span><span data-lang="ru">Курсы</span><span data-lang="en">Courses</span></a></li>
+          <li><a href="#narxlar"><span data-lang="uz" class="show">Narxlar</span><span data-lang="ru">Цены</span><span data-lang="en">Pricing</span></a></li>
+          <li><a href="#jadval"><span data-lang="uz" class="show">Dars jadvali</span><span data-lang="ru">Расписание</span><span data-lang="en">Schedule</span></a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="maqolalar.html" lang="uz">Ota-onalar uchun maqolalar</a></li>
+          <li><a href="stati.html" lang="ru">Статьи для родителей</a></li>
+          <li><a href="maxfiylik.html"><span data-lang="uz" class="show">Maxfiylik siyosati</span><span data-lang="ru">Политика конфиденциальности</span><span data-lang="en">Privacy policy</span></a></li>
+        </ul>
+      </div>
+      <div class="f-col">
+        <h3><span data-lang="uz" class="show">Aloqa</span><span data-lang="ru">Контакты</span><span data-lang="en">Contact</span></h3>
+        <ul>
+          <li><a href="tel:+998972344442">+998 97 234 44 42</a></li>
+          <li><a href="https://t.me/parvozcode" target="_blank" rel="noopener">Telegram · @parvozcode</a></li>
+          <li><a href="https://www.instagram.com/parvoz_code" target="_blank" rel="noopener">Instagram · @parvoz_code</a></li>
+          <li><a href="https://yandex.com/maps/-/CPq-BUYQ" target="_blank" rel="noopener"><span data-lang="uz" class="show">Xaritada ko'rish</span><span data-lang="ru">Показать на карте</span><span data-lang="en">View on map</span></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="f-bottom">
+      <span>© 2026 Parvoz O'quv Markazi · <span data-lang="uz" class="show">Samarqand</span><span data-lang="ru">Самарканд</span><span data-lang="en">Samarkand</span> · <a href="davomat.html" style="color:var(--faint);text-decoration:none" rel="nofollow"><span data-lang="uz" class="show">O'qituvchilar uchun</span><span data-lang="ru">Для учителей</span><span data-lang="en">For teachers</span></a></span>
+      <span class="f-tag">Learn. Build. Fly. ✈️</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Mobile sticky CTA -->
+<div class="sticky-cta" id="stickyCta">
+  <a class="btn btn-primary" href="#yozilish">
+    🎁 <span data-lang="uz" class="show">Bepul dars</span><span data-lang="ru">Бесплатный урок</span><span data-lang="en">Free lesson</span>
+  </a>
+  <a class="btn btn-ghost" href="tel:+998972344442" aria-label="Qo'ng'iroq qilish" style="flex:0 0 auto; padding:13px 18px;">📞</a>
+</div>
+
+<button class="to-top" id="toTop" type="button" aria-label="Sahifa boshiga qaytish">↑</button>
+
+<script>
+/* ============ THEME ============ */
+const THEME_LABEL = {
+  uz: { light: "☀️ Yorug' rejim",  dark: "🌙 Qorong'i rejim" },
+  ru: { light: '☀️ Светлая тема',  dark: '🌙 Тёмная тема' },
+  en: { light: '☀️ Light mode',    dark: '🌙 Dark mode' },
+};
+const THEME_COLOR = { dark: '#071029', light: '#f4f7fd' };
+let currentLang = 'uz';
+
+function currentTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+function syncThemeLabels() {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  const label = (THEME_LABEL[currentLang] || THEME_LABEL.uz)[next];
+  const mBtn = document.getElementById('themeBtnMobile');
+  if (mBtn) mBtn.textContent = label;
+  const dBtn = document.getElementById('themeBtn');
+  if (dBtn) dBtn.setAttribute('aria-label', label);
+}
+function setTheme(theme, save) {
+  document.documentElement.setAttribute('data-theme', theme);
+  // Faqat foydalanuvchi o'zi tanlaganda saqlanadi — aks holda sayt tizim rejimiga ergashadi
+  if (save) try { localStorage.setItem('parvoz-theme', theme); } catch (e) {}
+  const meta = document.getElementById('themeColorMeta');
+  if (meta) meta.setAttribute('content', THEME_COLOR[theme]);
+  syncThemeLabels();
+}
+['themeBtn','themeBtnMobile'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark', true));
+});
+setTheme(currentTheme());
+try {
+  const osLight = window.matchMedia('(prefers-color-scheme: light)');
+  osLight.addEventListener('change', e => {
+    let saved = null; try { saved = localStorage.getItem('parvoz-theme'); } catch (_) {}
+    if (saved !== 'light' && saved !== 'dark') setTheme(e.matches ? 'light' : 'dark');
+  });
+} catch (e) {}
+
+/* ============ LANGUAGE ============ */
+// Ruscha va inglizcha bosh sahifa — alohida fayllar: ru.html, en.html (tools/gen_home_ru.py va
+// tools/gen_home_en.py shu fayldan yaratadi). RU va EN havolalari o'sha sahifalarga olib boradi;
+// bu sahifada til doim o'zbekcha, ru.html va en.html da — ruscha va inglizcha.
+const LANGS = ['uz','ru','en'];
+const PAGE_LANG = document.documentElement.lang;
+function setLang(lang) {
+  if (!LANGS.includes(lang)) lang = 'uz';
+  currentLang = lang;
+  document.querySelectorAll('[data-lang]').forEach(el => {
+    el.classList.toggle('show', el.getAttribute('data-lang') === lang);
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.setLang === lang);
+  });
+  document.documentElement.lang = lang;
+  // Kurs kartalari: ruscha tanlaganda ruscha kurs sahifasiga (inglizcha sahifa yo'q — o'zbekchasi)
+  document.querySelectorAll('[data-href-ru]').forEach(a => {
+    if (!a.dataset.hrefUz) a.dataset.hrefUz = a.getAttribute('href');
+    a.setAttribute('href', lang === 'ru' ? a.dataset.hrefRu : a.dataset.hrefUz);
+  });
+  syncThemeLabels();
+  if (typeof syncMenuLabel === 'function') syncMenuLabel();
+  // ru.html ga o'tilayotgan bo'lsa (langRoute) tanlovni buzmaymiz
+  if (!window.__toRu) try { localStorage.setItem('parvoz-lang', lang); } catch(e) {}
+}
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.tagName === 'A') {
+      // Boshqa tildagi sahifa: tanlovni saqlab, o'sha bo'limning o'ziga o'tamiz
+      try { localStorage.setItem('parvoz-lang', btn.dataset.setLang); } catch(e) {}
+      btn.href = btn.getAttribute('href').split('#')[0] + location.hash;
+      return;
+    }
+    setLang(btn.dataset.setLang);
+  });
+});
+// Til sahifaning o'zidan olinadi (<html lang>): har bir til alohida fayl
+setLang(PAGE_LANG);
+// "Orqaga" bilan keshdan qaytganda tanlov shu sahifa tiliga qaytadi
+window.addEventListener('pageshow', e => { if (e.persisted) setLang(currentLang); });
+
+/* ============ NAVBAR ============ */
+const prefersReduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const nav = document.getElementById('nav');
+const toTop = document.getElementById('toTop');
+const stickyCta = document.getElementById('stickyCta');
+let heroH = window.innerHeight * .7;
+
+function onScroll() {
+  const y = window.scrollY;
+  nav.classList.toggle('scrolled', y > 10);
+  toTop.classList.toggle('show', y > 700);
+  stickyCta.classList.toggle('show', y > heroH);
+}
+window.addEventListener('scroll', onScroll, { passive:true });
+onScroll();
+
+toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior: prefersReduced() ? 'auto' : 'smooth' }));
+
+/* Mobile menu */
+const burger = document.getElementById('burger');
+const mobileMenu = document.getElementById('mobileMenu');
+// setLang() buni sahifa yuklanishida ham chaqiradi — o'zgaruvchilar hali e'lon qilinmagan bo'ladi
+function syncMenuLabel() {
+  const b = document.getElementById('burger'), m = document.getElementById('mobileMenu');
+  if (!b || !m) return;
+  const labels = { uz: ['Menyuni ochish', 'Menyuni yopish'], ru: ['Открыть меню', 'Закрыть меню'], en: ['Open menu', 'Close menu'] };
+  b.setAttribute('aria-label', (labels[document.documentElement.lang] || labels.uz)[m.classList.contains('open') ? 1 : 0]);
+}
+function setMenu(open, focusBurger) {
+  mobileMenu.classList.toggle('open', open);
+  burger.setAttribute('aria-expanded', open);
+  syncMenuLabel();
+  if (!open && focusBurger) burger.focus();
+}
+burger.addEventListener('click', () => setMenu(!mobileMenu.classList.contains('open')));
+mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+// Esc va menyudan tashqariga bosish yopadi
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && mobileMenu.classList.contains('open')) setMenu(false, true);
+});
+document.addEventListener('pointerdown', e => {
+  if (mobileMenu.classList.contains('open') && !mobileMenu.contains(e.target) && !burger.contains(e.target)) setMenu(false);
+});
+
+/* ============ SCROLL REVEAL ============ */
+const revealEls = document.querySelectorAll('[data-reveal]');
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold:.12, rootMargin:'0px 0px -40px 0px' });
+  revealEls.forEach(el => io.observe(el));
+} else {
+  revealEls.forEach(el => el.classList.add('in'));
+}
+
+/* ============ COUNT-UP ============ */
+function easeOutQuart(t){ return 1 - Math.pow(1 - t, 4); }
+function animateCount(el, target, suffix, duration) {
+  const start = performance.now();
+  function step(now) {
+    const p = Math.min((now - start) / duration, 1);
+    el.textContent = Math.round(target * easeOutQuart(p)) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+const statEls = document.querySelectorAll('[data-count]');
+if (statEls.length && 'IntersectionObserver' in window && !prefersReduced()) {
+  const statIo = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        statEls.forEach((el, i) => {
+          const target = parseInt(el.dataset.count, 10);
+          const suffix = el.dataset.suffix || '';
+          el.textContent = '0' + suffix;
+          setTimeout(() => animateCount(el, target, suffix, 1500), i * 140);
+        });
+        statIo.disconnect();
+      }
+    });
+  }, { threshold:.4 });
+  statIo.observe(statEls[0].closest('.stats'));
+}
+
+/* ============ FAQ ============ */
+// Ochiq javob ochilib bo'lgach balandligi cheklanmaydi — ekran burilsa / kengligi o'zgarsa
+// matn kesilib qolmaydi. Yopishdan oldin yana px ga qaytariladi (animatsiya uchun).
+document.querySelectorAll('.faq-item').forEach((item, i) => {
+  const btn = item.querySelector('.faq-q');
+  const panel = item.querySelector('.faq-a');
+  if (!panel.id) panel.id = 'faq-a-' + (i + 1);
+  btn.setAttribute('aria-controls', panel.id);
+  panel.addEventListener('transitionend', e => {
+    if (e.propertyName === 'max-height' && item.classList.contains('open')) panel.style.maxHeight = 'none';
+  });
+  btn.addEventListener('click', () => {
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(o => {
+      const p = o.querySelector('.faq-a');
+      if (p.style.maxHeight === 'none') { p.style.maxHeight = p.scrollHeight + 'px'; void p.offsetHeight; }
+      o.classList.remove('open');
+      o.querySelector('.faq-q').setAttribute('aria-expanded','false');
+      p.style.maxHeight = null;
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      btn.setAttribute('aria-expanded','true');
+      panel.style.maxHeight = prefersReduced() ? 'none' : panel.scrollHeight + 'px';
+    }
+  });
+});
+
+/* ============ GALLERY LIGHTBOX ============ */
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const lightboxVideo = document.getElementById('lightboxVideo');
+document.querySelectorAll('.g-item[data-full], .g-item[data-video]').forEach(item => {
+  item.addEventListener('click', () => {
+    const img = item.querySelector('img');
+    const alt = img ? img.alt : '';
+    const isVideo = !!item.dataset.video;
+    lightboxImg.hidden = isVideo;
+    lightboxVideo.hidden = !isVideo;
+    if (isVideo) {
+      // Video faqat bosilganda yuklanadi (sahifa ochilganda trafik ketmaydi)
+      lightboxVideo.poster = item.dataset.poster || '';
+      lightboxVideo.setAttribute('aria-label', alt);
+      lightboxVideo.src = item.dataset.video;
+    } else {
+      lightboxImg.src = item.dataset.full;
+      lightboxImg.alt = alt;
+    }
+    lightbox.showModal();
+    if (isVideo) lightboxVideo.play().catch(() => {});
+  });
+});
+document.getElementById('lightboxClose').addEventListener('click', () => lightbox.close());
+lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.close(); });
+lightbox.addEventListener('close', () => {
+  lightboxImg.src = '';
+  lightboxVideo.pause();
+  lightboxVideo.removeAttribute('src');
+  lightboxVideo.load();
+});
+
+/* ============ SHARHLAR (assets/reviews.json) ============ */
+(function loadReviews() {
+  var box = document.getElementById('reviewsList');
+  if (!box || !window.fetch) return;
+  var SRC = {
+    google:   { label: 'Google',   cls: '' },
+    yandex:   { label: 'Yandex',   cls: '' },
+    telegram: { label: 'Telegram', cls: '' }
+  };
+  var STARS = {
+    uz: function (n) { return n + ' yulduz'; },
+    ru: function (n) { return 'Оценка ' + n + ' из 5'; },
+    en: function (n) { return n + ' of 5 stars'; }
+  };
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  fetch('assets/reviews.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) {
+      var list = (data && Array.isArray(data.reviews)) ? data.reviews : [];
+      if (!list.length) return;
+      box.innerHTML = list.map(function (r, i) {
+        var stars = '★★★★★'.slice(0, Math.max(1, Math.min(5, r.rating || 5)));
+        var src = SRC[r.source] || { label: r.source || '' };
+        var initial = (r.author || '?').trim().charAt(0).toUpperCase();
+        return '<article class="testi" data-reveal style="--rd:' + (i * 0.08) + 's">' +
+          '<div class="testi-stars" aria-label="' + esc(STARS[currentLang] ? STARS[currentLang](stars.length) : STARS.uz(stars.length)) + '">' + stars + '</div>' +
+          '<p class="testi-text">' + esc(r.text) + '</p>' +
+          '<div class="testi-who">' +
+            '<div class="testi-ava" aria-hidden="true">' + esc(initial) + '</div>' +
+            '<div><div class="testi-name">' + esc(r.author) + '</div>' +
+            '<div class="testi-role">' +
+              (src.label ? '<span class="rv-source">' + esc(src.label) + '</span> ' : '') +
+              esc(r.date || '') +
+            '</div></div>' +
+          '</div></article>';
+      }).join('');
+      box.hidden = false;
+      box.querySelectorAll('[data-reveal]').forEach(function (el) { el.classList.add('in'); });
+    })
+    .catch(function () { /* sharhlar fayli yo'q yoki o'qilmadi — blok ko'rinmaydi */ });
+})();
+
+/* ============ AMBIENT (stars + floaters) ============ */
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!reduceMotion) {
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.2 + .5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*5}s;animation-delay:${Math.random()*4}s;opacity:${Math.random()*.5+.1}`;
+    starsEl.appendChild(s);
+  }
+  const shapes = ['✦','◆','❖','✧','◇','⬡'];
+  const floatersEl = document.getElementById('floaters');
+  shapes.forEach((e, i) => {
+    const el = document.createElement('div');
+    el.className = 'floater';
+    el.textContent = e;
+    el.style.cssText = `left:${8+i*15}%;--fd:${16+i*4}s;animation-delay:${i*3}s;--fs:${16+Math.random()*18}px;color:${['#ffb300','#2196f3','#00bcd4','#ffffff'][i%4]}`;
+    floatersEl.appendChild(el);
+  });
+}
+</script>
+<script src="assets/form.js" defer></script>
+</body>
+</html>

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Ruscha bosh sahifani (ru.html) index.html dan yaratadi.
+"""Ruscha bosh sahifani (ru.html) tools/home_src.html dan yaratadi.
 
     python3 tools/gen_home_ru.py
 
-index.html — manba, qo'lda tahrirlanadi (uch tilli: <span data-lang="uz|ru|en">).
+tools/home_src.html — manba, qo'lda tahrirlanadi (uch tilli: <span data-lang="uz|ru|en">);
+index.html, ru.html va en.html undan yaratiladi.
 Generator:
   * har bir tildagi spanlardan faqat ruschasini qoldiradi — ru.html da o'zbekcha va
     inglizcha matn umuman bo'lmaydi;
@@ -11,9 +12,9 @@ Generator:
     FAQ JSON-LD sahifadagi ruscha savol-javobdan olinadi, shuning uchun ular doim mos;
   * kurs kartalarini ruscha kurs sahifalariga ulaydi, til almashtirgichni havolaga aylantiradi;
   * ruscha sahifada o'zbekcha so'z qolmaganini tekshiradi;
-  * sitemap.xml ga index.html <-> ru.html hreflang juftligini yozadi.
+  * sitemap.xml ga index.html / ru.html / en.html hreflang uchligini yozadi.
 
-ru.html qo'lda tahrirlanmaydi: matnni index.html dagi ruscha spanda o'zgartiring va
+ru.html qo'lda tahrirlanmaydi: matnni tools/home_src.html dagi ruscha spanda o'zgartiring va
 shu buyruqni qayta ishga tushiring.
 """
 import html
@@ -27,6 +28,7 @@ import home_ru as R                     # noqa: E402
 from gen_courses_ru import leftover_uz  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+SRC = ROOT / 'tools' / 'home_src.html'      # uch tilli manba (qo'lda tahrirlanadi)
 BASE = 'https://parvozcode.uz/'
 URL = BASE + 'ru.html'
 KEEP = 'ru'
@@ -37,8 +39,8 @@ HREFLANG = (f'<link rel="alternate" hreflang="uz" href="{BASE}">\n'
             f'<link rel="alternate" hreflang="en" href="{EN_URL}">\n'
             f'<link rel="alternate" hreflang="x-default" href="{BASE}">')
 BOOT = "<script>\ntry { localStorage.setItem('parvoz-lang', 'ru'); } catch (e) {}\n</script>"
-NOTE = ('<!-- Bu fayl tools/gen_home_ru.py tomonidan index.html dan yaratiladi — qo\'lda tahrirlamang.\n'
-        '     Matnni index.html dagi ruscha spanlarda o\'zgartirib, generatorni qayta ishga tushiring. -->\n')
+NOTE = ('<!-- Bu fayl tools/gen_home_ru.py tomonidan tools/home_src.html dan yaratiladi — qo\'lda tahrirlamang.\n'
+        '     Matnni tools/home_src.html dagi ruscha spanlarda o\'zgartirib, generatorni qayta ishga tushiring. -->\n')
 
 OPEN = re.compile(r'<span data-lang="(uz|ru|en)"(?: class="show")?>')
 TAG = re.compile(r'<span\b|</span>')
@@ -208,7 +210,7 @@ def main():
     for key, lim in (('TITLE', 60), ('DESC', 155)):
         if len(getattr(R, key)) > lim:
             raise SystemExit(f'{key}: {len(getattr(R, key))} > {lim}')
-    src = (ROOT / 'index.html').read_text()
+    src = SRC.read_text()
     i = src.index('<body>')
     head, body = src[:i], src[i:]
     page = ru_head(head, body) + ru_body(body)
