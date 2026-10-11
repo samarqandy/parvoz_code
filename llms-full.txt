@@ -30,8 +30,8 @@ Hamma sahifalarning to'liq matni bitta faylda: https://parvozcode.uz/llms-full.t
 - **Qo'shimcha:** iqtidorli o'quvchilar uchun scholarship (bepul o'qish) imkoniyati; barcha jihozlar (kompyuter, robot to'plamlari, shaxmat doskalari) markaz tomonidan taqdim etiladi
 - **Muloqot tillari:** o'zbek, rus, ingliz
 
-> Bu fayl llms.txt ning to'liq varianti: har bir sahifaning matni. Yangilangan: 2026-10-10. Qisqa xarita: https://parvozcode.uz/llms.txt
-> This is the full-text companion of llms.txt: the content of every page. Updated: 2026-10-10.
+> Bu fayl llms.txt ning to'liq varianti: har bir sahifaning matni. Yangilangan: 2026-10-11. Qisqa xarita: https://parvozcode.uz/llms.txt
+> This is the full-text companion of llms.txt: the content of every page. Updated: 2026-10-11.
 
 ---
 
@@ -1972,7 +1972,7 @@ Manba / Source: https://parvozcode.uz/pered-zapisyu-na-kursy.html
 Выясните причину: неинтересно, некомфортно в группе или слишком сложно? Скажите нам — смена группы или подхода часто решает вопрос.
 
 
-## Учебный центр Parvoz (Самарканд): адрес, цена, возраст, график
+## Учебный центр Parvoz, Самарканд: адрес, цена, возраст
 
 Manba / Source: https://parvozcode.uz/uchebnyj-centr-parvoz-voprosy-otvety.html
 

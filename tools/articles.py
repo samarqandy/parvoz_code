@@ -334,7 +334,7 @@ ARTICLES = [
  "slug": "parvoz-markazi-haqida-savol-javob",
  "h1": "Parvoz O'quv Markazi haqida: asosiy savol-javoblar",
  "title": "Parvoz O'quv Markazi (Samarqand): manzil, narx, yosh, jadval",
- "desc": "Parvoz O'quv Markazi Samarqandda: manzil, telefon, narx (oyiga 300 000 so'm), 6 yoshdan qabul, haftada 3 kun, bepul sinov darsi, to'lov va yozilish tartibi.",
+ "desc": "Parvoz O'quv Markazi Samarqandda: manzil, telefon, narx (oyiga 300 000 so'm), 6 yoshdan qabul, haftada 3 kun, bepul sinov darsi, to'lov va yozilish.",
  "date": "2026-10-10",
  "course": ("index.html#kurslar", "Barcha yo'nalishlar"),
  "lede": "<strong>Parvoz O'quv Markazi (Parvoz Code) — Samarqand shahridagi bolalar uchun IT va intellektual ta'lim markazi.</strong> Dasturlash, robototexnika, matematika, shaxmat va ingliz tili 6 yoshdan o'rgatiladi. Manzil: Dahbed ko'chasi 11, 2-qavat. Narx — barcha yo'nalishlar uchun oyiga 300 000 so'm, haftada 3 kun, har dars 2 soat. Birinchi dars bepul. Telefon: +998 97 234 44 42.",
