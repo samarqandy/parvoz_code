@@ -18,7 +18,7 @@
    META_PIXEL     — Meta (Instagram/Facebook) Pixel:             "1234567890123456"
    ============================================================ */
 window.PARVOZ_CONFIG = {
-  GA4_ID: '',
+  GA4_ID: 'G-96JJTN21FS',
   GOOGLE_ADS_ID: '',
   ADS_LABELS: { lead: '', phone: '', telegram: '', whatsapp: '' },
   META_PIXEL: '',
